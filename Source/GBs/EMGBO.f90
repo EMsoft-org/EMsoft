@@ -47,6 +47,7 @@ use NameListHandlers
 use dictmod
 use io
 use files
+use error
 use rotations
 use Lambert
 use rng
@@ -60,14 +61,17 @@ IMPLICIT NONE
 character(fnlen)                  :: nmldeffile, progname, progdesc
 type(GBONameListType)             :: gbonl
 
-integer(kind=irg)                 :: numb, ip, TID, i, j, io_int(2), CSLnumber
+integer(kind=irg)                 :: numb, ip, TID, i, j, io_int(2), CSLnumber, numoct
 integer(kind=irg),allocatable     :: histogramSYM(:), histogramNBSYM(:)
 type(rng_t)                       :: seed 
 real(kind=dbl)                    :: aa(3),bb(3),cc(3),dd(3),qa(4),qb(4),qc(4),qd(4),pp,tt , acube, qq(4), &
                                      x1,x2,y1,y2,s1,s2, eu1(3), eu2(3), scale, Sqa(4), Sqc(4), Sqb(4), Sqd(4), &
                                      oac, obd
+real(kind=dbl),allocatable        :: octarray(:,:)
 type(dicttype),pointer            :: dict
-character(fnlen)                  :: fname
+character(fnlen)                  :: fname 
+character(4)                      :: mode
+logical                           :: f_exists  
 
 nmldeffile = 'EMGBO.nml'
 progname = 'EMGBO.f90'
@@ -81,6 +85,31 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 98 /), progname)
 
 ! deal with the namelist stuff
 call GetGBONameList(nmldeffile,gbonl)
+
+! what is the octonion generator mode?  'random' or a user-provided text file
+if (trim(gbonl%octonions).eq.'random') then 
+  mode = 'rand'
+  numoct = gbonl%numsamples
+  call Message(' Octonion mode:  random generation based on cubochoric sampling')
+else
+  mode = 'file'
+  fname = trim(EMsoft_getEMdatapathname())//trim(gbonl%octonions)
+  fname = EMsoft_toNativePath(fname)
+! does this file exist ?
+  inquire(file=trim(fname), exist=f_exists)
+  if (.not.f_exists) then 
+    call FatalError('EMGBO','input octonion file does not exist')
+  end if
+  call Message(' Octonion mode:  reading octonion pairs from '//trim(fname))
+  open(unit=dataunit,file=trim(fname),status='old',form='formatted')
+  read(dataunit,*) numoct
+  allocate(octarray(8,2*numoct))
+  do i=1,2*numoct
+    read(dataunit,*) octarray(1:8,i)
+  end do
+  close(dataunit,status='keep')
+  if (trim(gbonl%CSLtype).ne.'') numoct = 2*numoct
+end if
 
 ! set the number of bins for the interval [0,180]
 numb = gbonl%numbins
@@ -125,49 +154,51 @@ if (trim(gbonl%CSLtype).eq.'') then
   io_int(1) = gbonl%nthreads
   call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, aa, bb, cc, dd, pp, qa, qb, qc, qd, qq, tt, ip, i, x1,x2,y1,y2,s1,s2) 
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, aa, bb, cc, dd, pp, qa, qb, qc, qd, qq, tt, ip, i,j,x1,x2,y1,y2,s1,s2) 
 
   TID = OMP_GET_THREAD_NUM()
 
-  ! generate nquats random quartets of quaternions
   !$OMP DO SCHEDULE(DYNAMIC)
-  do i=1,gbonl%numsamples
-    ! get four random cubochoric points
-    aa = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-    bb = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-    cc = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-    dd = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-    ! generate the unit quaternions with positive scalar part
-    qa = cu2qu(aa)
+  do i=1,numoct
+    if (mode.eq.'rand') then 
+! get four random cubochoric points
+      aa = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+      bb = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+      cc = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+      dd = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+      qa = cu2qu(aa)
+      qb = cu2qu(bb)
+      qc = cu2qu(cc)
+      qd = cu2qu(dd)
+    else
+! get 2 octonions from the octarray
+      j = 2*(i-1)+1
+      qa = octarray(1:4,j) 
+      qb = octarray(5:8,j)
+      qc = octarray(1:4,j+1) 
+      qd = octarray(5:8,j+1)
+    end if
+! generate the unit quaternions with positive scalar part
     qa = qa/norm2(qa)
-    qb = cu2qu(bb)
     qb = qb/norm2(qb)
-    qc = cu2qu(cc)
     qc = qc/norm2(qc)
-    qd = cu2qu(dd)
     qd = qd/norm2(qd)
 
-  ! GBO geodesic distance with symmetry
+! GBO geodesic distance with symmetry
     if (gbonl%fixedAB.eqv..TRUE.) then
       tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,single=.TRUE.)
     else
       tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict)
-!      write(20,"(8F14.10)") qa, qb
-!      write(20,"(8F14.10)") qc, qd
     end if
     ip = nint(tt*scale)
     if (ip.lt.numb) histogramSYM(ip) = histogramSYM(ip) + 1
 
-  ! No-Boundary GBO geodesic distance
+! No-Boundary GBO geodesic distance
     tt = GBO_Omega_symmetric_NB(qa,qc,dict)
-    ! tt = GBO_Omega_symmetric(qa,qa,qc,qc,dict,noU1=.TRUE.)
     ip = nint(tt*scale)
     if (ip.lt.numb) histogramNBSYM(ip) = histogramNBSYM(ip) + 1
 
-
-
-
-    if (mod(i,1000000).eq.0) then
+    if (mod(i,100000).eq.0) then
       io_int(1) = i 
       io_int(2) = gbonl%numsamples
       call WriteValue('completed ',io_int,2,"(I14,' out of ',I14)")
@@ -175,7 +206,6 @@ if (trim(gbonl%CSLtype).eq.'') then
   end do
   !$OMP END DO
   !$OMP END PARALLEL
-!close(unit=20,status='keep')
 else
 ! we're doing a CSL boundary so let's get the correct quaternion for it ... 
   qa = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
@@ -189,21 +219,25 @@ else
   io_int(1) = gbonl%nthreads
   call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
-  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, cc, dd, pp, qc, qd, qq, tt, ip, i, x1,x2,y1,y2,s1,s2) 
+  !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, cc, dd, pp, qc, qd, qq, tt, ip, i,j, x1,x2,y1,y2,s1,s2) 
 
   TID = OMP_GET_THREAD_NUM()
 
   ! generate random quartets of quaternions
   !$OMP DO SCHEDULE(DYNAMIC)
-  do i=1,gbonl%numsamples
-    ! get four random cubochoric points
-    cc = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-    dd = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
-
-    ! generate the unit quaternions with positive scalar part
-    qc = cu2qu(cc)
+  do i=1,numoct
+    if (mode.eq.'rand') then 
+! get four random cubochoric points
+      cc = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+      dd = acube * (/ 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0, 2.D0*rng_uniform(seed)-1.D0 /)
+! generate the unit quaternions with positive scalar part
+      qc = cu2qu(cc)
+      qd = cu2qu(dd)
+    else 
+      qc = octarray(1:4,i) 
+      qd = octarray(5:8,i)
+    end if 
     qc = qc/norm2(qc)
-    qd = cu2qu(dd)
     qd = qd/norm2(qd)
 
   ! GBO geodesic distance with symmetry
@@ -220,7 +254,7 @@ else
     ip = nint(tt*scale)
     if (ip.lt.numb) histogramNBSYM(ip) = histogramNBSYM(ip) + 1
 
-    if (mod(i,1000000).eq.0) then
+    if (mod(i,100000).eq.0) then
       io_int(1) = i 
       io_int(2) = gbonl%numsamples
       call WriteValue('completed ',io_int,2,"(I14,' out of ',I14)")
@@ -230,14 +264,15 @@ else
   !$OMP END PARALLEL
 end if
 
+! output results
 fname = trim(EMsoft_getEMdatapathname())//trim(gbonl%outname)
 fname = EMsoft_toNativePath(fname)
 
-open(unit=20,file=trim(fname),status='unknown',form='formatted')
-write (20,"(I6)") numb
+open(unit=dataunit,file=trim(fname),status='unknown',form='formatted')
+write (dataunit,"(I6)") numb
 do i=0,numb
-  write (20,"(3I10)") i, histogramSYM(i), histogramNBSYM(i)
+  write (dataunit,"(3I10)") i, histogramSYM(i), histogramNBSYM(i)
 end do 
-close(unit=20,status='keep')
+close(unit=dataunit,status='keep')
 
 end program EMGBO

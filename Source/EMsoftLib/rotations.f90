@@ -2891,8 +2891,10 @@ real(kind=sgl),INTENT(IN)       :: h(3)         !< homochoric coordinates
 real(kind=sgl)                  :: res(4)
 
 integer(kind=irg)               :: i
-real(kind=sgl)                  :: hn(3), hmag, s, hm
+real(kind=sgl)                  :: hn(3), hmag, s, hm, sPi
 real(kind=sgl),parameter        :: thr = 1.0E-6
+
+sPi = sngl(cPi)
 
 ! normalize h and store the magnitude
 hmag = sum(h*h)
@@ -2912,7 +2914,7 @@ else
 
   s = 2.0*acos(s)
   if (abs(s-sngl(cPi)).lt.thr) then 
-   res = (/ hn(1), hn(2), hn(3), sngl(cPi) /)
+   res = (/ hn(1), hn(2), hn(3), sPi /)
   else
    res = (/ hn(1), hn(2), hn(3), s /)
   end if
@@ -3164,9 +3166,10 @@ IMPLICIT NONE
 real(kind=sgl),INTENT(IN)       :: r(4)         !< input Rodrigues vector
 real(kind=sgl)                  :: res(4)       !< output axis-angle pair
 
-real(kind=sgl)                  :: ta, angle
+real(kind=sgl)                  :: ta, angle, sPi
 
 ta = r(4)
+sPi = sngl(cPi)
 
 if (close_enough(ta,0.0)) then 
   res = (/ 0.0, 0.0, 1.0, 0.0 /)
@@ -3174,7 +3177,7 @@ if (close_enough(ta,0.0)) then
 end if
 
 if (ta.eq.infty()) then
-  res = (/ r(1), r(2), r(3), sngl(cPi) /)
+  res = (/ r(1), r(2), r(3), sPi /)
 else
   angle = 2.0*atan(ta)
   ta = 1.0/sqrt(sum(r(1:3)*r(1:3)))
@@ -3717,9 +3720,11 @@ use local
 use constants
 
 real(kind=sgl), INTENT(IN)              :: q(4)
-real(kind=sgl)                          :: res(4), omega, s
+real(kind=sgl)                          :: res(4), omega, s, sPi
 
 omega = 2.0 * acos(q(1))
+sPi = sngl(cPi)
+
 ! if the angle equals zero, then we return the rotation axis as [001]
 if (close_enough(omega,0.0)) then
   res = (/ 0.0, 0.0, 1.0, 0.0 /)
@@ -3728,7 +3733,7 @@ else
     s =  (q(1)/abs(q(1)))/sqrt(q(2)**2+q(3)**2+q(4)**2)
     res = (/ q(2)*s, q(3)*s, q(4)*s, omega /)
   else
-    res = (/ q(2), q(3), q(4), sngl(cPi) /)
+    res = (/ q(2), q(3), q(4), sPi /)
   end if
 end if
 
@@ -5571,14 +5576,15 @@ use constants
 real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
 real(kind=sgl)                          :: res(3,3)
 
-real(kind=sgl)                          :: l, tmp(3), ax(4)
+real(kind=sgl)                          :: l, tmp(3), ax(4), sPi
 
 l = sqrt(sum(c*c))
+sPi = sngl(cPi)
 
 if (l.gt.0.0) then ! not the identity rotation
    tmp = c/l
    if ( close_enough(l,1.0) ) then
-        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+        ax = (/ tmp(1), tmp(2), tmp(3), sPi /)
    else
         ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
    end if
@@ -5657,14 +5663,15 @@ use constants
 real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
 real(kind=sgl)                          :: res(3)
 
-real(kind=sgl)                          :: l, tmp(3), ax(4)
+real(kind=sgl)                          :: l, tmp(3), ax(4), sPi
 
 l = sqrt(sum(c*c))
+sPi = sngl(cPi)
 
 if (l.gt.0.0) then ! not the identity rotation
    tmp = c/l
    if ( close_enough(l,1.0) ) then
-        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+        ax = (/ tmp(1), tmp(2), tmp(3), sPi /)
    else
         ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
    end if
@@ -5737,14 +5744,15 @@ use constants
 real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
 real(kind=sgl)                          :: res(4)
 
-real(kind=sgl)                          :: l, tmp(3), ax(4)
+real(kind=sgl)                          :: l, tmp(3), ax(4), sPi
 
 l = sqrt(sum(c*c))
+sPi = sngl(cPi)
 
 if (l.gt.0.0) then ! not the identity rotation
    tmp = c/l
    if ( close_enough(l,1.0) ) then
-        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+        ax = (/ tmp(1), tmp(2), tmp(3), sPi /)
    else
         ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
    end if
@@ -5817,14 +5825,15 @@ use constants
 real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
 real(kind=sgl)                          :: res(4)
 
-real(kind=sgl)                          :: l, tmp(3)
+real(kind=sgl)                          :: l, tmp(3), sPi
 
 l = sqrt(sum(c*c))
+sPi = sngl(cPi)
 
 if (l.gt.0.0) then ! not the identity rotation
    tmp = c/l
    if ( close_enough(l,1.0) ) then
-        res = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+        res = (/ tmp(1), tmp(2), tmp(3), sPi /)
    else
         res = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
    end if

@@ -1470,6 +1470,7 @@ end subroutine patternmod_errormessage
 !> @date 04/01/18 MDG 1.0 original
 !> @date 04/04/18 MDG 1.1 added optional exptIQ parameter
 !> @date 06/02/20 MDG 2.0 changed handling of pattern binning (version 5.0.3)
+!> @date 10/06/20 MDG 2.1 add option for normalized cross correlation
 !--------------------------------------------------------------------------
 recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, &
                                         epatterns, exptIQ)
@@ -1488,6 +1489,8 @@ use timing
 use commonmod
 use ImageOPs 
 use ISO_C_BINDING
+use FFTW3mod
+use, intrinsic :: iso_fortran_env
 
 IMPLICIT NONE
 
@@ -1513,25 +1516,36 @@ integer(kind=irg)                           :: istat, PL, BL, Precordsize, Breco
 integer(HSIZE_T)                            :: dims3(3), offset3(3)
 integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42, itmpexpt2 = 43
 integer(kind=irg)                           :: tickstart, tstop 
-real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1)
+real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1), Nval, Nval2, mean, sdev
 real(kind=dbl)                              :: w, Jres, sclfct
 integer(kind=irg),allocatable               :: EBSDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), EBSDPattern(:,:), exppatarray(:), EBSDpat(:,:), pat1D(:), &
-                                               Pepatterns(:,:)
+                                               Pepatterns(:,:), mask(:,:)
 real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:), inpat(:,:), outpat(:,:)
 complex(kind=dbl),allocatable               :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer           :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                    :: ip, op
 type(C_PTR)                                 :: planf, HPplanf, HPplanb
 
 
 call Message('Preprocessing experimental patterns')
 
+if (ebsdnl%similaritymetric.eq.'ncc') then
+  allocate(mask(ebsdnl%exptnumsx,ebsdnl%exptnumsy))
+  mask = reshape(masklin,(/ebsdnl%exptnumsx,ebsdnl%exptnumsy/))
+end if 
+
 !===================================================================================
 ! define a bunch of mostly integer parameters
 
 ! for the input patterns we have the following parameters (P for experimental Pattern)
-Px = ebsdnl%exptnumsx
-Py = ebsdnl%exptnumsy
+if (ebsdnl%exptnumsx.lt.10) then ! we'll assume that we should be using the binned sizes here 
+  Px = binx 
+  Py = biny 
+else
+  Px = ebsdnl%exptnumsx
+  Py = ebsdnl%exptnumsy
+end if
 PL = Px * Py
 if (mod(PL,16) .ne. 0) then
     Pcorrectsize = 16*ceiling(float(PL)/16.0)
@@ -1642,10 +1656,26 @@ if (present(exptIQ)) then
 end if
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(Px,Py),inp(Px,Py),outp(Px,Py),stat=istat)
+allocate(hpmask(Px,Py),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask array'
+
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(Px*Py,C_SIZE_T))
+call c_f_pointer(ip, inp, [Px,Py])
+
+op = fftw_alloc_complex(int(Px*Py,C_SIZE_T))
+call c_f_pointer(op, outp, [Px,Py])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
 call init_HiPassFilter(w, (/ Px,Py /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
+
+! remove these pointers again because we will need them for the parallel part
+call fftw_free(ip)
+call fftw_free(op)
 
 call Message('Starting processing of experimental patterns')
 call Time_tick(tickstart)
@@ -1661,13 +1691,16 @@ if (binx.ne.Px) then
   call WriteValue(' binned size  : ',io_int,2,"(I4,' x ',I4)")
 end if 
 
+Nval = 1.0/float(Px*Py)
+Nval2 = 1.0/float(Px*Py-1)
+
 ! ===================================================================================
 ! we do one row at a time
 prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat, ip, op) &
+!$OMP& PRIVATE(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp, mean, sdev)
 
 ! set the thread ID
     TID = OMP_GET_THREAD_NUM()
@@ -1679,9 +1712,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
     allocate(EBSDpint(Px,Py),stat=istat)
     if (istat .ne. 0) stop 'could not allocate EBSDpint array'
 
-    allocate(inp(Px,Py),outp(Px,Py),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+    ip = fftw_alloc_complex(int(Px*Py,C_SIZE_T))
+    call c_f_pointer(ip, inp, [Px,Py])
 
+    op = fftw_alloc_complex(int(Px*Py,C_SIZE_T))
+    call c_f_pointer(op, outp, [Px,Py])
+
+    inp = cmplx(0.D0,0D0)
+    outp = cmplx(0.D0,0.D0)
 
     tmpimageexpt = 0.0
     rrdata = 0.D0
@@ -1707,6 +1745,8 @@ prepexperimentalloop: do iii = iiistart,iiiend
 ! then loop in parallel over all patterns to perform the preprocessing steps
 !$OMP DO SCHEDULE(DYNAMIC)
     do jj=1,jjend
+
+
 ! convert imageexpt to 2D EBSD Pattern array
         do kk=1,Py
           EBSDPat(1:Px,kk) = exppatarray((jj-1)*Ppatsz+(kk-1)*Px+1:(jj-1)*Ppatsz+kk*Px)
@@ -1722,12 +1762,22 @@ prepexperimentalloop: do iii = iiistart,iiiend
         ffdata = applyHiPassFilter(rrdata, (/ Px, Py /), w, hpmask, inp, outp, HPplanf, HPplanb)
         EBSDPat = sngl(ffdata)
 
+! in ncc mode, we multiply by the mask before scaling the intensities
+
+        if (ebsdnl%similaritymetric.eq.'ndp') then 
 ! adaptive histogram equalization
-        ma = maxval(EBSDPat)
-        mi = minval(EBSDPat)
+          ma = maxval(EBSDPat)
+          mi = minval(EBSDPat)
     
-        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
-        EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
+          EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+          EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
+        else  ! use normalized cross correlation so subtract mean and divided by standard deviation
+          EBSDPat = EBSDPat * mask
+          mean = sum(EBSDPat) * Nval
+          EBSDPat = EBSDPat - mean 
+          sdev = sqrt(Nval2 * sum( EBSDPat*EBSDPat ))
+          EBSDPat = EBSDPat / sdev
+        end if
 
 ! convert back to 1D vector
         do kk=1,Py
@@ -1735,12 +1785,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
         end do
 
 ! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) * masklin(1:PL)
-        vlen = vecnorm(exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL)/vlen
-        else
-          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = 0.0
+        if (ebsdnl%similaritymetric.eq.'ndp') then 
+          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) * masklin(1:PL)
+          vlen = vecnorm(exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL))
+          if (vlen.ne.0.0) then
+            exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL)/vlen
+          else
+            exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = 0.0
+          end if
         end if
     end do
 !$OMP END DO
@@ -1766,7 +1818,10 @@ prepexperimentalloop: do iii = iiistart,iiiend
     end if
 
 !$OMP BARRIER
-deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint)
+call fftw_free(ip)
+call fftw_free(op)
+
 !$OMP END PARALLEL
 
 ! print an update of progress
@@ -1825,7 +1880,7 @@ if (binx.ne.Px) then
 ! convert outpat to a 1D array for writing to file or epatterns array
     pat1D = sngl(reshape(outpat, (/ BL /) ))
 ! normalize the pattern 
-    pat1D = pat1D/vecnorm(pat1D)
+    if (ebsdnl%similaritymetric.eq.'ndp') pat1D = pat1D/vecnorm(pat1D)
     if (inRAM.eqv..TRUE.) then
       epatterns(1:Bpatsz, jj) = pat1D(1:BL)
     else 
@@ -1889,7 +1944,7 @@ use error
 use omp_lib
 use filters
 use timing
-
+use FFTW3mod
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -1920,7 +1975,8 @@ integer(kind=irg),allocatable               :: TKDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), TKDPattern(:,:), imageexpt(:), exppatarray(:), TKDpat(:,:)
 real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 complex(kind=dbl),allocatable               :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer           :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                    :: ip, op
 type(C_PTR)                                 :: planf, HPplanf, HPplanb
 
 
@@ -2005,10 +2061,26 @@ if (present(exptIQ)) then
 end if
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask array'
+
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
 call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
+
+! remove these pointers again because we will need them for the parallel part
+call fftw_free(ip)
+call fftw_free(op)
 
 call Message('Starting processing of experimental patterns')
 call Time_tick(tickstart)
@@ -2020,7 +2092,7 @@ dims3 = (/ binx, biny, tkdnl%ipf_wd /)
 prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat, ip, op) &
 !$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
 
 ! set the thread ID
@@ -2033,8 +2105,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
     allocate(TKDpint(binx,biny),stat=istat)
     if (istat .ne. 0) stop 'could not allocate TKDpint array'
 
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+    ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(ip, inp, [binx,biny])
+
+    op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(op, outp, [binx,biny])
+
+    inp = cmplx(0.D0,0D0)
+    outp = cmplx(0.D0,0.D0)
 
     tmpimageexpt = 0.0
     rrdata = 0.D0
@@ -2111,7 +2189,10 @@ prepexperimentalloop: do iii = iiistart,iiiend
       end if
     end if
 
-deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, inp, outp)
+deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint)
+call fftw_free(ip)
+call fftw_free(op)
+
 !$OMP BARRIER
 !$OMP END PARALLEL
 

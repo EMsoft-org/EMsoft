@@ -114,7 +114,7 @@ recursive subroutine Time_reset(TT)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)	:: TT
+type(timetype),INTENT(INOUT)  :: TT
 !f2py intent(in,out) ::  TT
 
 TT%TIME_t_count = 0.0
@@ -148,9 +148,9 @@ recursive subroutine Time_report(TT, interval)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)		:: TT
+type(timetype),INTENT(INOUT)    :: TT
 !f2py intent(in,out) ::  TT
-real(kind=sgl),intent(IN)   		:: interval
+real(kind=sgl),intent(IN)       :: interval
 
  TT%TIME_interval = interval
  TT%TIME_fraction = TT%TIME_interval
@@ -175,7 +175,7 @@ recursive subroutine Time_start(TT)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)		:: TT
+type(timetype),INTENT(INOUT)    :: TT
 !f2py intent(in,out) ::  TT
 
 ! start the timing of the computation
@@ -204,12 +204,12 @@ recursive subroutine Time_estimate(TT, numk)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)		:: TT
+type(timetype),INTENT(INOUT)    :: TT
 !f2py intent(in,out) ::  TT
-integer(kind=irg),intent(IN)     	:: numk
+integer(kind=irg),intent(IN)       :: numk
 
-integer(kind=irg)      		:: TIME_nc
-real(kind=sgl)				:: io_real(1)
+integer(kind=irg)          :: TIME_nc
+real(kind=sgl)        :: io_real(1)
 
 ! get the current time
  call system_clock(TIME_nc, TT%TIME_count_rate, TT%TIME_count_max)
@@ -244,13 +244,13 @@ recursive subroutine Time_remaining(TT, ik, numk)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)		:: TT
+type(timetype),INTENT(INOUT)    :: TT
 !f2py intent(in,out) ::  TT
-integer(kind=irg),intent(IN)   	:: ik
-integer(kind=irg),intent(IN)   	:: numk
+integer(kind=irg),intent(IN)     :: ik
+integer(kind=irg),intent(IN)     :: numk
 
-integer(kind=irg)    			:: TIME_nc, io_int(1)
-real(kind=sgl)				:: io_real(1)
+integer(kind=irg)          :: TIME_nc, io_int(1)
+real(kind=sgl)        :: io_real(1)
 
 
  TT%TIME_fraction = TT%TIME_fraction + TT%TIME_interval
@@ -300,10 +300,10 @@ recursive subroutine PrintTime(tm)
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)		:: tm
+real(kind=sgl),INTENT(IN)    :: tm
 
-integer(kind=irg)    			:: days, hours, minutes, seconds, io_int(4)
-real(kind=sgl)       			:: secs
+integer(kind=irg)          :: days, hours, minutes, seconds, io_int(4)
+real(kind=sgl)             :: secs
 
   secs = tm
   days = 0
@@ -348,11 +348,11 @@ recursive subroutine Time_stop(TT, numk)
 
 IMPLICIT NONE
 
-type(timetype),INTENT(INOUT)		:: TT
+type(timetype),INTENT(INOUT)    :: TT
 !f2py intent(in,out) ::  TT
-integer(kind=irg),INTENT(IN)  		:: numk
+integer(kind=irg),INTENT(IN)      :: numk
 
-real(kind=sgl)				:: io_real(1)
+real(kind=sgl)        :: io_real(1)
 
 
   call system_clock(TT%TIME_newcount, TT%TIME_count_rate, TT%TIME_count_max)

@@ -63,13 +63,15 @@ implicit none
 
   ! a global instance of the FFT wisdom type
   ! this should make it easier to manage automatically
-  type(FFTWisdomType) :: FFTWisdom ! may call FFTWisdom%load() before planning and FFTWisdom%save() afterwards (auto save doesn't work yet)
+  type(FFTWisdomType) :: FFTWisdom ! may call FFTWisdom%load() before planning 
+                                   ! and FFTWisdom%save() afterwards (auto save doesn't work yet)
 !DEC$ ATTRIBUTES DLLEXPORT :: FFTWisdom
 
 
   !@brief: wrapper class to handle memory allocation for FFTs
   type FFTBuffer
-    type(c_ptr), allocatable :: ptr ! = c_null_ptr ! fftw allocated memory pointer, allocatable since =c_null_ptr doesn't carry to nested types
+    type(c_ptr), allocatable :: ptr ! = c_null_ptr ! fftw allocated memory pointer, 
+                                    ! allocatable since =c_null_ptr doesn't carry to nested types
   contains
     !@brief                : (re)allocate a buffer
     !@param sz [IN] integer: size of array to allocate (number of doubles)
@@ -563,22 +565,28 @@ write (*,*) 'wisdom file '//trim(wisdomFile), fileExists
 
     rank           = 1                                   !individual transforms are all 1D
     nn(1)          = this%vN                             !individual transforms are all of length n
-    howmany        = this%vN                             !how many transformations will be performed (one down each z for each y at a single x)
-    inembed(1)     = 0                                   !dimensions of super array that input  is row major subarray of (null for not a subarray)
+    howmany        = this%vN                             !how many transformations will be performed 
+                                                         !(one down each z for each y at a single x)
+    inembed(1)     = 0                                   !dimensions of super array that input is row major subarray 
+                                                         !of (null for not a subarray)
     istride        = this%vN * this%vH                   !stride between sequential elements (z spacing)
     idist          = this%vH                             !kth fft input at in + k * idist (y spacing)
-    onembed(1)     = 0                                   !dimensions of super array that output is row major subarray of (null for not a subarray)
+    onembed(1)     = 0                                   !dimensions of super array that output is row major subarray 
+                                                         !of (null for not a subarray)
     ostride        = 1                                   !output stride
     odist          = this%vN                             !kth fft outputs to out + k * odist
     sign           = FFTW_BACKWARD                       !inverse transform
 
     ! unsigned flags     = FFTW_DESTROY_INPUT | (unsigned)pFlag;//planning flags
     this%pZ%ptr = fftw_plan_many_dft    (rank, nn, howmany, in      , inembed, istride, idist, this%wrk,&
-                                         onembed, ostride, odist  , sign, vFlg)!1st: transform down z for all y at a single x (into work array)
+                                         onembed, ostride, odist  , sign, vFlg)!1st: transform down z for all y 
+                                                                               !at a single x (into work array)
     this%pY%ptr = fftw_plan_many_dft    (rank, nn, this%vH, this%wrk, inembed, this%vN, 1    , in      ,&
-                                         onembed, this%vH, istride, sign, vFlg)!2nd: transform down y for all z at a single x (into original 3d input from work)
+                                         onembed, this%vH, istride, sign, vFlg)!2nd: transform down y for all z 
+                                                                               !at a single x (into original 3d input from work)
     this%pX%ptr = fftw_plan_many_dft_c2r(rank, nn, howmany, in      , inembed, 1      , idist, out     ,&
-                                         onembed, ostride, odist  ,       vFlg)!3rd: transform down x for all y at a single z (into work array)
+                                         onembed, ostride, odist  ,       vFlg)!3rd: transform down x for all y 
+                                                                               !at a single z (into work array)
 
     ! clean temporary space
     call fftw_free(pr)
@@ -603,7 +611,8 @@ write (*,*) 'wisdom file '//trim(wisdomFile), fileExists
       call fftw_execute_dft (this%pZ%ptr, spectra (i,:,:), this%wrk(:,:,1)) ! do Z transform into first slice of work array
       call fftw_execute_dft (this%pY%ptr, this%wrk(:,:,1), spectra (i,:,:)) ! do Y transform back overtop of input
     enddo
-    ! do i = 1, this%vH ! loop up xy planes doing batches of 1d c2r transforms, does 1 extra plane for extraction of 3x3x3 neighborhood at upper glide
+    ! do i = 1, this%vH ! loop up xy planes doing batches of 1d c2r transforms, does 1 extra plane for extraction of 
+    ! 3x3x3 neighborhood at upper glide
     do i = 1, this%vN ! loop up xy planes doing batches of 1d c2r transforms, does entire cube
       call fftw_execute_dft_c2r (this%pX%ptr, spectra(:,:,i), signal(:,:,i))
     enddo

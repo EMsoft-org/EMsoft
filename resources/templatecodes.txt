@@ -41,6 +41,7 @@
 048EMEBSDDIchangesetting
 049EMEBSDSGtest
 050EMoverlap
+051EMBSE
 060EMsampleRFZ
 070EMECPIndexing
 071EMECPSingle

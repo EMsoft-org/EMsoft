@@ -194,6 +194,8 @@ integer(kind=irg)            :: status
 character(fnlen)             :: notifymode, platform
 integer(kind=irg)            :: ierr
 
+status = 0
+
 platform = EMsoft_getEMsoftplatform()
 if (trim(platform).ne.'Windows') then
 

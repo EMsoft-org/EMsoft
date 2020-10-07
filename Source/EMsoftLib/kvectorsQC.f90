@@ -51,23 +51,23 @@ IMPLICIT NONE
 public
 
 interface QC_Addkvector
-	module procedure TDQC_Addkvector
-	module procedure QC_Addkvector
+  module procedure TDQC_Addkvector
+  module procedure QC_Addkvector
 end interface QC_Addkvector
 
 interface QC_Calckvectors
-	module procedure QC_Calckvectors
-	module procedure TDQC_Calckvectors
+  module procedure QC_Calckvectors
+  module procedure TDQC_Calckvectors
 end interface QC_Calckvectors
 
 interface QC_applySymmetry
-	module procedure TDQC_applySymmetry
-	module procedure QC_applyIcosahedralSymmetry
+  module procedure TDQC_applySymmetry
+  module procedure QC_applyIcosahedralSymmetry
 end interface QC_applySymmetry
 
 interface GetVectorsConeCBEDQC
-	module procedure GetVectorsConeCBED2DQC
-	module procedure GetVectorsConeCBEDQC
+  module procedure GetVectorsConeCBED2DQC
+  module procedure GetVectorsConeCBEDQC
 end interface GetVectorsConeCBEDQC
 
 type IncidentListCBED

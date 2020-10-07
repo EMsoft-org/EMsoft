@@ -110,6 +110,7 @@ use filters
 use patternmod
 use NameListTypedefs
 use HDF5
+use FFTW3mod
 
 IMPLICIT NONE
 
@@ -128,7 +129,8 @@ real(kind=sgl),allocatable                          :: expt(:), pattern(:,:), pc
 integer(kind=irg),allocatable                       :: nrvals(:), pint(:,:), ppp(:,:)
 type(C_PTR)                                         :: HPplanf, HPplanb
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer                   :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                            :: ip, op
 real(kind=dbl),allocatable                          :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 
 ! declare variables for use in object oriented image module
@@ -192,7 +194,6 @@ call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitex
 ! and close the pattern file
 call closeExpPatternFile(enl%inputtype, iunitexpt)
 
-write (*,*) 'maximum intensity in pattern ',maxval(expt)
 
 ! turn it into a 2D pattern
 allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
@@ -237,6 +238,7 @@ if (trim(enl%patternfile).ne.'undefined') then
   deallocate(output_image)
 end if
 
+
 ! define the high-pass filter width array and the nregions array
 numr = (enl%nregionsmax - enl%nregionsmin) / enl%nregionsstepsize + 1
 allocate(nrvals(numr))
@@ -257,13 +259,26 @@ image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%tifffile)
 image_filename = EMsoft_toNativePath(image_filename)
 
 ! next we need to set up the high-pass filter fftw plans
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask, inp, outp arrays'
 allocate(rrdata(binx,biny),ffdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate rrdata, ffdata arrays'
-call init_HiPassFilter(dble(hpvals(1)), (/enl%numsx, enl%numsy /), hpmask, inp, outp, HPplanf, HPplanb) 
 
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
+call init_HiPassFilter(dble(hpvals(1)), (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
 ! the outer loop goes over the hipass filter width and is displayed horizontally in the final image
+
 do ii=1,numw
 ! Hi-Pass filter
     pattern = pcopy
@@ -309,7 +324,11 @@ do ii=1,numw
         end if
       end do
     end do
-end do
+end do 
+
+call fftw_free(ip)
+call fftw_free(op)
+call fftw_cleanup()
 
 ! set up the image_t structure
 im2 = image_t(output_image)
