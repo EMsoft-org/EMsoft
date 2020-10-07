@@ -630,6 +630,7 @@ type BSENameListType
         character(fnlen)        :: useangles
         character(fnlen)        :: imagefile
         character(fnlen)        :: masterfile
+        character(fnlen)        :: Kosselmasterfile
         character(fnlen)        :: datafile
 end type BSENameListType
 
@@ -1349,6 +1350,7 @@ type EBSDIndexingNameListType
         character(1)            :: maskpattern
         character(3)            :: scalingmode
         character(3)            :: Notify
+        character(3)            :: similaritymetric
         !character(3)            :: eulerconvention
         !character(3)            :: outputformat
         character(1)            :: keeptmpfile
