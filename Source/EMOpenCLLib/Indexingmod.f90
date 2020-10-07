@@ -1049,7 +1049,7 @@ dictionaryloop: do ii = 1,cratio+1
 
         dp =  maxval(results)
         if (dp.gt.mvres) mvres = dp
-        write (*,*) jj,pp,'; max/min ncc = ',dp, minval(results) 
+!       write (*,*) jj,pp,'; max/min ncc = ',dp, minval(results) 
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
