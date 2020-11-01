@@ -389,7 +389,7 @@ real(kind=sgl)                          :: bitrange
 
 ! new stuff: deformation tensor
 real(kind=dbl)                          :: Umatrix(3,3), Fmatrix(3,3), Smatrix(3,3), quF(4), Fmatrix_inverse(3,3), &
-                                           Gmatrix(3,3)
+                                           Gmatrix(3,3), gs2c(3,3)
 logical                                 :: includeFmatrix=.FALSE., noise
 
 !====================================
@@ -577,39 +577,54 @@ if (enl%applyDeformation.eq.'y') then
 ! importantly, we need to transpose the input deformation tensor for the 
 ! computations to be performed correctly
   Fmatrix = transpose(enl%Ftensor)
-  
-! perform the polar decomposition on the deformation tensor
-  call getPolarDecomposition(Fmatrix, Umatrix, Smatrix)
-  call Message('')
 
-! and convert the unitary matrix to a quaternion
-  quF = conjg(om2qu(Umatrix))
+  if (numangles.eq.1.AND.enl%Fframe.eq.'samp') then
+    call Message('Ftensor in the sample frame:')
+    call PrintMatrixd('F = ',Fmatrix) 
+    call Message('')
+    call Message('Converting Sample Frame to Crystal Frame')
+    call Message('')
+    gs2c = qu2om(angles%quatang(1:4,1))
+    Fmatrix=matmul(matmul(gs2c,Fmatrix),transpose(gs2c))
+    call Message('Ftensor in the crystal frame:')
+    call PrintMatrixd('F = ',Fmatrix) 
+  end if
 
-  call Message('Polar Decomposition')
-  call Message('  --> Unitary Matrix')
-  call PrintMatrixd('U = ',Umatrix) 
-  char10 = ''
-  call print_orientation(init_orientation(quF,'qu'),'qu',char10)
-  write(*,*) 'rotation angle = ',2.0*acos(quF(1))*180.D0/cPi
-  call Message('  --> Stretch Matrix')
-  call PrintMatrixd('S = ',Smatrix) 
+  if (enl%Fframe.eq.'crys'.OR.numangles.eq.1.) then
+  ! perform the polar decomposition on the deformation tensor
+    call getPolarDecomposition(Fmatrix, Umatrix, Smatrix)
+    call Message('')
 
-! compute the effective lattice parameters for the given deformation, based on the 
-! undeformed unit cell
-  Gmatrix = matmul(matmul(transpose(Fmatrix),cell%dsm), transpose(matmul(transpose(Fmatrix),cell%dsm)) )
-  call Message('Metric tensor for distorted cell:')
-  call PrintMatrixd('Gdis=',Gmatrix)
-  io_real(1:3) = (/ sqrt(Gmatrix(1,1)), sqrt(Gmatrix(2,2)), sqrt(Gmatrix(3,3)) /)
-  call WriteValue('(a, b, c) = ',io_real,3)
-  
-  io_real(1:3) = (/ acos(Gmatrix(2,3)/sqrt(Gmatrix(2,2))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
-                    acos(Gmatrix(1,3)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
-                    acos(Gmatrix(1,2)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(2,2)))*180.D0/cPi  /)
-  call WriteValue('(alpha, beta, gamma) = ',io_real,3)
-  call Message('')
+  ! and convert the unitary matrix to a quaternion
+    quF = conjg(om2qu(Umatrix))
 
+    call Message('Polar Decomposition')
+    call Message('  --> Unitary Matrix')
+    call PrintMatrixd('U = ',Umatrix) 
+    char10 = ''
+    call print_orientation(init_orientation(quF,'qu'),'qu',char10)
+    write(*,*) 'rotation angle = ',2.0*acos(quF(1))*180.D0/cPi
+    call Message('  --> Stretch Matrix')
+    call PrintMatrixd('S = ',Smatrix) 
+
+  ! compute the effective lattice parameters for the given deformation, based on the 
+  ! undeformed unit cell
+    Gmatrix = matmul(matmul(transpose(Fmatrix),cell%dsm), transpose(matmul(transpose(Fmatrix),cell%dsm)) )
+    call Message('Metric tensor for distorted cell:')
+    call PrintMatrixd('Gdis=',Gmatrix)
+    io_real(1:3) = (/ sqrt(Gmatrix(1,1)), sqrt(Gmatrix(2,2)), sqrt(Gmatrix(3,3)) /)
+    call WriteValue('(a, b, c) = ',io_real,3)
+    
+    io_real(1:3) = (/ acos(Gmatrix(2,3)/sqrt(Gmatrix(2,2))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
+                      acos(Gmatrix(1,3)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
+                      acos(Gmatrix(1,2)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(2,2)))*180.D0/cPi  /)
+    call WriteValue('(alpha, beta, gamma) = ',io_real,3)
+    call Message('')
+  else
+    call Message('Metric tensor unavailable')
+  end if
 ! invert the deformation tensor and pass it on to the pattern computation routine
-  call mInvert(Fmatrix, Fmatrix_inverse, .FALSE.)
+!  call mInvert(Fmatrix, Fmatrix_inverse, .FALSE.)
 end if
 
 !====================================
@@ -806,7 +821,8 @@ do ibatch=1,totnumbatches
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL default(shared)  PRIVATE(TID,iang,i,j,istat,EBSDpattern,binned,idum,bpat,ma,mi,threadbatchpatterns,bpatint)&
 !$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, dims2, dims3, threadbatchpatternsint, threadbatchpatterns32)&
-!$OMP& PRIVATE(binnedvec, threadbatchpatterns32lin)
+!$OMP& PRIVATE(binnedvec, threadbatchpatterns32lin)&
+!$OMP& PRIVATE(Fmatrix_inverse, Fmatrix, gs2c)
 
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
@@ -909,7 +925,13 @@ do ibatch=1,totnumbatches
 ! sample quaternion orientation, and then back to direction cosines...
 ! then convert these individually to the correct EBSD pattern location
     binned = 0.0
-    
+    Fmatrix = transpose(enl%Ftensor)
+    if (enl%Fframe.eq.'samp') then
+      gs2c = qu2om(angles%quatang(1:4,iang))
+      Fmatrix=matmul(matmul(gs2c,Fmatrix),transpose(gs2c))
+    end if
+    call mInvert(Fmatrix, Fmatrix_inverse, .FALSE.)
+
     if (includeFmatrix.eqv..TRUE.) then 
      if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
@@ -1314,7 +1336,7 @@ real(kind=sgl)                          :: bitrange
 
 ! new stuff: deformation tensor
 real(kind=dbl)                          :: Umatrix(3,3), Fmatrix(3,3), Smatrix(3,3), quF(4), Fmatrix_inverse(3,3), &
-                                           Gmatrix(3,3)
+                                           Gmatrix(3,3), gs2c(3,3)
 logical                                 :: includeFmatrix=.FALSE.
 
 !====================================
@@ -1598,7 +1620,7 @@ do ibatch=1,totnumbatches
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL default(shared)  PRIVATE(TID,iang,i,j,istat,EBSDpattern,binned,idum,bpat,ma,mi,threadbatchpatterns,bpatint)&
 !$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, threadbatchpatternsint, threadbatchpatterns32, prefactor)&
-!$OMP& PRIVATE(Fmatrix_inverse, nel, Fmatrix)
+!$OMP& PRIVATE(Fmatrix_inverse, nel, Fmatrix, gs2c)
 
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
@@ -1669,6 +1691,10 @@ do ibatch=1,totnumbatches
   do iang=istart(TID,ibatch),istop(TID,ibatch)
 ! invert the transposed deformation tensor for this pattern
     Fmatrix = transpose(orpcdef%deftensors(1:3,1:3,iang))
+    if (enl%Fframe.eq.'samp') then
+      gs2c = qu2om(orpcdef%quatang(1:4,iang))
+      Fmatrix=matmul(matmul(gs2c,Fmatrix),transpose(gs2c))
+    end if
     call mInvert(Fmatrix, Fmatrix_inverse, .FALSE.)
 
 ! for each pattern we need to compute the detector arrays 

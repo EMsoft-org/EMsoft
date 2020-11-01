@@ -3925,6 +3925,7 @@ character(1)            :: spatialaverage
 character(3)            :: scalingmode
 character(3)            :: eulerconvention
 character(3)            :: outputformat
+character(4)            :: Fframe
 character(5)            :: bitdepth
 character(fnlen)        :: anglefile
 character(fnlen)        :: anglefiletype
@@ -3937,7 +3938,7 @@ namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefi
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
                         applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
-                        maskradius, poisson
+                        maskradius, poisson, Fframe
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3967,6 +3968,7 @@ makedictionary  = 'y'
 poisson         = 'n'           ! apply poisson noise ? 
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
+Fframe = 'crys'                 ! frame of reference for the Ftensor ('crys':crystal frame; 'samp':sample frame)
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
@@ -4048,6 +4050,7 @@ enl%includebackground = includebackground
 enl%makedictionary = makedictionary
 enl%poisson = poisson
 enl%applyDeformation = applyDeformation
+enl%Fframe=Fframe
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
 enl%eulerconvention = eulerconvention
@@ -4399,6 +4402,7 @@ character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
+character(4)            :: Fframe
 character(3)            :: scalingmode
 character(3)            :: eulerconvention
 character(3)            :: outputformat
@@ -4425,25 +4429,25 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt
+                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
-NP=120
-itermax=200
-strategy=6
-refresh=500
+NP=60
+itermax=100
+strategy=2
+refresh=10
 iwrite=7
-method=(/0,1,0/)
-VTR= -1e-4
-CR_XC=0.5
-F_XC=0.8
-F_CR=0.8
+method=(/0,1,1/)
+VTR= -1
+CR_XC=0.9
+F_XC=0.5
+F_CR=0.5
 bound=(/0.001,1.0,1.0/)
 w=1.0
 w_damp=0.99
-c1=1.5
-c2=1.5
+c1=2
+c2=2
 hybrid='n'
 globalopt='DE'
 single_opt='n'
@@ -4476,6 +4480,7 @@ makedictionary  = 'n'
 poisson         = 'n'           ! apply poisson noise ? 
 includebackground = 'n'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
+Fframe = 'crys'                 ! frame of reference for the Ftensor ('crys':crystal frame; 'samp':sample frame)
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
@@ -4574,6 +4579,7 @@ enl%includebackground = includebackground
 enl%makedictionary = makedictionary
 enl%poisson = poisson
 enl%applyDeformation = applyDeformation
+enl%Fframe = Fframe
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
 enl%eulerconvention = eulerconvention
