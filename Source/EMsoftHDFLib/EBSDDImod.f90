@@ -517,6 +517,7 @@ end do
 !======== pre-process the experimental patterns=================
 !===============================================================
 ! is the output to a temporary file or will it be kept in memory?
+dinl%similaritymetric = 'ndp'
 if (ronl%inRAM.eqv..TRUE.) then 
 ! allocate the array that will hold all the processed experimental patterns
   allocate(epatterns(correctsize,totnumexpt),stat=istat)

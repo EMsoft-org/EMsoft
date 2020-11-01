@@ -65,18 +65,13 @@ public:
    */
   PatternDisplay_UI(QWidget* parent = nullptr);
 
-  ~PatternDisplay_UI() override;
+  ~PatternDisplay_UI() override = default;
 
-    /**
-    * @brief Setter property for Controller
-    */
-    void setController(PatternDisplayController* value); 
-
-    /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-    PatternDisplayController* getController() const;
+  /**
+   * @brief Getter property for Controller
+   * @return Value of Controller
+   */
+  PatternDisplayController* getController() const;
 
   using EnumType = unsigned int;
 
@@ -144,7 +139,7 @@ protected slots:
   /**
    * @brief on_generateBtn_clicked
    */
-  void on_generateBtn_clicked() const;
+  void on_generateBtn_clicked();
 
   /**
    * @brief on_mpSelectBtn_clicked
@@ -161,7 +156,7 @@ protected slots:
    * @brief setMinAndMaxEnergyLevelChoices
    * @param ekeVs
    */
-  void setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs) const;
+  void setMinAndMaxEnergyLevelChoices(const std::vector<float>& ekeVs) const;
 
   /**
    * @brief setGenerateButtonAvailability
@@ -183,21 +178,27 @@ signals:
   void patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData) const;
 
 private:
-  PatternDisplayController* m_Controller;
-  QSharedPointer<QThread> m_Thread = nullptr;
+  std::unique_ptr<PatternDisplayController> m_Controller = std::make_unique<PatternDisplayController>();
+  std::unique_ptr<QThread> m_Thread = std::make_unique<QThread>();
 
-  SimulatedPatternDisplayWidget* m_PatternDisplayWidget = nullptr;
+  std::unique_ptr<SimulatedPatternDisplayWidget> m_PatternDisplayWidget;
 
   AbstractAngleWidget* m_CurrentAngleWidget = nullptr;
-  SingleAngleWidget::Pointer m_SingleAngleWidget = SingleAngleWidget::NullPointer();
-  AngleReaderWidget::Pointer m_AngleReaderWidget = AngleReaderWidget::NullPointer();
-  SamplingRateWidget::Pointer m_SamplingRateWidget = SamplingRateWidget::NullPointer();
-  SampleCubochoricSpaceWidget::Pointer m_SampleCubochoricSpaceWidget = SampleCubochoricSpaceWidget::NullPointer();
+  std::unique_ptr<SingleAngleWidget> m_SingleAngleWidget = std::make_unique<SingleAngleWidget>();
+  std::unique_ptr<AngleReaderWidget> m_AngleReaderWidget = std::make_unique<AngleReaderWidget>();
+  std::unique_ptr<SamplingRateWidget> m_SamplingRateWidget = std::make_unique<SamplingRateWidget>();
+  std::unique_ptr<SampleCubochoricSpaceWidget> m_SampleCubochoricSpaceWidget = std::make_unique<SampleCubochoricSpaceWidget>();
 
   /**
    * @brief createValidators
    */
   void createValidators() const;
+
+  /**
+   * @brief createPatternDisplayWidget
+   * @return
+   */
+  std::unique_ptr<SimulatedPatternDisplayWidget> createPatternDisplayWidget();
 
   /**
    * @brief createWidgetConnections

@@ -318,6 +318,7 @@ if (adpnl%usetmpfile.eq.'n') then
   dinl%nregions = adpnl%nregions
   dinl%exptnumsx = adpnl%numsx
   dinl%exptnumsy = adpnl%numsy
+  dinl%similaritymetric = 'ndp'
 
   call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt)
 

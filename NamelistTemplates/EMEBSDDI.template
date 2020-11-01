@@ -9,6 +9,8 @@
 !
 ! 'dynamic' for on the fly indexing or 'static' for pre calculated dictionary
  indexingmode = 'dynamic',
+! use the normalized dot product 'ndp' or the normalized cross correlation 'ncc' as the similarity metric
+ similaritymetric = 'ndp',
 !
 !###################################################################
 ! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'

@@ -85,6 +85,7 @@ contains
 !> @date 02/07/20 MDG 4.0 integration with new wrapper routine; adds optional arguments 
 !> @date 02/22/20 MDG 4.1 split of call back routines
 !> @date 06/01/20 MDG 5.0 change in handling of pattern binning (as of EMsoft version 5.0.3)
+!> @date 10/06/20 MDG 5.1 added normalized cross correlation as optional similarity metric
 !--------------------------------------------------------------------------
 subroutine EBSDDIdriver(Cnmldeffile, Cprogname, cproc, ctimeproc, cerrorproc, objAddress, cancel) &
            bind(c, name='EBSDDIdriver') 
@@ -266,8 +267,8 @@ real(kind=sgl)                                      :: dmin,voltage,scl,ratio, m
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax, iiistart, iiiend, jjend
-real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres, nel, emult
-real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx
+real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres, nel, emult, mean, sdev
+real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx, Nval, Nval2
 integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
@@ -301,6 +302,13 @@ end if
 
 ! deal with the namelist stuff
 call GetEBSDIndexingNameList(nmldeffile,dinl)
+
+if (dinl%similaritymetric.eq.'ndp') then 
+  call Message('--> Using normalized dot product as similarity metric')
+end if 
+if (dinl%similaritymetric.eq.'ncc') then 
+  call Message('--> Using normalized cross correlation as similarity metric')
+end if 
 
 ! binned pattern array size for experimental patterns
 binx = dinl%exptnumsx/dinl%binning
@@ -953,6 +961,10 @@ if (Clinked.eqv..TRUE.) then
   cancelled = .FALSE.
 end if 
 
+Nval = 1.0/float(binx*biny)
+Nval2 = 1.0/float(binx*biny-1)
+
+
 dictionaryloop: do ii = 1,cratio+1
     results = 0.0
 
@@ -976,7 +988,8 @@ dictionaryloop: do ii = 1,cratio+1
     end if
 
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, vlen, tock, ttime, dicttranspose, EBSDdictpatflt) &
-!$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip)
+!$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip) &
+!$OMP& PRIVATE(mean, sdev)
 
 ! allocate the local arrays that are used by each thread
     allocate(EBSDpatterninteger(binx,biny))
@@ -1032,8 +1045,11 @@ dictionaryloop: do ii = 1,cratio+1
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,dinl%devid,kernel,context,command_queue)
 
+        if (dinl%similaritymetric.eq.'ncc') results = results * Nval
+
         dp =  maxval(results)
         if (dp.gt.mvres) mvres = dp
+!       write (*,*) jj,pp,'; max/min ncc = ',dp, minval(results) 
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
@@ -1139,23 +1155,33 @@ dictionaryloop: do ii = 1,cratio+1
          call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
                                         EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
 
+
          if (dinl%scalingmode .eq. 'gam') then
            binned = binned**dinl%gammavalue
          end if
 
-! hi pass filtering
+! hi pass filtering (disabled)
 !      rdata = dble(binned)
 !      fdata = HiPassFilter(rdata,dims,w)
 !      binned = sngl(fdata)
 
+
+         if (dinl%similaritymetric.eq.'ndp') then 
 ! adaptive histogram equalization
-         ma = maxval(binned)
-         mi = minval(binned)
-         
-         EBSDpatternintd = ((binned - mi)/ (ma-mi))
-         EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-         EBSDpatternad =  adhisteq(dinl%nregions,binx,biny,EBSDpatterninteger)
-         binned = float(EBSDpatternad)
+           ma = maxval(binned)
+           mi = minval(binned)
+           
+           EBSDpatternintd = ((binned - mi)/ (ma-mi))
+           EBSDpatterninteger = nint(EBSDpatternintd*255.0)
+           EBSDpatternad =  adhisteq(dinl%nregions,binx,biny,EBSDpatterninteger)
+           binned = float(EBSDpatternad)
+         else  ! use normalized cross correlation 
+           binned = binned * mask
+           mean = sum(binned) * Nval
+           binned = binned - mean 
+           sdev = sqrt(Nval2 * sum( binned*binned ))
+           binned = binned / sdev 
+         end if 
 
          imagedictflt = 0.0
          imagedictfltflip = 0.0
@@ -1166,13 +1192,15 @@ dictionaryloop: do ii = 1,cratio+1
          end do
 
 ! normalize and apply circular mask 
-         imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
-         vlen = vecnorm(imagedictflt(1:correctsize))
-         if (vlen.ne.0.0) then
-           imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
-         else
-           imagedictflt(1:correctsize) = 0.0
-         end if
+         if (dinl%similaritymetric.eq.'ndp') then 
+           imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
+           vlen = vecnorm(imagedictflt(1:correctsize))
+           if (vlen.ne.0.0) then
+             imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
+           else
+             imagedictflt(1:correctsize) = 0.0
+           end if
+         end if 
          
          dict((pp-1)*correctsize+1:pp*correctsize) = imagedictflt(1:correctsize)
 

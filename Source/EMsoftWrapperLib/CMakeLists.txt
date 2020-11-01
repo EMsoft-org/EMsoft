@@ -1,5 +1,5 @@
 
-project(EMsoftWrapperLib)
+project(EMsoftWrapperLib C CXX Fortran)
 
 # --------------------------------------------------------------------
 # The MODALITY_DIRS variable is set one level above this one.
@@ -30,7 +30,6 @@ set(EMsoftWrapperLib_HEADERS
   ${SEM_Wrapper_HEADERS} 
   ${TEM_Wrapper_HEADERS} 
 )
-
 
 
 add_library(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES} ${EMsoftWrapperLib_HEADERS})
