@@ -120,6 +120,7 @@ do while (next)
 
   do k=1,num
     qus = quat_mult( dict%Pm(1:4,k), qu )
+    if (qus(1).lt.0.0) qus = -qus
     res = init_orientation(qus,'qu')
     ro = res%rodrigues
     ax = res%axang
