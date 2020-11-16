@@ -55,6 +55,7 @@ end type EBSDAngleType
 
 type EBSDAnglePCDefType
         real(kind=sgl),allocatable      :: quatang(:,:)
+        real(kind=sgl),allocatable      :: quatangfield(:,:,:,:)
         real(kind=sgl),allocatable      :: pcs(:,:)
         real(kind=sgl),allocatable      :: deftensors(:,:,:)
         real(kind=dbl),allocatable      :: pcfield(:,:,:)
@@ -1236,7 +1237,7 @@ use rotations
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                    :: ipar(7)
-real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=sgl),INTENT(IN)                       :: qu(4,ipar(7)) 
 real(kind=dbl),INTENT(IN)                       :: prefactor
 real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
 real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
@@ -1271,12 +1272,11 @@ do ii = 1,ipar(2)
     do jj = 1,ipar(3)
 ! get the pixel direction cosines from the pre-computed array
         dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
-! apply the grain rotation 
-        dc = quat_Lp( qu(1:4), dc)
-
 ! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
 ! to determine the direction cosines of the sampling unit vector.        
         do kk = 1, ipar(7)
+! apply the grain rotation 
+          dc = quat_Lp( qu(1:4,kk), dc)
 ! apply the deformation
           dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
 ! and normalize the direction cosines (to remove any rounding errors)
@@ -1327,7 +1327,7 @@ use rotations
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                    :: ipar(7)
-real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=sgl),INTENT(IN)                       :: qu(4,ipar(7)) 
 real(kind=dbl),INTENT(IN)                       :: prefactor
 real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
 real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
@@ -1362,12 +1362,11 @@ do ii = 1,ipar(2)
     do jj = 1,ipar(3)
 ! get the pixel direction cosines from the pre-computed array
         dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
-! apply the grain rotation 
-        dc = quat_Lp( qu(1:4), dc)
-
 ! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
 ! to determine the direction cosines of the sampling unit vector.        
         do kk = 1, ipar(7)
+! apply the grain rotation 
+          dc = quat_Lp( qu(1:4, kk), dc)
 ! apply the deformation
           dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
 ! and normalize the direction cosines (to remove any rounding errors)
