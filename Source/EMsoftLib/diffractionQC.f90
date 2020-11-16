@@ -49,18 +49,18 @@ IMPLICIT NONE
 public
 
 interface QC_CalcWaveLength
-	module procedure QC_CalcWaveLength2DQC
-	module procedure QC_CalcWaveLength3DQC
+  module procedure QC_CalcWaveLength2DQC
+  module procedure QC_CalcWaveLength3DQC
 end interface QC_CalcWaveLength
 
 interface QC_getUcg
-	module procedure QC_getUcg2DQC
-	module procedure QC_getUcg3DQC
+  module procedure QC_getUcg2DQC
+  module procedure QC_getUcg3DQC
 end interface QC_getUcg
 
 interface QC_Calcsg
-	module procedure QC_Calcsg2DQC
-	module procedure QC_Calcsg3DQC
+  module procedure QC_Calcsg2DQC
+  module procedure QC_Calcsg3DQC
 end interface QC_Calcsg
 
 contains
@@ -278,7 +278,7 @@ real(kind=dbl),INTENT(OUT)           :: Vmod
 real(kind=dbl),INTENT(OUT)           :: Vpmod
 real(kind=dbl),INTENT(OUT)           :: xig
 real(kind=dbl),INTENT(OUT)           :: xgp
-complex(kind=dbl)     				       :: Ucg 
+complex(kind=dbl)                    :: Ucg 
 
 integer(kind=irg)                    :: i,j,absflg,m,ii
 real(kind=sgl)                       :: s,twopi,arg,swk,dwwk,pref,ul,pre,preg,sct,fs,fsp, g, go, p, q, &
@@ -298,12 +298,12 @@ czero = cmplx(0.0,0.0)
 ! first we need to get the scattering parameter
 ! compute the scattering parameter s^2=(g/2)^2
 if (sum(hkl**2).eq.0) then 
-	s = 0.0
-	g = 0.0
-	go = 0.0
+  s = 0.0
+  g = 0.0
+  go = 0.0
 else
-	g = QC_getvectorLength(QCcell, hkl, 'P', 'r')
-	s = (0.50*g)**2
+  g = QC_getvectorLength(QCcell, hkl, 'P', 'r')
+  s = (0.50*g)**2
 end if
 
 ! To go from the standard B factor in [nm^2] to ul^2 in A^2,
@@ -340,23 +340,23 @@ gg=czero
 
 do m = 1,QCcell%ATOM_ntype
 
-	ul = sqrt(QCcell%ATOM_pos(m,8)*dwwk + QCcell%ATOM_pos(m,9)*dwwk)
+  ul = sqrt(QCcell%ATOM_pos(m,8)*dwwk + QCcell%ATOM_pos(m,9)*dwwk)
 
-	j  = QCcell%ATOM_type(m)
+  j  = QCcell%ATOM_type(m)
 
-	sf = FSCATT(s,ul,j,smb,sngl(QCcell%voltage),absflg,accflg,dwflg) * QCcell%ATOM_pos(m,7)
+  sf = FSCATT(s,ul,j,smb,sngl(QCcell%voltage),absflg,accflg,dwflg) * QCcell%ATOM_pos(m,7)
 
-	pp = ShapeTransformTriacontahedron(QCcell, hkl, m)
+  pp = ShapeTransformTriacontahedron(QCcell, hkl, m)
 
 ! loop over all atoms in the orbit
-	p1 = czero
-	do j = 1,QCcell%numat(m)
-		arg = twopi*sum(float(hkl(1:6))*QCcell%apos(m,j,1:6))
-		p1  = p1 + exp(cmplx(0.0,-arg))
-	end do
+  p1 = czero
+  do j = 1,QCcell%numat(m)
+    arg = twopi*sum(float(hkl(1:6))*QCcell%apos(m,j,1:6))
+    p1  = p1 + exp(cmplx(0.0,-arg))
+  end do
 
-	ff = ff + p1*real(sf)  * abs(real(pp))
-	gg = gg + p1*aimag(sf) * abs(real(pp))
+  ff = ff + p1*real(sf)  * abs(real(pp))
+  gg = gg + p1*aimag(sf) * abs(real(pp))
 
 end do
 
@@ -379,21 +379,21 @@ Ucg = pre * cmplx(real(ff)-aimag(gg),aimag(ff)+real(gg))
 
 ! complex Vg 
 if (QCcell%mLambda.ne.-1.0) then
-	if (abs(Umod).gt.0.0) then 
-		xig = 1.0/abs(Umod)/QCcell%mLambda
-	else
-		xig = 1.0E+8
-	end if 
+  if (abs(Umod).gt.0.0) then 
+    xig = 1.0/abs(Umod)/QCcell%mLambda
+  else
+    xig = 1.0E+8
+  end if 
 
-	if (abs(Upmod).gt.0.0) then 
-		xgp = 1.0/abs(Upmod)/QCcell%mLambda
-	else
-		xgp = 1.0E+8
-	end if 
+  if (abs(Upmod).gt.0.0) then 
+    xgp = 1.0/abs(Upmod)/QCcell%mLambda
+  else
+    xgp = 1.0E+8
+  end if 
 
-	arg = Vpphase-Vphase
-	qg  = cmplx(cos(Vphase)/xig-sin(Vpphase)/xgp,cos(Vpphase)/xgp+sin(Vphase)/xig)
-	!qg = cmplx(1.0/xig-sin(arg)/xgp,cos(arg)/xgp)
+  arg = Vpphase-Vphase
+  qg  = cmplx(cos(Vphase)/xig-sin(Vpphase)/xgp,cos(Vpphase)/xgp+sin(Vphase)/xig)
+  !qg = cmplx(1.0/xig-sin(arg)/xgp,cos(arg)/xgp)
 
 end if
 

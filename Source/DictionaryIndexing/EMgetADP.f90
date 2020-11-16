@@ -142,8 +142,6 @@ real(kind=sgl),allocatable                          :: EBSDpattern(:,:), dpmap(:
 real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), EBSDpat(:,:)
 integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
 real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:)
-complex(kind=dbl),allocatable                       :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
 character(11)                                       :: dstr
 character(15)                                       :: tstrb
 character(15)                                       :: tstre
@@ -318,6 +316,9 @@ if (adpnl%usetmpfile.eq.'n') then
   dinl%inputtype = adpnl%inputtype
   dinl%HDFstrings = adpnl%HDFstrings
   dinl%nregions = adpnl%nregions
+  dinl%exptnumsx = adpnl%numsx
+  dinl%exptnumsy = adpnl%numsy
+  dinl%similaritymetric = 'ndp'
 
   call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt)
 

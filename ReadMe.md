@@ -88,6 +88,8 @@ make -j
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
+## Changes in 5.0.3
+This minor update changes the handling of binning in the EMEBSDDI dictionary indexing program; this required additional parameters in the corresponding name list template file.  The changes are described in the EMEBSDDI wiki page.
 
 ## Changes in 5.0.2
 This update implements simplifications of the HDFsupport module, in particular the argument list for the hyperslab writing and reading routines.  It also provides a modified EMMCOpenCL program with better parameter control for interaction volume runs, as well as a new EMEBSDdefect program (still in further development) for the computation of EBSD patterns when there is a deformation tensor field in the region of interest.

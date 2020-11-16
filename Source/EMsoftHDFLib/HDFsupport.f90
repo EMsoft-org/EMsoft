@@ -239,7 +239,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: strin
-character(kind=c_char)                      :: cstrout(len_trim(strin)+1)
+character(kind=c_char)                      :: cstrout(fnlen)
 
 integer(kind=irg)                           :: slen, i
 
@@ -397,10 +397,10 @@ call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(line, line2, 1, HDF_head, overwrite)
-
+  call HDFerror_check('HDF_writeEMheader:HDF_writeDatasetStringArray:'//trim(line)//':overwrite', hdferr)
 else
   hdferr = HDF_writeDatasetStringArray(line, line2, 1, HDF_head)
-
+  call HDFerror_check('HDF_writeEMheader:HDF_writeDatasetStringArray:'//trim(line), hdferr)
 end if
 
 ! stop time /EMheader/StopTime 'character'; this is often updated at the end of a run

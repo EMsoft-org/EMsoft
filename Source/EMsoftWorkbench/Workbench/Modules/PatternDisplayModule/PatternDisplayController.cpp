@@ -353,6 +353,7 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   m_CurrentOrder.clear();
   m_PriorityOrder.clear();
   m_PatternWatchers.clear();
+  m_Cancel = false;
 
   std::vector<float> eulerAngles = patternData.angles;
   size_t angleCount = eulerAngles.size() / 3;
@@ -376,13 +377,13 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   int32_t threads = 1; // QThreadPool::globalInstance()->maxThreadCount();
   for(int32_t i = 0; i < threads; i++)
   {
-    QSharedPointer<QFutureWatcher<void>> watcher(new QFutureWatcher<void>());
-    connect(watcher.data(), SIGNAL(finished()), this, SLOT(patternThreadFinished()));
+    std::unique_ptr<QFutureWatcher<void>> watcher = std::make_unique<QFutureWatcher<void>>(new QFutureWatcher<void>());
+    connect(watcher.get(), &QFutureWatcher<void>::finished, this, [=] { patternThreadFinished(threads); });
 
     QFuture<void> future = QtConcurrent::run(this, &PatternDisplayController::generatePatternImagesUsingThread, patternData, detectorData);
     watcher->setFuture(future);
 
-    m_PatternWatchers.push_back(watcher);
+    m_PatternWatchers.push_back(std::move(watcher));
   }
 }
 
@@ -506,10 +507,10 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::patternThreadFinished()
+void PatternDisplayController::patternThreadFinished(int maxThreadCount)
 {
   m_NumOfFinishedPatternThreads++;
-  if(m_NumOfFinishedPatternThreads == QThreadPool::globalInstance()->maxThreadCount())
+  if(m_NumOfFinishedPatternThreads == maxThreadCount)
   {
     m_Cancel = false;
     emit patternGenerationFinished();

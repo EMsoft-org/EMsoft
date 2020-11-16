@@ -27,7 +27,15 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
 
       GetHDF5LinkLibraries(EMSOFT)
       set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib)
-    
+
+      Add_EMsoft_Executable(TARGET EMsoftConfigTest
+                                    SOURCES ${APP_DIR}/EMsoftConfigTest.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE
+                                    INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                                    )
+
       Add_EMsoft_Executable(TARGET EMsoftSlackTest
                                     SOURCES ${APP_DIR}/EMsoftSlackTest.f90 
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}

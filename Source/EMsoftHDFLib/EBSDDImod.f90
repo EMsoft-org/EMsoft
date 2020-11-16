@@ -65,6 +65,7 @@ contains
 !> @param nmldeffile namelist filename
 !
 !> @date 09/23/19 MDG 1.0 reorganization of program structure
+!> @date 04/27/20 MDG 1.1 move array (de)allocation inside parallel region (resolves issue on Windows)
 !--------------------------------------------------------------------------
 subroutine EMEBSDrefinement(progname, ronl, nmldeffile)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMEBSDrefinement
@@ -104,82 +105,83 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)             :: nmldeffile, progname
-type(RefineOrientationtype),INTENT(INOUT):: ronl
+character(fnlen),INTENT(IN)               :: nmldeffile, progname
+type(RefineOrientationtype),INTENT(INOUT) :: ronl
 
-character(fnlen)                        :: progdesc
-type(EBSDIndexingNameListType)          :: dinl
-type(MCCLNameListType)                  :: mcnl
-type(EBSDMasterNameListType)            :: mpnl
-type(EBSDNameListType)                  :: ebsdnl
-type(EBSDMCdataType)                    :: EBSDMCdata
-type(EBSDMPdataType)                    :: EBSDMPdata
-type(EBSDDetectorType)                  :: EBSDdetector
-type(EBSDDIdataType)                    :: EBSDDIdata
-
-logical                                 :: stat, readonly, noindex, ROIselected
-character(fnlen)                        :: dpfile, masterfile, energyfile
-integer(kind=irg)                       :: hdferr, ii, jj, kk, iii, istat, npy, jjj
-
-real(kind=dbl)                          :: misang       ! desired misorientation angle (degrees)
-integer(kind=irg)                       :: Nmis         ! desired number of sampling points along cube edge
-integer(kind=irg)                       :: CMcnt        ! number of entries in linked list
-type(FZpointd),pointer                  :: CMlist, CMtmp       ! pointer to start of linked list and temporary one
-real(kind=dbl)                          :: rhozero(4), hipassw
-
-real(kind=sgl),allocatable              :: euPS(:,:), euler_bestmatch(:,:,:), CIlist(:), CMarray(:,:,:)
-integer(kind=irg),allocatable           :: indexmain(:,:) 
-real(kind=sgl),allocatable              :: resultmain(:,:)                                         
-integer(HSIZE_T)                        :: dims(1),dims2D(2),dims3(3),offset3(3) 
+character(fnlen)                          :: progdesc
+type(EBSDIndexingNameListType)            :: dinl
+type(MCCLNameListType)                    :: mcnl
+type(EBSDMasterNameListType)              :: mpnl
+type(EBSDNameListType)                    :: ebsdnl, myebsdnl
+type(EBSDMCdataType)                      :: EBSDMCdata
+type(EBSDMPdataType)                      :: EBSDMPdata
+type(EBSDDetectorType)                    :: EBSDdetector, myEBSDdetector
+type(EBSDDIdataType)                      :: EBSDDIdata
+  
+logical                                   :: stat, readonly, noindex, ROIselected
+character(fnlen)                          :: dpfile, masterfile, energyfile
+integer(kind=irg)                         :: hdferr, ii, jj, kk, iii, istat, npy, jjj
+  
+real(kind=dbl)                            :: misang       ! desired misorientation angle (degrees)
+integer(kind=irg)                         :: Nmis         ! desired number of sampling points along cube edge
+integer(kind=irg)                         :: CMcnt        ! number of entries in linked list
+type(FZpointd),pointer                    :: CMlist, CMtmp       ! pointer to start of linked list and temporary one
+real(kind=dbl)                            :: rhozero(4), hipassw
+  
+real(kind=sgl),allocatable                :: euPS(:,:), euler_bestmatch(:,:,:), CIlist(:), CMarray(:,:,:)
+integer(kind=irg),allocatable             :: indexmain(:,:) 
+real(kind=sgl),allocatable                :: resultmain(:,:), DPCX(:), DPCY(:), DPCL(:) 
+integer(HSIZE_T)                          :: dims(1),dims2D(2),dims3(3),offset3(3) 
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
-character(fnlen)                        :: dataset, groupname  
-character(fnlen)                        :: ename, fname    
-character(2)                            :: anglemode
-real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
-
-integer(c_size_t),allocatable           :: IPAR2(:)
-real(kind=dbl),allocatable              :: X(:), XL(:), XU(:)
-real(kind=sgl),allocatable              :: INITMEANVAL(:)
-real(kind=dbl)                          :: RHOBEG, RHOEND
-integer(kind=irg)                       :: NPT, N, IPRINT, NSTEP, NINIT
-integer(kind=irg),parameter             :: MAXFUN = 10000
-logical                                 :: verbose
-
-logical                                 :: f_exists, init, g_exists, overwrite
-integer(kind=irg),parameter             :: iunitexpt = 41, itmpexpt = 42
-integer(kind=irg)                       :: binx, biny, recordsize, pos(2)
-real(kind=sgl),allocatable              :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), mask(:,:), masklin(:)
-real(kind=sgl),allocatable              :: imagedictflt(:), exppatarray(:)
-real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), binned(:,:), euler_best(:,:)
-real(kind=sgl),allocatable              :: epatterns(:,:)
-integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:), Rvar(:)
-type(C_PTR)                             :: planf, HPplanf, HPplanb
-integer(kind=8)                         :: size_in_bytes_dict,size_in_bytes_expt
-
-real(kind=dbl)                          :: w, Jres, nel, emult 
-real(kind=dbl)                          :: stpsz, cu0(3)
-real(kind=dbl),allocatable              :: cubneighbor(:,:)
-real(kind=sgl)                          :: quat(4), quat2(4), ma, mi, dp, tstart, tstop, io_real(4), tmp, &
-                                           vlen, avec(3), dtor
-real(kind=dbl)                          :: qu(4), rod(4) 
-integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tickstart, ierr, L, nvar, niter
-integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt
-
-real(kind=dbl)                          :: prefactor, F, angleaxis(4)
-real(kind=sgl),allocatable              :: quPS(:,:), axPS(:,:), dpPS(:,:), eulerPS(:,:,:)
-real(kind=dbl)                          :: ratioE, eurfz(3), euinp(3)
-integer(kind=irg)                       :: cratioE, fratioE, eindex, jjend, iiistart, iiiend, Nd, Ne, patsz, pp
-integer(kind=irg),allocatable           :: ppendE(:)
-real(kind=sgl),allocatable              :: exptpatterns(:,:)
-
-real(kind=sgl),allocatable              :: STEPSIZE(:), OSMmap(:,:), IQmap(:)
-type(dicttype),pointer                  :: dict
-integer(kind=irg)                       :: FZtype, FZorder
-character(fnlen)                        :: modalityname
-
-type(HDFobjectStackType)                :: HDF_head
-type(unitcell)                          :: cell
+character(fnlen)                          :: dataset, groupname  
+character(fnlen)                          :: ename, fname    
+character(2)                              :: anglemode
+real(kind=dbl),parameter                  :: nAmpere = 6.241D+18   ! Coulomb per second
+  
+integer(c_size_t),allocatable             :: IPAR2(:)
+real(kind=dbl),allocatable                :: X(:), XL(:), XU(:)
+real(kind=sgl),allocatable                :: INITMEANVAL(:)
+real(kind=dbl)                            :: RHOBEG, RHOEND
+integer(kind=irg)                         :: NPT, N, IPRINT, NSTEP, NINIT
+integer(kind=irg),parameter               :: MAXFUN = 10000
+logical                                   :: verbose
+  
+logical                                   :: f_exists, init, g_exists, overwrite
+integer(kind=irg),parameter               :: iunitexpt = 41, itmpexpt = 42
+integer(kind=irg)                         :: binx, biny, recordsize, pos(2)
+real(kind=sgl),allocatable                :: tmpimageexpt(:), mask(:,:), masklin(:)
+real(kind=sgl),allocatable                :: imagedictflt(:), exppatarray(:)
+real(kind=sgl),allocatable                :: EBSDpatternintd(:,:), binned(:,:), euler_best(:,:)
+real(kind=sgl),allocatable                :: epatterns(:,:)
+integer(kind=irg),allocatable             :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:), Rvar(:)
+type(C_PTR)                               :: planf, HPplanf, HPplanb
+integer(kind=8)                           :: size_in_bytes_dict,size_in_bytes_expt
+  
+real(kind=dbl)                            :: w, Jres, nel, emult 
+real(kind=dbl)                            :: stpsz, cu0(3)
+real(kind=dbl),allocatable                :: cubneighbor(:,:)
+real(kind=sgl)                            :: quat(4), quat2(4), qq(4), ma, mi, dp, tstart, tstop, io_real(4), tmp, &
+                                             vlen, avec(3), dtor, alpha, ca, sa, c2a, s2a, nn(3), omega, dx, dy, rho
+real(kind=dbl)                            :: qu(4), rod(4) 
+integer(kind=irg)                         :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tickstart, ierr, L, nvar, niter,i,j, &
+                                             samplex, sampley, maxeindex, unchanged
+integer(kind=irg)                         :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt, mystat
+  
+real(kind=dbl)                            :: prefactor, F, angleaxis(4)
+real(kind=sgl),allocatable                :: quPS(:,:), axPS(:,:), dpPS(:,:), eulerPS(:,:,:)
+real(kind=dbl)                            :: ratioE, eurfz(3), euinp(3)
+integer(kind=irg)                         :: cratioE, fratioE, eindex, jjend, iiistart, iiiend, Nd, Ne, patsz, pp
+integer(kind=irg),allocatable             :: ppendE(:)
+real(kind=sgl),allocatable                :: exptpatterns(:,:)
+  
+real(kind=sgl),allocatable                :: STEPSIZE(:), OSMmap(:,:), IQmap(:)
+type(dicttype),pointer                    :: dict
+integer(kind=irg)                         :: FZtype, FZorder
+character(fnlen)                          :: modalityname
+  
+type(HDFobjectStackType)                  :: HDF_head
+type(unitcell)                            :: cell
 
 dtor = sngl(cPi) / 180.0
 
@@ -304,7 +306,8 @@ allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
          EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=istat)
 
 ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
-! and then generate the detector arrays
+! and then generate the detector arrays; these are the generic arrays without pattern center 
+! correction.
 ebsdnl%numsx = dinl%numsx
 ebsdnl%numsy = dinl%numsy
 ebsdnl%xpc = dinl%xpc
@@ -315,7 +318,6 @@ ebsdnl%L = dinl%L
 ebsdnl%energymin = dinl%energymin
 ebsdnl%energymax = dinl%energymax
 call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
-deallocate(EBSDMCdata%accum_e)
 
 ! close the fortran HDF interface
 ! call h5close_EMsoft(hdferr)
@@ -411,7 +413,6 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) call FatalError('EMFitOrientationPS','angle type must be eu or ax')
     read (53,*) nvar
     nvar = nvar + 1     ! identity operation is first entry
-    allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar))
 
     if (anglemode.eq.'ax') then 
     ! allocate some arrays
@@ -466,7 +467,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     call Message('--------')
 else  ! there are no pseudo-symmetric variants in this run
     nvar = 1     ! identity operation is the only entry
-    allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar), quPS(4,nvar))
+    allocate(quPS(4,nvar))
     quPS(1:4,1) = (/  1.0, 0.0, 0.0, 0.0 /)
 end if 
 !=====================================================
@@ -487,41 +488,28 @@ call DI_Init(dict,'nil')
 !=====================================================
 !==========ALLOCATE ALL ARRAYS HERE=================== 
 !=====================================================
-allocate(mask(binx,biny),masklin(binx*biny))
+! account for the fact that the binning parameter may
+! not be equal to 1 (used as of 5.0.3)
+allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
 mask = 1.0
 masklin = 0.0
-
-allocate(EBSDPattern(binx,biny),tmpimageexpt(binx*biny),imageexpt(binx*biny),binned(binx,biny))
-EBSDPattern = 0.0
-tmpimageexpt = 0.0
-imageexpt = 0.0
-binned = 0.0
-
-
-allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
-EBSDpatternintd = 0.0
-EBSDpatterninteger = 0
-EBSDpatternad = 0.0
-
-allocate(imagedictflt(binx*biny))
-imagedictflt = 0.0
 
 !===============================================================
 ! define the circular mask if necessary and convert to 1D vector
 !===============================================================
 if (dinl%maskpattern.eq.'y') then
-  do ii = 1,biny
-      do jj = 1,binx
-          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. dinl%maskradius**2) then
+  do ii = 1,dinl%exptnumsy
+      do jj = 1,dinl%exptnumsx
+          if((ii-dinl%exptnumsy/2)**2 + (jj-dinl%exptnumsx/2)**2 .ge. dinl%maskradius**2) then
               mask(jj,ii) = 0.0
           end if
       end do
   end do
 end if
   
-do ii = 1,biny
-    do jj = 1,binx
-        masklin((ii-1)*binx+jj) = mask(jj,ii)
+do ii = 1,dinl%exptnumsy
+    do jj = 1,dinl%exptnumsx
+        masklin((ii-1)*dinl%exptnumsx+jj) = mask(jj,ii)
     end do
 end do
 
@@ -529,6 +517,7 @@ end do
 !======== pre-process the experimental patterns=================
 !===============================================================
 ! is the output to a temporary file or will it be kept in memory?
+dinl%similaritymetric = 'ndp'
 if (ronl%inRAM.eqv..TRUE.) then 
 ! allocate the array that will hold all the processed experimental patterns
   allocate(epatterns(correctsize,totnumexpt),stat=istat)
@@ -543,6 +532,65 @@ else
   dinl%tmpfile = trim(ronl%tmpfile)
   call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
 end if
+
+! do we need to redefine the mask arrays ?
+! remake the mask if the binning factor is not 1 
+if ((dinl%binning.ne.1).and.(dinl%maskpattern.eq.'y') ) then 
+  deallocate(mask, masklin) 
+  allocate(mask(binx,biny), masklin(binx*biny))
+  mask = 1.0
+  masklin = 0.0
+
+  do ii = 1,biny
+    do jj = 1,binx
+      if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. (dinl%maskradius/dinl%binning)**2) then
+        mask(jj,ii) = 0.0
+      end if
+    end do
+  end do
+
+! convert the mask to a linear (1D) array
+  masklin = reshape(mask, (/ binx*biny /) )
+end if 
+
+!===============================================================
+!========Pattern center correction parameters===================
+!===============================================================
+if (trim(ronl%PCcorrection).eq.'on') then 
+  alpha = 0.5 * sngl(cPi) - (mcnl%sig - dinl%thetac) * dtor  
+  ca = cos(alpha)
+  c2a = cos(2.0*alpha)
+  sa = sin(alpha)
+  s2a = sin(2.0*alpha)
+! determine the shift vector for each sampling point (on the sample!) with respect to the 
+! (initialx, initialy) position
+  if (ROIselected.eqv..TRUE.) then 
+    allocate(DPCX(dinl%ROI(3)), DPCY(dinl%ROI(4)), DPCL(dinl%ROI(4)) )
+    do i=1,dinl%ROI(3)
+      DPCX(i) = - ( ronl%initialx - (dinl%ROI(1)+(i-1)) ) * dinl%StepX
+    end do 
+    do j=1,dinl%ROI(4)
+      DPCY(j) = - ( ronl%initialy - (dinl%ROI(2)+(j-1)) ) * dinl%StepY
+    end do 
+  else
+    allocate(DPCX(dinl%ipf_wd), DPCY(dinl%ipf_ht), DPCL(dinl%ipf_ht) )
+    do i=1,dinl%ipf_wd
+      DPCX(i) = - ( ronl%initialx - i ) * dinl%StepX
+    end do 
+    do j=1,dinl%ipf_ht
+      DPCY(j) = - ( ronl%initialy - j ) * dinl%StepY
+    end do 
+  end if
+! convert these shifts to shifts in the detector reference frame 
+! and put them in units of the detector pixel size 
+  DPCX = - DPCX / dinl%delta
+  DPCL = - DPCY * sa 
+  DPCY = - DPCY * ca / dinl%delta
+end if  
+
+! write (*,*) 'DPCX : ', DPCX
+! write (*,*) 'DPCY : ', DPCY
+! write (*,*) 'DPCL : ', DPCL
 
 !=================================
 !========LOOP VARIABLES===========
@@ -572,16 +620,12 @@ end if
 !===================================================================================
 !===============BOBYQA VARIABLES====================================================
 !===================================================================================
+! these are shared by all threads
 N = 3
-allocate(X(N),XL(N),XU(N),INITMEANVAL(N),STEPSIZE(N))
-
-XL = 0.D0
-XU = 1.D0
 RHOBEG = 0.1D0
 RHOEND = 0.0001D0
 IPRINT = 0
 NPT = N + 6
-STEPSIZE = ronl%step
 verbose = .FALSE.
 
 if (ronl%inRAM.eqv..FALSE.) then
@@ -594,38 +638,93 @@ end if
 !===================================================================================
 !===============MAIN COMPUTATION LOOP===============================================
 !===================================================================================
+if (ROIselected.eqv..TRUE.) then 
+  maxeindex = dinl%ROI(3) * dinl%ROI(4)
+else 
+  maxeindex = dinl%ipf_wd * dinl%ipf_ht
+end if 
 
 io_int(1) = ronl%nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(ronl%nthreads)
 
+
 call Time_tick(tickstart)
 
 allocate(exptpatterns(binx*biny,dinl%numexptsingle),stat=istat)
+unchanged = 0 
+
+! parameters for orientation correction
+! if (trim(ronl%PCcorrection).eq.'on') then 
+!   alpha = cPi/2.D0 - (ebsdnl%MCsig - ebsdnl%thetac)*cPi/180.0
+!   ca = cos(alpha)
+!   sa = sin(alpha)
+!   drd = ebsdnl%stepY*ca
+!   dtd = ebsdnl%stepX
+!   zs = ebsdnl%L/ebsdnl%numsx/ebsdnl%delta
+!   xs = 0.D0
+!   ys = 0.D0
+!   rho = sqrt(xs**2 + ys**2 + zs**2)
+!   !r = (/(ys*ca + zs*sa)/rho, -xs/rho, (-ys*sa + zs*ca)/rho /)
+!   r = (/sa, 0.D0, ca/)
+! end if 
 
 ! depending on the ronl%method, we perform the optimization with different routines...
 if (ronl%method.eq.'FIT') then 
 
+    call Message(' --> Starting regular refinement loop')
+
     do iii = 1,cratioE
         if (ronl%inRAM.eqv..FALSE.) then
+            allocate(tmpimageexpt(binx*biny))
             do jj = 1,ppendE(iii)
                 eindex = (iii - 1)*Ne + jj
                 read(itmpexpt,rec=eindex) tmpimageexpt
                 exptpatterns(1:binx*biny,jj) = tmpimageexpt(1:binx*biny)
             end do
+            deallocate(tmpimageexpt)
         end if
 
         
-    !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,ii,tmpimageexpt,jj,quat,quat2,binned,ma,mi,eindex) &
-    !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,kk,ll,mm) &
-    !$OMP& PRIVATE(X,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos)
-         
+    !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,ii,tmpimageexpt,jj,qu,qq,quat,quat2,binned,ma,mi,eindex) &
+    !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,kk,ll,mm, myebsdnl) &
+    !$OMP& PRIVATE(X,XL,XU,STEPSIZE,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos, mystat, myEBSDdetector) &
+    !$OMP& PRIVATE(samplex, sampley, dx, dy, rho, nn, omega)
+          
+          allocate(X(N),XL(N),XU(N),INITMEANVAL(N),STEPSIZE(N))
+          XL = 0.D0
+          XU = 1.D0
+          STEPSIZE = ronl%step         
+
+          allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar))
+
+          allocate(tmpimageexpt(binx*biny),binned(binx,biny))
+          allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
+          allocate(imagedictflt(binx*biny))
+          tmpimageexpt = 0.0
+          binned = 0.0
+          EBSDpatternintd = 0.0
+          EBSDpatterninteger = 0
+          EBSDpatternad = 0.0
+          imagedictflt = 0.0
+
+          if (trim(ronl%PCcorrection).eq.'on') then 
+! allocate the necessary arrays 
+            allocate(myEBSDdetector%rgx(dinl%numsx,dinl%numsy), &
+                     myEBSDdetector%rgy(dinl%numsx,dinl%numsy), &
+                     myEBSDdetector%rgz(dinl%numsx,dinl%numsy), &
+                     myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=mystat)
+          end if 
+
           TID = OMP_GET_THREAD_NUM()
+
+    !$OMP BARRIER
 
     !$OMP DO SCHEDULE(DYNAMIC)
           do jj = 1,ppendE(iii)
 
             eindex = (iii - 1)*Ne + jj
+            if (eindex.gt.maxeindex) CYCLE 
             if (ronl%inRAM.eqv..TRUE.) then
                 tmpimageexpt(1:correctsize) = epatterns(1:correctsize,eindex)
                 tmpimageexpt = tmpimageexpt/vecnorm(tmpimageexpt)
@@ -659,13 +758,73 @@ if (ronl%method.eq.'FIT') then
                 
                     eulerPS(1:3,kk,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
                                                  X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
-                                                 X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) * 180.0/cPi
+                                                 X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
 
                     call EMFitOrientationcalfunEBSD(IPAR2, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
                                         EBSDMPdata%mLPNH, EBSDMPdata%mLPSH, N, X, F, mask, prefactor, &
                                         EBSDdetector%rgx, EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, dinl%gammavalue, verbose)
 
                     dpPS(kk,ll) = 1.D0 - F
+
+! do we need to perform a pattern center correction ?  This would be necessary for large area
+! scans.  First, we apply the equivalent rotation to the refined orientation, then we create a 
+! new set of detector arrays for this pattern center location, and we do another refinement step
+! to get the final corrected orientation.  At the end, we make sure the new orientation falls in 
+! the appropriate RFZ.
+                    if ( (trim(ronl%PCcorrection).eq.'on') .and. (eindex.le.maxeindex) ) then 
+! get the corrected pattern center coordinates
+                      if (ROIselected.eqv..TRUE.) then 
+                        samplex = mod(eindex-1, dinl%ROI(3))+1
+                        sampley = (eindex-1)/dinl%ROI(3)+1
+                      else 
+                        samplex = mod(eindex-1, dinl%ipf_wd)+1
+                        sampley = (eindex-1)/dinl%ipf_wd+1
+                      end if 
+                      myebsdnl = ebsdnl 
+                      dx = DPCX(samplex)
+                      dy = DPCY(sampley)
+                      myebsdnl%xpc = ebsdnl%xpc - dx
+                      myebsdnl%ypc = ebsdnl%ypc - dy
+                      myebsdnl%L = ebsdnl%L - DPCL(sampley)
+                      call GenerateEBSDDetector(myebsdnl, mcnl, EBSDMCdata, myEBSDdetector, verbose=.FALSE.)
+
+! first undo the pattern center shift by an equivalent rotation (see J. Appl. Cryst. (2017). 50, 1664–1676, eq.15)
+                      if ((dx.ne.0.0).or.(dy.ne.0.0)) then 
+                        qu = eu2qu(eulerPS(1:3,kk,ll))
+                        rho = dx**2+dy**2
+                        nn = -(/dx*ca,-dy,-dx*sa/)/sqrt(rho)
+                        omega = acos(ebsdnl%L/sqrt(ebsdnl%L**2 + dinl%delta**2 * rho))
+                        qq = (/ cos(omega*0.5), sin(omega*0.5) * nn /)
+                        quat2 = quat_mult(sngl(qu), qq)
+                        INITMEANVAL(1:3) = qu2ho(quat2)
+                      else
+                        INITMEANVAL(1:3) = eu2ho(eulerPS(1:3,kk,ll))
+                      end if 
+
+! refine the orientation using the new detector array and initial orientation 
+                      X = 0.5D0
+                      call bobyqa (IPAR2, INITMEANVAL, tmpimageexpt, N, NPT, X, XL,&
+                               XU, RHOBEG, RHOEND, IPRINT, MAXFUN, EMFitOrientationcalfunEBSD, myEBSDdetector%accum_e_detector,&
+                               EBSDMPdata%mLPNH, EBSDMPdata%mLPSH, mask, prefactor, myEBSDdetector%rgx, myEBSDdetector%rgy, &
+                               myEBSDdetector%rgz, STEPSIZE, dinl%gammavalue, verbose)
+                  
+                      eulerPS(1:3,kk,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
+                                                   X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
+                                                   X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
+
+                      call EMFitOrientationcalfunEBSD(IPAR2, INITMEANVAL, tmpimageexpt, myEBSDdetector%accum_e_detector, &
+                                          EBSDMPdata%mLPNH, EBSDMPdata%mLPSH, N, X, F, mask, prefactor, &
+                                          myEBSDdetector%rgx, myEBSDdetector%rgy, myEBSDdetector%rgz, STEPSIZE, &
+                                          dinl%gammavalue, verbose)
+
+                      dpPS(kk,ll) = 1.D0 - F
+
+! and return this orientation to the RFZ
+                      euinp(1:3) = eulerPS(1:3,kk,ll)
+                      call ReduceOrientationtoRFZ(euinp, dict, FZtype, FZorder, eurfz)
+                      eulerPS(1:3,kk,ll) = eurfz(1:3)
+                    end if 
+
                 end do
             end do
 
@@ -674,19 +833,32 @@ if (ronl%method.eq.'FIT') then
             if (dp .gt. CIlist(eindex)) then
               CIlist(eindex) = dp
               pos = maxloc(dpPS)
-              euler_best(1:3,eindex) = eulerPS(1:3,pos(1),pos(2))
+              euler_best(1:3,eindex) = eulerPS(1:3,pos(1),pos(2)) * 180.0/cPi
             else
               euler_best(1:3,eindex) = euler_bestmatch(1:3,1,eindex) * 180.0/cPi
+              !$OMP CRITICAL
+                unchanged = unchanged + 1 
+              !$OMP END CRITICAL
             end if
             
             if (mod(eindex,250) .eq. 0) then
                 io_int(1) = eindex
                 io_int(2) = totnumexpt
-                call Writevalue('completed refining pattern #',io_int,2,'(I8,'' of '',I8)')
+                call Writevalue('      completed refining pattern #',io_int,2,'(I8,'' of '',I8)')
             end if
 
         end do
     !$OMP END DO
+
+        deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
+        deallocate(X,XL,XU,INITMEANVAL,STEPSIZE, eulerPS, dpPS)
+        if (trim(ronl%PCcorrection).eq.'on') then
+          deallocate(myEBSDdetector%rgx, myEBSDdetector%rgy)
+          deallocate(myEBSDdetector%rgz, myEBSDdetector%accum_e_detector)
+        end if
+
+    !$OMP BARRIER
+
     !$OMP END PARALLEL
      
     end do
@@ -697,11 +869,13 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
         stpsz = LPs%ap/2.D0/dinl%ncubochoric/2.D0
 
         if (ronl%inRAM.eqv..FALSE.) then
+            allocate(tmpimageexpt(binx*biny))
             do jj = 1,ppendE(iii)
                 eindex = (iii - 1)*dinl%numexptsingle + jj
                 read(itmpexpt,rec=eindex) tmpimageexpt
                 exptpatterns(1:binx*biny,jj) = tmpimageexpt(1:binx*biny)
             end do
+            deallocate(tmpimageexpt)
         end if
 
         do kk = 1,niter
@@ -713,8 +887,18 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ii,tmpimageexpt,jj,quat,binned,ma,mi,eindex) &
     !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,ll,mm,dp) &
     !$OMP& PRIVATE(cubneighbor,cu0)
-    !$OMP DO SCHEDULE(DYNAMIC)
 
+            allocate(tmpimageexpt(binx*biny),binned(binx,biny))
+            allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
+            allocate(imagedictflt(binx*biny))
+            tmpimageexpt = 0.0
+            binned = 0.0
+            EBSDpatternintd = 0.0
+            EBSDpatterninteger = 0
+            EBSDpatternad = 0.0
+            imagedictflt = 0.0
+
+    !$OMP DO SCHEDULE(DYNAMIC)
             do ii = 1,ppendE(iii)
 
                eindex = (iii - 1)*dinl%numexptsingle + ii
@@ -774,6 +958,9 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
             end do
 
     !$OMP END DO
+
+            deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
+
     !$OMP END PARALLEL
 
         stpsz = stpsz/2.D0
@@ -786,6 +973,10 @@ end if
 if (ronl%inRAM.eqv..FALSE.) then
    close(unit=itmpexpt, status='delete')
 end if
+
+!===========================================
+write (*,*) 'total number of unchanged points : ', unchanged,' out of ', maxeindex
+!===========================================
 
 !===========================================
 ! output section
@@ -1404,7 +1595,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp  
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -1945,7 +2136,7 @@ scl = float(ipar(4))
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
 
-        dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
+        dc = quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) )
 
         dc = dc/sqrt(sum(dc**2))
 
@@ -2279,6 +2470,25 @@ dataset = SC_numsx
 dataset = SC_numsy
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
 
+!=====================================================
+! check here for the exptnumsx(y) parameters that were introduced in 5.0.3
+dataset = 'exptnumsx'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsx)
+    else 
+      ebsdnl%exptnumsx = ebsdnl%numsx 
+    end if 
+
+dataset = 'exptnumsy'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsy)
+    else 
+      ebsdnl%exptnumsy = ebsdnl%numsy 
+    end if 
+!=====================================================
+
 dataset = SC_omega
     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
 
@@ -2355,8 +2565,13 @@ if (present(getADP)) then
    dataset = SC_AvDotProductMap
    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
    if (g_exists.eqv..TRUE.) then
-    allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
-    call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+    if (sum(ebsdnl%ROI).ne.0) then 
+      allocate(EBSDDIdata%ADP(ebsdnl%ROI(3), ebsdnl%ROI(4)))
+      call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ROI(3), ebsdnl%ROI(4), HDF_head)
+    else
+      allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
+      call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+    end if 
    else
         call Message('  --> no AvDotProductMap data set found ... continuing ... ')
    end if

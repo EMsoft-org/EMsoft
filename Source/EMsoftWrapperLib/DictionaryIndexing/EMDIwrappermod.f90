@@ -233,6 +233,8 @@ use filters
 use EBSDDImod
 use omp_lib
 use patternmod
+use FFTW3mod
+
 
 IMPLICIT NONE
 
@@ -261,7 +263,8 @@ integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatterna
 real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), EBSDpat(:,:), exppatarray(:)
 real(kind=dbl),allocatable              :: ksqarray(:,:), rrdata(:,:), ffdata(:,:)
 complex(kind=dbl),allocatable           :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer       :: inp(:,:), outp(:,:)
+type(c_ptr),allocatable                 :: ip, op
 real(kind=sgl),allocatable              :: lstore(:,:), pstore(:,:), lp(:), cp(:)
 
 
@@ -453,10 +456,27 @@ call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
 deallocate(EBSDPat)
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
 ! if (istat .ne. 0) stop 'could not allocate hpmask array'
+
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
+
 call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
+
+! remove these pointers again because we will need them for the parallel part
+call fftw_free(ip)
+call fftw_free(op)
 
 dims3 = (/ binx, biny, ipar(26) /)
 
@@ -488,7 +508,7 @@ pindex = 0
 prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat, ip, op) &
 !$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
 
 ! set the thread ID
@@ -501,8 +521,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
     allocate(EBSDpint(binx,biny),stat=istat)
     ! if (istat .ne. 0) stop 'could not allocate EBSDpint array'
 
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    ! if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+    ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(ip, inp, [binx,biny])
+
+    op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(op, outp, [binx,biny])
+
+    inp = cmplx(0.D0,0D0)
+    outp = cmplx(0.D0,0.D0)
 
     tmpimageexpt = 0.0
     rrdata = 0.D0
@@ -605,7 +631,10 @@ prepexperimentalloop: do iii = iiistart,iiiend
       end if
     end if
 
-deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint)
+call fftw_free(ip)
+call fftw_free(op)
+
 !$OMP BARRIER
 !$OMP END PARALLEL
 
@@ -674,6 +703,7 @@ use filters
 use EBSDDImod
 use omp_lib
 use patternmod
+use FFTW3mod
 
 IMPLICIT NONE
 
@@ -688,8 +718,8 @@ integer(kind=irg),allocatable           :: EBSDpint(:,:)
 real(kind=sgl),allocatable              :: EBSDpat(:,:)
 real(kind=dbl),allocatable              :: rrdata(:,:), ffdata(:,:)
 complex(kind=dbl),allocatable           :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
-
+complex(C_DOUBLE_COMPLEX),pointer       :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                :: ip, op
 type(C_PTR)                             :: HPplanf, HPplanb
 
 HPplanf = C_NULL_PTR
@@ -715,7 +745,17 @@ binx = ipar(19)
 biny = ipar(20)
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
+
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
 call init_HiPassFilter(dble(fpar(24)), (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
 
 ! initialize thread private variables
@@ -734,9 +774,12 @@ mi = minval(EBSDPat)
 EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
 outputpattern = float(adhisteq(ipar(28), binx, biny, EBSDpint))
 
-deallocate(inp, outp, EBSDpint, EBSDPat, rrdata, ffdata, hpmask)
+deallocate(EBSDpint, EBSDPat, rrdata, ffdata, hpmask)
 HPplanf = C_NULL_PTR
 HPplanb = C_NULL_PTR
+
+call fftw_free(ip)
+call fftw_free(op)
 
 ! that's it folks...
 end subroutine EMsoftCpreprocessSingleEBSDPattern
@@ -777,6 +820,7 @@ use EBSDDImod
 use omp_lib
 use patternmod
 use HDF5
+use FFTW3mod
 
 IMPLICIT NONE
 
@@ -799,7 +843,8 @@ integer(kind=irg),allocatable           :: nrvals(:), pint(:,:), ppp(:,:)
 integer(HSIZE_T)                        :: dims3(3), offset3(3)
 type(C_PTR)                             :: HPplanf, HPplanb
 complex(kind=dbl),allocatable           :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer       :: inp(:,:), outp(:,:)
+type(c_ptr),allocatable                 :: ip, op 
 real(kind=dbl),allocatable              :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 
 ! parameters to deal with the input string array spar
@@ -969,8 +1014,17 @@ do ii=1,numw
 end do
 
 ! next we need to set up the high-pass filter fftw plans
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny))
+allocate(hpmask(binx,biny))
 allocate(rrdata(binx,biny),ffdata(binx,biny))
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
 call init_HiPassFilter(dble(hpvals(1)), (/numsx, numsy /), hpmask, inp, outp, HPplanf, HPplanb) 
 
 ! the outer loop goes over the hipass filter width and is displayed horizontally in the final image
@@ -1023,9 +1077,11 @@ do ii=1,numw
 end do
 
 ! clean up all auxiliary arrays
-deallocate(hpmask, inp, outp, pcopy, rrdata, ffdata, hpvals, nrvals)
+deallocate(hpmask, pcopy, rrdata, ffdata, hpvals, nrvals)
 deallocate(pattern, pint, ppp, expt)
 if (allocated(sumexpt)) deallocate(sumexpt)
+call fftw_free(ip)
+call fftw_free(op)
 
 ! this completes the computation of the patternarray output array
 
@@ -1533,7 +1589,7 @@ ierr = clReleaseKernel(kernel)
 
 ! and deallocate some arrays
 deallocate(ppend, ppendE, res, results1, results2, resulttmp, expt, dicttranspose, tmpimageexpt)
-deallocate(indexlist1, indexlist2, indexarray, indextmp)
+deallocate(indexlist1, indexlist2, indextmp)
 nullify(dict, results, dpsort, indexlist, dpindex)
 
 end subroutine EMsoftCEBSDDI
@@ -1935,6 +1991,10 @@ do iii = 1,cratioE
 !$OMP END DO
 !$OMP END PARALLEL
 end do
+
+! and deallocate some arrays
+deallocate(LOCALIPAR, X, XL, XU, INITMEANVAL, tmpimageexpt, imageexpt, mask, masklin, dpPS, eulerPS, ppendE, STEPSIZE)
+nullify(dict)
 
 end subroutine EMsoftCEBSDRefine
 

@@ -57,7 +57,7 @@ end type TKDLargeAccumType
 
 type TKDMasterType
         real(kind=sgl),allocatable      :: mLPNH(:,:,:) , mLPSH(:,:,:)
-        real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
+        real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)  ! auxiliary detector arrays needed for interpolation
 end type TKDMasterType
 
 type TKDPixel
@@ -722,12 +722,12 @@ type(TKDLargeAccumType),pointer         :: acc
 type(TKDMasterType),pointer             :: master
 logical,INTENT(IN),OPTIONAL             :: verbose
 
-real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)     ! scintillator coordinate ararays [microns]
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, nixp, niyp, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, epl     ! various parameters
+integer(kind=irg)                       :: nix, niy, nixp, niyp, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, epl   
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1017,7 +1017,7 @@ scl = float(ipar(4))
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
 
-        dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
+        dc = quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) )
 
         dc = dc/sqrt(sum(dc**2))
 

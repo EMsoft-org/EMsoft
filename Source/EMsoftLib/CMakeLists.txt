@@ -103,6 +103,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
   ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
+  ${EMsoftLib_SOURCE_DIR}/so2.f90
   ${EMsoftLib_SOURCE_DIR}/so3.f90
   ${EMsoftLib_SOURCE_DIR}/spsort.f
   ${EMsoftLib_SOURCE_DIR}/STEMmodule.f90
@@ -252,7 +253,8 @@ else()
 
   elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # First, Flags that should be used under any build condition
-    target_compile_options(EMsoftLib PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
+    target_compile_options(EMsoftLib PUBLIC 
+                                            #$<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-assume byterecl>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-stand f08 -diag-disable=7025>

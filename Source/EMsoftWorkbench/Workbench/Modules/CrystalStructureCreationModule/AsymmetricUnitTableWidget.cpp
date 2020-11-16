@@ -132,7 +132,7 @@ void AsymmetricUnitTableWidget::on_addRowBtn_clicked() const
 
   std::vector<double> columnData;
   int columnCount = dynamicTable->columnCount();
-  columnData.reserve(columnCount);
+  columnData.resize(columnCount);
   for(int i = 0; i < columnCount; i++)
   {
     columnData[i] = 0;

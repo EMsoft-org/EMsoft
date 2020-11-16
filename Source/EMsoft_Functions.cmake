@@ -56,17 +56,6 @@ macro(GetHDF5LinkLibraries PREFIX)
   endif()
 endmacro()
 
-# #-------------------------------------------------------------------------------
-# #
-# #
-# macro(GetOpenCLLinkLibraries PREFIX)
-  
-#   set(lib_type "static")
-#   set(${PREFIX}_OpenCLLinkLibs ${${PREFIX}_OpenCLLinkLibs} ${lib_type})
-  
-# endmacro()
-
-
 #---------------------------------------------------------------------
 # This function creates an executable that is to be compiled. The valid
 # arguments are:
@@ -120,6 +109,13 @@ function(Add_EMsoft_Executable)
   if (Fortran_COMPILER_NAME MATCHES "gfortran.*" AND APPLE)
     target_link_options(${Z_TARGET} PUBLIC $<$<CONFIG:Release>:LINKER:-no_compact_unwind>)
   endif()
+
+  # if(WIN32)
+  #   set_target_properties(${Z_TARGET} PROPERTIES 
+  #     LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcmrt.lib /NODEFAULTLIB:msvcurt.lib /NODEFAULTLIB:msvcrtd.lib"
+  #     CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1 /MTd"
+  #     )
+  # endif()
 endfunction()
 
 # --------------------------------------------------------------------------

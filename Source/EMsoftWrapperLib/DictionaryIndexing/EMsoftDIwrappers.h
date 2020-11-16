@@ -1,5 +1,8 @@
 #ifndef _emsoft_DIwrappers_H_
 #define _emsoft_DIwrappers_H_
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 
 #ifdef __cplusplus
@@ -58,8 +61,7 @@ typedef void (*ProgCallBackTypeErrorDIdriver)(size_t, int);
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-void EMsoftCpreprocessEBSDPatterns
-    (int32_t* ipar, float* fpar, char* spar, float* mask,
+void EMsoftCpreprocessEBSDPatterns(int32_t* ipar, float* fpar, char* spar, float* mask,
      float* exptIQ, float* ADPmap, ProgCallBackTypeDI2 callback, 
      size_t object, bool* cancel);
 
@@ -70,8 +72,7 @@ void EMsoftCpreprocessEBSDPatterns
 * @param inputpattern  input EBSD pattern as float array
 * @param outputpattern  input EBSD pattern as float array
 */
-void EMsoftCpreprocessSingleEBSDPattern
-    (size_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
+void EMsoftCpreprocessSingleEBSDPattern(int32_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
 
 /**
 * EBSD pattern preprocessing parameter range:
@@ -81,8 +82,7 @@ void EMsoftCpreprocessSingleEBSDPattern
 * @param averagedpattern  input EBSD pattern as float array
 * @param patternarray  input EBSD pattern as float array
 */
-void EMsoftCEBSDDIpreview
-    (size_t* ipar, float* fpar, char* spar, float* averagedpattern, float* patternarray);
+void EMsoftCEBSDDIpreview(int32_t* ipar, float* fpar, char* spar, float* averagedpattern, float* patternarray);
 
 /**
 * EBSD Dictionary indexing (all in ram) wrapper routine
@@ -99,10 +99,10 @@ void EMsoftCEBSDDIpreview
 * @param cancel boolean to trigger cancellation of computation
 */
 
-void EMsoftCEBSDDI
-	(int32_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
-	 float* resultmain, int32_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
-     size_t object, bool* cancel); 
+void EMsoftCEBSDDI(int32_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
+    float* resultmain, int32_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
+    size_t object, bool* cancel); 
+
 
 /**
 * EBSD indexing refinement (all in ram) wrapper routine
@@ -122,10 +122,9 @@ void EMsoftCEBSDDI
 * @param cancel boolean to trigger cancellation of computation
 */
 
-void EMsoftCEBSDRefine
-	(size_t* ipar, float* fpar, int32_t* accum_e, float* mLPNH, float* mLPSH,
-	 float* variants, float* epatterns, float* startEulers, float* startdps, float* eumain, 
-	 float* dpmain, ProgCallBackTypeDI2 callback, size_t object, bool* cancel);
+void EMsoftCEBSDRefine(int32_t* ipar, float* fpar, int32_t* accum_e, float* mLPNH, float* mLPSH,
+    float* variants, float* epatterns, float* startEulers, float* startdps, float* eumain, 
+    float* dpmain, ProgCallBackTypeDI2 callback, size_t object, bool* cancel);
 
 
 /**
@@ -139,10 +138,9 @@ void EMsoftCEBSDRefine
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-void EBSDDIdriver
-    (char* nmlfile, char* progname, 
+void EBSDDIdriver(char* nmlfile, char* progname, 
      // float* dparray, int32_t* indexarray, 
-     ProgCallBackTypeDIdriver3 callback, 
+     ProgCallBackTypeDI3 callback, 
      ProgCallBackTypeErrorDIdriver errorcallback,
      size_t object, bool* cancel);
 

@@ -11,7 +11,7 @@
 !        list of conditions and the following disclaimer in the documentation and/or 
 !        other materials provided with the distribution.
 !     - The name of Marc De Graef may not be used to endorse or promote products 
-!	derived from this software without specific prior written permission.
+!  derived from this software without specific prior written permission.
 !
 ! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -231,7 +231,7 @@ IMPLICIT NONE
 type(MRCstruct),INTENT(INOUT)  :: MRCheader
 !f2py intent(in,out) ::  MRCheader
 
-integer(kind=irg)			   :: i
+integer(kind=irg)              :: i
 
 ! this is a simple direct dump of all the structure entries into the MRC buffer
  call MRC_Write_Word(MRCheader%nx,4)
@@ -306,7 +306,7 @@ IMPLICIT NONE
 type(FEIstruct),INTENT(INOUT)  :: FEIheaders(1024)
 !f2py intent(in,out) ::  FEIheaders
 
-integer(kind=irg)			   :: i
+integer(kind=irg)         :: i
 
 do i=1,1024
  call MRC_Write_Real(FEIheaders(i)%a_tilt,4)

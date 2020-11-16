@@ -245,8 +245,6 @@ datafile = trim(EMsoft_getEMdatapathname())//trim(ecpnl%datafile)
 datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 
-nullify(HDF_head%next)
-
 ! write the EMheader to the file
 groupname = SC_ECP
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
@@ -255,14 +253,10 @@ call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-groupname = SC_EMECP
-hdferr = HDF_createGroup(groupname, HDF_head)
-
 ! read the text file and write the array to the file
 dataset = SC_EMECPNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
-call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! create a NMLparameters group to write all the namelist entries into
@@ -457,6 +451,9 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         end if
 
     end do imageloop
+
+! added by MDG, 06/16/20
+    ECPpattern = ECPpattern**ecpnl%gammavalue
     
     !call BarrelDistortion(D,ECPpattern,ecpnl%npix,ecpnl%npix)
     !ma = maxval(ECPpattern)
@@ -473,6 +470,7 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         io_int(1) = iang
         call WriteValue(' completed pattern # ',io_int,1)
     end if
+    
 !$OMP CRITICAL
     if (ecpnl%outputformat .eq. 'bin') then
         ma = maxval(ECPpattern)

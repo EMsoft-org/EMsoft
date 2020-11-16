@@ -99,15 +99,18 @@ if (NOT DEFINED CMP_SOURCE_DIR)
 endif()
 include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
 
-# Next up, Set the version of EMsoft that is used through out the project.
-set(EMsoft_VER_MAJOR "5")
-set(EMsoft_VER_MINOR "0")
-set(EMsoft_VER_PATCH "2")
-
-project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
 
 include(CMakeParseArguments)
 
+# Next up, Set the version of EMsoft that is used through out the project.
+set(EMsoft_VER_MAJOR "5")
+set(EMsoft_VER_MINOR "0")
+set(EMsoft_VER_PATCH "3")
+
+project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
+
+# --------------------------------------------------------------------
+# Generate Git hash and build date information
 cmpGenerateBuildDate(PROJECT_NAME EMsoft)
 if(NOT "${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
   string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
@@ -119,27 +122,27 @@ execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
                 OUTPUT_VARIABLE EMsoft_GIT_HASH
                 RESULT_VARIABLE did_run
                 ERROR_VARIABLE git_error
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
                 OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 string(REPLACE "\n" "" EMsoft_GIT_HASH "${EMsoft_GIT_HASH}")
 
 execute_process( # get abbreviated hash
   COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
   OUTPUT_VARIABLE EMsoft_SHORT_GIT_HASH
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+set(EMsoft_VERSION_TWEAK "${EMsoft_SHORT_GIT_HASH}")
+set(EMsoft_VERSION "${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.${EMsoft_VERSION_TWEAK}")
 
 execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty='%cd' --date=format:%Y-%m-%d-%H:%M:%S
                 OUTPUT_VARIABLE GVS_GIT_COMMIT_DATE
                 RESULT_VARIABLE did_run
                 ERROR_VARIABLE git_error
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+                WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} 
 )
 string(REPLACE "\n" "" GVS_GIT_COMMIT_DATE "${GVS_GIT_COMMIT_DATE}")
-message(STATUS "${PROJECT_NAME}   Git Hash:${EMsoft_GIT_HASH} committed on ${GVS_GIT_COMMIT_DATE}")
-
 
 #message(STATUS "EMsoft_BUILD_DATE: ${EMsoft_BUILD_DATE}")
 
@@ -383,4 +386,18 @@ if(EMsoft_ENABLE_TESTING)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
 endif()
 
-
+message(STATUS "*******************************************************************************")
+message(STATUS "* EMsoft Configuration Summary")
+message(STATUS "* BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message(STATUS "* System: ${CMAKE_SYSTEM_NAME}")
+message(STATUS "* Version: ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "* Processor: ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "* EMsoft_SHORT_GIT_HASH: ${EMsoft_SHORT_GIT_HASH}")
+message(STATUS "* EMsoft Git committed on ${GVS_GIT_COMMIT_DATE}")
+message(STATUS "* EMsoft_VER_MAJOR: ${EMsoft_VER_MAJOR}")
+message(STATUS "* EMsoft_VER_MINOR: ${EMsoft_VER_MINOR}")
+message(STATUS "* EMsoft_VER_PATCH: ${EMsoft_VER_PATCH}")
+message(STATUS "* EMsoft_VERSION_TWEAK: ${EMsoft_VERSION_TWEAK}")
+message(STATUS "* EMsoft_VERSION: ${EMsoft_VERSION}")
+message(STATUS "* CMAKE_Fortran_COMPILER: ${CMAKE_Fortran_COMPILER}")
+message(STATUS "*******************************************************************************")

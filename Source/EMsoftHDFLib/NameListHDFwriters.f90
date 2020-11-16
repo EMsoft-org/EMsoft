@@ -1523,7 +1523,7 @@ hdferr = HDF_createGroup(groupname,HDF_head)
 ! write all the single integers
 io_int = (/ emnl%stdout, emnl%newpgnum /)
 intlist(1) = 'stdout'
-intlist(1) = 'newpgnum'
+intlist(2) = 'newpgnum'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
@@ -2659,7 +2659,7 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
 !f2py intent(in,out) ::  enl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real = 10
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 11
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
@@ -2686,7 +2686,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
 io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
-             enl%alphaBD, enl%hipassw /)
+             enl%alphaBD, enl%hipassw, enl%omega /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -2697,6 +2697,7 @@ reallist(7) = 'energymax'
 reallist(8) = 'gammavalue'
 reallist(9) = 'alphaBD'
 reallist(10)= 'hipassw'
+reallist(11)= 'omega'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a 4-vector
@@ -4194,12 +4195,12 @@ use local
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
 !f2py intent(in,out) ::  ebsdnl
 
-integer(kind=irg),parameter                           :: n_int = 20, n_real = 12, n_reald = 3
+integer(kind=irg),parameter                           :: n_int = 22, n_real = 12, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_reald(n_reald)
@@ -4216,7 +4217,7 @@ hdferr = HDF_createGroup(groupname,HDF_head)
 io_int = (/ ebsdnl%ncubochoric, ebsdnl%numexptsingle, ebsdnl%numdictsingle, ebsdnl%ipf_ht, &
             ebsdnl%ipf_wd, ebsdnl%nnk, ebsdnl%maskradius, ebsdnl%numsx, ebsdnl%numsy, ebsdnl%binning, &
             ebsdnl%nthreads, ebsdnl%energyaverage, ebsdnl%devid, ebsdnl%platid, ebsdnl%nregions, ebsdnl%nnav, &
-            ebsdnl%nosm, ebsdnl%nlines, ebsdnl%usenumd, ebsdnl%nism /)
+            ebsdnl%nosm, ebsdnl%nlines, ebsdnl%usenumd, ebsdnl%nism, ebsdnl%exptnumsx, ebsdnl%exptnumsy /)
 intlist(1) = 'Ncubochoric'
 intlist(2) = 'numexptsingle'
 intlist(3) = 'numdictsingle'
@@ -4237,6 +4238,8 @@ intlist(17) = 'nosm'
 intlist(18) = 'nlines'
 intlist(19) = 'usenumd'
 intlist(20) = 'nism'
+intlist(21) = 'exptnumsx'
+intlist(22) = 'exptnumsy'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 io_real = (/ ebsdnl%L, ebsdnl%thetac, ebsdnl%delta, ebsdnl%omega, ebsdnl%xpc, &

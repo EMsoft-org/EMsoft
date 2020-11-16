@@ -1376,7 +1376,7 @@ if (AorD.eq.'D') then
 !        ! and correct the dynamical matrix element to become a Bethe potential coefficient
               ll = rlr%hkl - rlc%hkl
               DynMat(ir,ic) = cell%LUT(ll(1),ll(2),ll(3))  - cmplx(0.5D0*cell%mLambda,0.0D0,dbl)*weaksum
-             else
+            else
               ll = rlr%hkl - rlc%hkl
               DynMat(ir,ic) = cell%LUT(ll(1),ll(2),ll(3))
             end if
@@ -1396,9 +1396,8 @@ if (AorD.eq.'D') then
               DynMat(ir,ir) = cmplx(2.D0*rlr%sg/cell%mLambda-weaksgsum,Upz,dbl)
             else
               DynMat(ir,ir) = cmplx(2.D0*rlr%sg/cell%mLambda,Upz,dbl)
-
             end if           
-        
+ 
            end if       
            rlc => rlc%nexts
            ic = ic + 1

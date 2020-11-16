@@ -34,4 +34,15 @@
 ! or format:  first line 'eu', second line number of Euler triplets, then one triplet per line (in degrees)
  PSvariantfile = 'undefined',
 ! ===================================
+! the standard refinement approach uses the same pattern center for all patterns; this is 
+! a reasonable approximation when the total scan area is of the order of the detector pixel
+! size.  For larger scan areas, one must perform a pattern center correction.  This can 
+! be turned on using the following parameter: (note that the refinement will take approximately 
+! twice as long due to the two-pass nature of therefinement; see J. Appl. Cryst. (2017). 50, 1664–1676)
+ PCcorrection = 'off',
+! Pattern center correction requires knowledge of the pattern coordinates for which the 
+! pattern center was originally refined. These are determined in units of the sampling step size.
+! These would typically be the x, y coordinates used in the EMEBSDDIpreview program.
+ initialx = 0,
+ initialy = 0,
  /

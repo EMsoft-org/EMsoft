@@ -1829,7 +1829,8 @@ logical,INTENT(IN),OPTIONAL             :: usehex
 logical                                 :: verbose,switchmirror,hex
 integer(kind=irg)                       :: i,j,isym,pgnum,ks,istat
 integer(kind=irg)                       :: istart,iend,jstart,jend
-integer(kind=irg),parameter             :: LaueTest(11) = (/ 149, 151, 153, 156, 158, 160, 161, 164, 165, 166, 167 /)  ! space groups with 2 or mirror at 30 degrees
+! space groups with 2 or mirror at 30 degrees
+integer(kind=irg),parameter             :: LaueTest(11) = (/ 149, 151, 153, 156, 158, 160, 161, 164, 165, 166, 167 /)  
 real(kind=dbl)                          :: delta,x,y,q,kstar(3),XX,YY,xp,yp,rr, xy(2)
 
 
