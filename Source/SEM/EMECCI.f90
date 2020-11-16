@@ -193,6 +193,16 @@ type(image_t)                           :: im
 integer(int8)                           :: i8 (3,4)
 integer(int8), allocatable              :: montage(:,:)
 
+!new variables
+real(kind=sgl), allocatable             :: dispfield(:,:,:,:)
+integer(kind=irg)                       :: hdferr2
+character(fnlen)                        :: DDD_file
+logical                                 :: readonly
+type(HDFobjectStackType)                :: hdf_array_head
+integer(kind=8)                         :: atomArraySize4D(4), z
+!
+
+
  ECCI = .TRUE.
  
  nullify(HDF_head%next)
@@ -380,13 +390,36 @@ if ((eccinl%dispmode.eq.'new').or.(eccinl%dispmode.eq.'not')) then
  call TransSpace(cell,float(ga),gac,'r','c')
  call TransSpace(cell,float(gb),gbc,'r','c')
  
+! new section
+ nullify(hdf_array_head%next)
+ DDD_file = eccinl%DDDfilename
+ call h5open_EMsoft(hdferr2)
+
+ readonly = .TRUE.
+ hdferr2 = HDF_openFile(DDD_file, hdf_array_head,readonly)
+ 
+ dataset = 'Data'
+ call HDF_readDatasetFloatArray4D(dataset, atomArraySize4D, hdf_array_head, hdferr2, dispfield)
+
+ call HDF_pop(hdf_array_head,.TRUE.)
+
+ call h5close_EMsoft(hdferr2)
+
+!
 
 !!$OMP DO SCHEDULE (GUIDED)
   do i=1,defects%DF_npix  
     do j=1,defects%DF_npiy
       defects%DF_R = 0.0
 ! compute the displacement vectors DF_R for all points in the column
-      call CalcR(cell,defects,i,j)
+      !call CalcR(cell,defects,i,j)
+
+      do z=1, defects%DF_nums
+      
+        defects%DF_R(z,1:3) = dispfield(1:3,i,j,z)
+      
+      end do
+
 ! loop over the fixed thickness slices
       do ik=1,defects%DF_nums
 ! then convert to the dot-product 

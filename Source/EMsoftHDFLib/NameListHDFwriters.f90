@@ -3905,7 +3905,7 @@ integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 integer(kind=irg)                                     :: i
-character(fnlen)                                      :: dataset, groupname
+character(fnlen)                                      :: dataset, groupname, DDDfilename
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
@@ -3995,6 +3995,11 @@ dataset = SC_sgname
 line2(1) = eccinl%sgname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create sgname dataset',.TRUE.)
+
+dataset = DDDfilename
+line2(1) = eccinl%DDDfilename
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create DDDfilename dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

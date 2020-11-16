@@ -47,6 +47,7 @@
 ! name for optional output of image montage (can be .tiff or .bmp)
 ! leave set to undefined if not needed
  montagename = 'undefined',
+ DDDfilename = 'undefined',
 !------------
 ! image parameters and scattering matrix step size
 !------------

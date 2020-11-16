@@ -5441,12 +5441,13 @@ character(fnlen)        :: dispfile
 character(fnlen)        :: dataname
 character(fnlen)        :: ECPname
 character(fnlen)        :: sgname
+character(fnlen)        :: DDDfilename
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist / ECCIlist / DF_L, DF_npix, DF_npiy, DF_slice, dmin, sgname, stdout, &
                       progmode, dispfile, ktmax, dkt, ECPname, summode, lauec, lauec2, &
                       dispmode, nthreads, xtalname, voltage, k, nktstep, &
-                      dataname, defectfilename, montagename
+                      dataname, defectfilename, montagename, DDDfilename
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -5473,6 +5474,7 @@ dispfile = 'displacements.data'
 dataname = 'ECCIout.data'
 ECPname = 'undefined'
 sgname = 'nofile'
+DDDfilename = 'undefined'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5520,6 +5522,7 @@ eccinl%dispfile = dispfile
 eccinl%dataname = dataname
 eccinl%ECPname = ECPname
 eccinl%sgname = sgname
+eccinl%DDDfilename = DDDfilename
 
 end subroutine GetECCINameList
 

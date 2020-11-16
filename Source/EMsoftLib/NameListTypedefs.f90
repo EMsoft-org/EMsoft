@@ -1135,6 +1135,7 @@ type ECCINameListType
     character(fnlen)        :: dataname
     character(fnlen)        :: ECPname
     character(fnlen)        :: sgname
+    character(fnlen)        :: DDDfilename
 end type ECCINameListType
 
 ! namelist for the EMsampleRFZ program
