@@ -72,6 +72,11 @@ type EBSDMasterType
         real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
 end type EBSDMasterType
 
+type EBSDSEMArray
+        integer(kind=irg),allocatable   ::SEM_X(:)
+        integer(kind=irg),allocatable   ::SEM_Y(:)
+end type
+
 interface CalcEBSDPatternDefect
   module procedure CalcEBSDPatternDefect_zint
   module procedure CalcEBSDPatternDefect_noint

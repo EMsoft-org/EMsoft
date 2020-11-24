@@ -360,7 +360,11 @@ select case (itype)
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
                call invert_ordering_arrays(npat)
-               call Message('  found pattern reordering arrays')
+               if (present(verbose)) then
+	                if (verbose.eqv..TRUE.) then
+                    call Message('  found pattern reordering arrays')
+                  end if
+               end if
                ! and leave this group
                call HDF_pop(pmHDF_head)
             end if
@@ -931,13 +935,14 @@ select case (itype)
 ! and use the original pattern coordinate (ispot) as an index into the reordering arrays.
         exppat = 0.0
         dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
-        ispot = offset3(3)
+        ispot = offset3(3)+1
         newspot = semiy(ispot) * wd + semix(ispot)
         offset3new = (/ offset3(1), offset3(2),  newspot /)
-        EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+        EBSDpat32i = HDF_readHyperslabIntegerArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+        !EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
         do jj=1,dims3(2)
             do ii=1,dims3(1) 
-                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
+                exppat((jj-1)*dims3(1)+ii) = float(EBSDpat32i(ii,jj,1))
             end do 
         end do 
 
@@ -989,6 +994,8 @@ end subroutine getSingleExpPattern
 !> @brief read a list of metadat from input EBSD data file
 !
 !> @param enl EBSDNameListType
+!> @param SEM EBSDSEMArray
+!> @param patterndata EBSDDIpreviewNameListType
 !> @param angles a list of 
 !> @param numangle number of orientation data entry
 !> @param filename 
@@ -998,7 +1005,7 @@ end subroutine getSingleExpPattern
 !
 !> @date 04/29/20 CZ 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine GetMetaData(enl, angles, numangles, filename, inputtype, funit, HDFstrings, istat, verbose)
+recursive subroutine GetMetaData(enl, SEM, patterndata, angles, numangles, filename, inputtype, funit, HDFstrings, istat, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetMetaData
 
 use local
@@ -1015,6 +1022,8 @@ use EBSDmod
 IMPLICIT NONE
 type(EBSDAngleType),INTENT(INOUT)       :: angles
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDDIpreviewNameListType),INTENT(INOUT)    :: patterndata
+type(EBSDSEMArray),INTENT(INOUT)        :: SEM
 character(fnlen),INTENT(IN)             :: filename
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: funit, numangles
@@ -1022,6 +1031,7 @@ character(fnlen),INTENT(IN)             :: HDFstrings(10)
 integer(kind=irg)						:: istat
 
 real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:), eu(:,:)
+real(kind=sgl), allocatable           	:: PCX(:), PCY(:), DD(:)
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
                                            ios, up1header(4), version, patx, paty, myoffset, offset, nlines
@@ -1118,8 +1128,7 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    !case(4, 7, 10, 11)  ! "TSLHDF", "EMEBSD"
-      case(4)
+      case(4) ! TSLHDF
         nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
@@ -1133,7 +1142,10 @@ select case (itype)
         hdferr = HDF_openGroup(groupname, pmHDF_head)
         groupname = 'Data'
         hdferr = HDF_openGroup(groupname, pmHDF_head)
-			
+
+        ! Euler angle and PC convention (TSL)
+			  call Message('Euler angle convention: '//enl%eulerconvention)
+
         allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
         dataset = 'Phi'
         call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
@@ -1169,19 +1181,20 @@ select case (itype)
 
         dataset = 'x-star'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
-        enl%xpc=enl%numsx*(enl%xpc-0.5)
+        call Message('Pattern center convention: '//enl%eulerconvention)
         print *, "Pattern Center Information:"
-        print *, "xpc:", enl%xpc
+        print *, "PCx:", enl%xpc
+        enl%xpc=-enl%numsx*(enl%xpc-0.5)! change view from detector to sample
         
         dataset = 'y-star'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
+        print *, "PCy:", enl%ypc	
         enl%ypc=enl%numsx*enl%ypc-enl%numsy*0.5
-        print *, "ypc:", enl%ypc	
 
         dataset = 'z-star'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+        print *, "Detector Distance:", enl%L
         enl%L=enl%numsx*enl%delta*enl%L
-        print *, "L:", enl%L
 
         call HDF_pop(pmHDF_head)
         call HDF_pop(pmHDF_head)
@@ -1221,7 +1234,8 @@ select case (itype)
               dataset = 'xpc'
               call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
           write(*,*)
-          print *, "Initial Pattern Center Information:"
+          call Message('Pattern center convention: '//'EMsoft')
+          print *, "Pattern Center Information:"
           print *, "xpc:", enl%xpc
               dataset = 'ypc'
               call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
@@ -1232,7 +1246,7 @@ select case (itype)
               dataset = 'thetac'
                       call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
           write(*,*)
-          print *, "Tilt angle of the camera:", enl%thetac
+          print *, "Camera Tilt:", enl%thetac
 
           dataset = 'delta'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
@@ -1261,7 +1275,7 @@ select case (itype)
           call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
           enl%eulerconvention=trim(stringarray(1))
           deallocate(stringarray)
-          call Message('Euelr angle convention: '//enl%eulerconvention)
+          call Message('Euler angle convention: '//enl%eulerconvention)
         
           dataset = 'bitdepth'
           call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
@@ -1303,38 +1317,100 @@ select case (itype)
           call HDF_pop(pmHDF_head)
           nullify(pmHDF_head%next)
     case(8)  !  "BrukerHDF" (a lot of meta data missing in the current HDF5 file)
-        ! nullify(pmHDF_head%next)
-        ! ! open the file
-        ! hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
-        ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+        nullify(pmHDF_head%next)
+        ! open the file
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+        ! open the correct level of the data set
+        groupname = trim(HDFstrings(1))
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
 
-        ! ! open the correct level of the data set
-        ! groupname = trim(HDFstrings(1))
-        ! hdferr = HDF_openGroup(groupname, pmHDF_head)
+		    ! open groups containing orientation information
+        groupname = 'EBSD'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        groupname = 'Data'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
 
-		    ! ! open groups containing orientation information
-        ! groupname = 'EBSD'
-        ! hdferr = HDF_openGroup(groupname, pmHDF_head)
-        ! groupname = 'Data'
-        ! hdferr = HDF_openGroup(groupname, pmHDF_head)
+        ! Euler angle convention for Bruker is HKL (+90 degree for phi1)
+			  enl%eulerconvention='hkl'
+        call Message('Euler angle convention: '//enl%eulerconvention)
 
-        ! allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
-        ! dataset = 'PHI'
-        ! call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
-        ! dataset = 'phi1'
-        ! call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
-        ! dataset = 'phi2'
-        ! call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
-        ! allocate(angles%quatang(4,numangles),stat=istat)
-        ! do i=1,numangles 
-        !   eu(i,1)=eu1(i)
-        !   eu(i,2)=eu2(i)
-        !   eu(i,3)=eu3(i)
-        !   angles%quatang(1:4,i) = eu2qu(dtor*eu(i,1:3))
-        ! end do
-        ! print *, "Converting Euler angles to quaternions"
-        ! print *, "Number of orientations imported:", numangles
-        ! deallocate(eu1, eu2, eu3, eu)
+        allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
+        dataset = 'PHI'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
+        dataset = 'phi1'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
+        dataset = 'phi2'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
+        
+        ! convert Euler angles to quaternions
+        allocate(angles%quatang(4,numangles),stat=istat)
+        do i=1,numangles 
+          eu(i,1)=eu1(i)+90.0 ! Bruker convention
+          eu(i,2)=eu2(i)
+          eu(i,3)=eu3(i)
+          angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
+        end do
+        print *, "Converting Euler angles to quaternions"
+        print *, "Number of orientations imported:", numangles
+        deallocate(eu1, eu2, eu3, eu)
+
+        allocate(PCX(numangles),PCY(numangles),DD(numangles))
+        dataset = 'PCX'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, PCX)
+        enl%xpc=sum(PCX)/size(PCX)
+        call Message('Pattern center convention: '//'Bruker')
+        print *, "Pattern Center Information:"
+        print *, "PCx:", enl%xpc
+        enl%xpc=-enl%numsx*(enl%xpc-0.5)! change view from detector to sample
+       
+        
+        dataset = 'PCY'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, PCY)
+        enl%ypc=sum(PCY)/size(PCY)
+        print *, "PCy:", enl%ypc	
+        enl%ypc=enl%numsy*(0.5-enl%ypc)
+    
+
+        dataset = 'DD'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, DD)
+        enl%L=sum(DD)/size(DD)
+        print *, "Detector Distance:", enl%L
+        enl%L=enl%numsy*enl%delta*enl%L
+        
+
+        deallocate(PCX,PCY,DD)
+        call HDF_pop(pmHDF_head)
+		   
+        groupname = 'Header'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        
+        dataset = 'CameraTilt'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+        print *, "Camera Tilt:", enl%thetac
+        call HDF_pop(pmHDF_head)
+        call HDF_pop(pmHDF_head)
+
+
+        groupname = 'SEM'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        allocate(SEM%SEM_X(patterndata%ipf_wd*patterndata%ipf_ht),stat=istat)
+        allocate(SEM%SEM_Y(patterndata%ipf_wd*patterndata%ipf_ht),stat=istat)
+        
+        dataset = 'SEM IX'
+        call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
+        
+
+        dataset = 'SEM IY'
+        call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+        call invert_ordering_arrays(patterndata%ipf_wd)
+        SEM%SEM_Y=semiy
+        SEM%SEM_X=semix
+        call HDF_pop(pmHDF_head)
+
+        nullify(pmHDF_head%next)
 
 
     case(9)  !  "NORDIF"
