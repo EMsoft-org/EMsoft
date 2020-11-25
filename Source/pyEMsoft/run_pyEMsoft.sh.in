@@ -105,6 +105,7 @@ EMsoft_SDK=@EMsoft_SDK@
 # derived folders
 EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
 EMsoftHDFLib=${EMsoft_folder}/Source/EMsoftHDFLib
+EMsoftOpenCLLib=${EMsoft_folder}/Source/EMOpenCLLib
 EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoftLib
 EMsoftBuildHDFLib=${EMsoft_BUILDfolder}/EMsoftHDFLib
 EMsoftBuildOpenCLLib=${EMsoft_BUILDfolder}/EMOpenCLLib
