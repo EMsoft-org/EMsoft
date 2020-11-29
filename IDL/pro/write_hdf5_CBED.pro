@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2020, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -26,60 +26,42 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; CTEMsoft2013:CBEDCBEDDrawWidget_event.pro
+; EMsoft:write_hdf5_CBED
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: CBEDCBEDDrawWidget_event.pro
+; PROGRAM: write_hdf5_CBED
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief main event handler for CBED pattern display mode
+;> @brief; create an hdf5 file with a CBED pattern in it
 ;
-;> @date 10/09/13 MDG 1.0 first version
-;> @date 11/28/20 MDG 2.0 added pattern save options
+;> @date 11/29/20 MDG 1.0 first attempt 
 ;--------------------------------------------------------------------------
-pro CBEDCBEDDrawWidget_event, event
+pro write_hdf5_CBED, hdfname
 
-;------------------------------------------------------------
-; common blocks
-common CBED_widget_common, widget_s
 common CBED_data_common, data
 common CBEDpattern, CBEDpattern
 
-if (data.eventverbose eq 1) then help,event,/structure
+; create the file and close it immediately so that we can use H5_PUTDATA to add datasets
+res = H5F_CREATE(hdfname)
+H5F_CLOSE, res
 
-; intercept the image widget movement here 
-if (event.id eq widget_s.CBEDDrawbase) then begin
-  data.CBEDDrawxlocation = event.x
-  data.CBEDDrawylocation = event.y-25
-    CBEDprint,' Window moved to location ('+string(fix(data.CBEDDrawxlocation),format="(I4)")+','+string(fix(data.CBEDDrawylocation),format="(I4)")+')'
-end else begin
+; put the CBED pattern into the file 
+H5_PUTDATA, hdfname, 'CBEDpattern', CBEDpattern
 
-    WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
-
-    CASE eventval OF
-
-    'SAVECBEDPATTERN': begin
-; display a filesaving widget in the data folder with the file extension filled in
-        delist = ['jpeg','tiff','bmp','mrc','hdf5']
-        de = delist[data.imageformat]
-        filename = DIALOG_PICKFILE(/write,default_extension=de,path=data.pathname,title='enter filename without extension')
-        if (data.imageformat le 2) then im = bytscl(CBEDpattern)
-        case de of
-            'jpeg': write_jpeg,filename,im,quality=100
-            'tiff': write_tiff,filename,reverse(im,2)
-            'bmp': write_bmp,filename,im
-; for the next two file format we need to use the raw data values, not the scaled ones
-            'mrc': write_mrc,filename
-            'hdf5': write_hdf5_CBED,filename
-         else: MESSAGE,'unknown file format option'
-        endcase
-    endcase
-
-    else: MESSAGE, "Event User Value Not Found"
-
-    endcase
-
+; then write a bunch of parameters to the file as well in the 'parameters' group 
+H5_PUTDATA, hdfname, 'parameters/CameraLength-mm', data.camlen 
+H5_PUTDATA, hdfname, 'parameters/ConvergenceAngle-mrad', data.thetau 
+if (data.cbedmode eq 0) then begin 
+    H5_PUTDATA, hdfname, 'parameters/IntensityScaling', 'linear'
+end else begin 
+    H5_PUTDATA, hdfname, 'parameters/intensityscaling', 'logarithmic'
+    H5_PUTDATA, hdfname, 'parameters/logoffset', data.logoffset
 endelse
+H5_PUTDATA, hdfname, 'parameters/LaueCenter', [data.Lauex, data.Lauey]
+H5_PUTDATA, hdfname, 'parameters/pix-per-nm', data.scale
+H5_PUTDATA, hdfname, 'parameters/thickness-nm', data.thickness
+
+
 
 end

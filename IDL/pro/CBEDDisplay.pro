@@ -35,6 +35,7 @@
 @CBEDupdateLaue			; draw the Laue position on top of the CBED schematic
 @CBEDmoveLaue			; move CBED pattern from one Laue position to another one
 @write_mrc              ; creates an .mrc file with a CBED pattern 
+@write_hdf5_CBED        ; create an HDF5 file with a CBED pattern 
 
 ;
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
