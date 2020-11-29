@@ -48,6 +48,7 @@ common CBED_HOLZlists, HOLZvals
 common fontstrings, fontstr, fontstrlarge, fontstrsmall
 common SYM2D, SYM_MATnum, SYM_direc
 common CBEDcirclestuff, CBEDschematic, midx, midy, drad, cang, scl, gxpos, ct, st, sc
+common CBEDpattern, CBcurrent
 
 wset,data.CBdrawID
 

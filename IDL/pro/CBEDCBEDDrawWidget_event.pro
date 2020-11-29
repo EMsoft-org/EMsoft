@@ -33,9 +33,10 @@
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief main event handler for LACBED mode
+;> @brief main event handler for CBED pattern display mode
 ;
 ;> @date 10/09/13 MDG 1.0 first version
+;> @date 11/28/20 MDG 2.0 added pattern save options
 ;--------------------------------------------------------------------------
 pro CBEDCBEDDrawWidget_event, event
 
@@ -43,6 +44,7 @@ pro CBEDCBEDDrawWidget_event, event
 ; common blocks
 common CBED_widget_common, widget_s
 common CBED_data_common, data
+common CBEDpattern, CBEDpattern
 
 if (data.eventverbose eq 1) then help,event,/structure
 
@@ -51,6 +53,34 @@ if (event.id eq widget_s.CBEDDrawbase) then begin
   data.CBEDDrawxlocation = event.x
   data.CBEDDrawylocation = event.y-25
     CBEDprint,' Window moved to location ('+string(fix(data.CBEDDrawxlocation),format="(I4)")+','+string(fix(data.CBEDDrawylocation),format="(I4)")+')'
-end
+end else begin
+
+    WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
+
+    CASE eventval OF
+
+    'SAVECBEDPATTERN': begin
+; display a filesaving widget in the data folder with the file extension filled in
+        delist = ['jpeg','tiff','bmp','mrc','hdf5']
+        de = delist[data.imageformat]
+        print,' data format selected : ',data.imageformat, de 
+        filename = DIALOG_PICKFILE(/write,default_extension=de,path=data.pathname,title='enter filename without extension')
+        if (data.imageformat le 2) then im = bytscl(CBEDpattern)
+        case de of
+            'jpeg': write_jpeg,filename,im,quality=100
+            'tiff': write_tiff,filename,reverse(im,2)
+            'bmp': write_bmp,filename,im
+; for the next two file format we need to use the raw data values, not the scaled ones
+            'mrc': write_mrc,filename
+            'hdf5': write_hdf5_CBED,filename
+         else: MESSAGE,'unknown file format option'
+        endcase
+    endcase
+
+    else: MESSAGE, "Event User Value Not Found"
+
+    endcase
+
+endelse
 
 end
