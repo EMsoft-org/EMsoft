@@ -64,6 +64,9 @@ wset,data.CBdrawID
 ; overall beam convergence angle; this is used to scale the coordinates of the reciprocal lattice points
 	clscl = data.camlen / data.refcamlen 
 
+; set the reciprocal nm per pixel parameter ( based on (0 2 -1) reflection for L-glutamic acid )
+    data.scale = clscl * 2.895324/128.0    ; [nm^{-1}]
+
 ; extract a subset of the disks array
 	dx = round(0.5*thfrac * (data.datadims[0]-1) * float(drad)/float(midx)) > 1
 	ndx = fix(2 * clscl * dx * data.thetac/40.0) > 1

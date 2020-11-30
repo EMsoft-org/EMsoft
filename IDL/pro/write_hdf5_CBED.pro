@@ -42,12 +42,25 @@ pro write_hdf5_CBED, hdfname
 common CBED_data_common, data
 common CBEDpattern, CBEDpattern
 
+save_thicksel = data.thicksel 
+
+; compute a CBED thickness series and dump it to a .mrc file.
+;
+dims = size(CBEDpattern,/dimensions)
+CBEDstack = fltarr(dims[0],dims[1],data.numt)
+
+for i=0,data.numt-1 do begin 
+  data.thicksel = i
+  CBEDgocbed
+  CBEDstack[0:*,0:*,i] = CBEDpattern
+endfor
+
 ; create the file and close it immediately so that we can use H5_PUTDATA to add datasets
 res = H5F_CREATE(hdfname)
 H5F_CLOSE, res
 
 ; put the CBED pattern into the file 
-H5_PUTDATA, hdfname, 'CBEDpattern', CBEDpattern
+H5_PUTDATA, hdfname, 'CBEDpattern', CBEDstack
 
 ; then write a bunch of parameters to the file as well in the 'parameters' group 
 H5_PUTDATA, hdfname, 'parameters/CameraLength-mm', data.camlen 
@@ -62,6 +75,7 @@ H5_PUTDATA, hdfname, 'parameters/LaueCenter', [data.Lauex, data.Lauey]
 H5_PUTDATA, hdfname, 'parameters/pix-per-nm', data.scale
 H5_PUTDATA, hdfname, 'parameters/thickness-nm', data.thickness
 
-
-
+; reset original parameters
+data.thicksel = save_thicksel
+CBEDgocbed
 end
