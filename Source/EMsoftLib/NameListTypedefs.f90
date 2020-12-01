@@ -975,7 +975,8 @@ type CBEDNameListType
         integer(kind=irg)       :: k(3)
         integer(kind=irg)       :: fn(3)
         real(kind=sgl)          :: voltage
-        real(kind=sgl)          :: lauec(2)
+        real(kind=sgl)          :: camlen
+        real(kind=sgl)          :: klaue(2)
         real(kind=sgl)          :: dmin
         real(kind=sgl)          :: convergence
         real(kind=sgl)          :: startthick
@@ -1174,6 +1175,7 @@ type ECCINameListType
     character(fnlen)        :: montagename
     character(fnlen)        :: defectfilename
     character(fnlen)        :: dispfile
+    character(fnlen)        :: DDDfilename
     character(fnlen)        :: dataname
     character(fnlen)        :: ECPname
     character(fnlen)        :: sgname

@@ -5469,7 +5469,8 @@ integer(kind=irg)       :: numthick
 integer(kind=irg)       :: npix
 integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: voltage
-real(kind=sgl)          :: lauec(2)
+real(kind=sgl)          :: camlen
+real(kind=sgl)          :: klaue(2)
 real(kind=sgl)          :: dmin
 real(kind=sgl)          :: convergence
 real(kind=sgl)          :: startthick
@@ -5477,7 +5478,7 @@ real(kind=sgl)          :: thickinc
 character(fnlen)        :: xtalname
 character(fnlen)        :: outname
 
-namelist /CBEDlist/ xtalname, voltage, k, fn, dmin, convergence, lauec, &
+namelist /CBEDlist/ xtalname, voltage, k, fn, dmin, convergence, klaue, camlen, &
                     nthreads, startthick, thickinc, numthick, outname, npix, maxHOLZ
 
 k = (/ 0, 0, 1 /)               ! beam direction [direction indices]
@@ -5485,11 +5486,12 @@ fn = (/ 0, 0, 1 /)              ! foil normal [direction indices]
 maxHOLZ = 2                     ! maximum HOLZ layer index to be used for the output file; note that his number
                                 ! does not affect the actual computations; it only determines which reflection 
                                 ! families will end up in the output file
-lauec = (/ 0.0, 0.0 /)          ! Laue center coordinates
+klaue = (/ 0.0, 0.0 /)          ! Laue center coordinates
 numthick = 10                   ! number of increments
 npix = 256                      ! output arrays will have size npix x npix
 nthreads = 1                    ! number of computational threads
 voltage = 200.0                 ! acceleration voltage [kV]
+camlen = 1000.0                 ! camera length [mm]
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 convergence = 25.0              ! beam convergence angle [mrad]
 startthick = 10.0               ! starting thickness [nm]
@@ -5519,8 +5521,9 @@ cbednl%maxHOLZ = maxHOLZ
 cbednl%numthick = numthick
 cbednl%npix = npix
 cbednl%nthreads = nthreads
-cbednl%lauec = lauec
+cbednl%klaue = klaue
 cbednl%voltage = voltage
+cbednl%camlen = camlen
 cbednl%dmin = dmin
 cbednl%convergence = convergence
 cbednl%startthick = startthick
@@ -5847,6 +5850,7 @@ character(5)            :: progmode
 character(fnlen)        :: xtalname
 character(fnlen)        :: montagename
 character(fnlen)        :: defectfilename
+character(fnlen)        :: DDDfilename
 character(fnlen)        :: dispfile
 character(fnlen)        :: dataname
 character(fnlen)        :: ECPname
@@ -5856,7 +5860,7 @@ character(fnlen)        :: sgname
 namelist / ECCIlist / DF_L, DF_npix, DF_npiy, DF_slice, dmin, sgname, stdout, &
                       progmode, dispfile, ktmax, dkt, ECPname, summode, lauec, lauec2, &
                       dispmode, nthreads, xtalname, voltage, k, nktstep, &
-                      dataname, defectfilename, montagename
+                      dataname, defectfilename, montagename, DDDfilename
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -5879,6 +5883,7 @@ progmode = 'array'
 xtalname = 'undefined'
 montagename = 'undefined'
 defectfilename = 'undefined'
+DDDfilename = 'undefined'
 dispfile = 'displacements.data'
 dataname = 'ECCIout.data'
 ECPname = 'undefined'
@@ -5926,6 +5931,7 @@ eccinl%progmode = progmode
 eccinl%xtalname = xtalname
 eccinl%montagename = montagename
 eccinl%defectfilename = defectfilename
+eccinl%DDDfilename = DDDfilename
 eccinl%dispfile = dispfile
 eccinl%dataname = dataname
 eccinl%ECPname = ECPname

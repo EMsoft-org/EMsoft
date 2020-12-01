@@ -194,7 +194,8 @@ end if
  cell%LUT = cmplx(0.D0,0.D0)
  cell%LUTqg = cmplx(0.D0,0.D0)
  cell%dbdiff = .FALSE.
- ddt = 1.0e-5 
+ ! ddt = 1.0e-5 
+ ddt = 1.0e-10 
 
 ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
 ! list of linked reflections; in the old code, this was done at the same time, but it appears

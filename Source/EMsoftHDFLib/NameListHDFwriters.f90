@@ -3518,12 +3518,12 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(CBEDNameListType),INTENT(INOUT)                  :: cbednl
 !f2py intent(in,out) ::  cbednl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 5
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -3551,17 +3551,18 @@ dataset = SC_fn
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, cbednl%fn, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create fn dataset',.TRUE.)
 
-dataset = SC_lauec
-hdferr = HDF_writeDatasetFloatArray1D(dataset, cbednl%lauec, 2, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create lauec dataset',.TRUE.)
+dataset = SC_klaue
+hdferr = HDF_writeDatasetFloatArray1D(dataset, cbednl%klaue, 2, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create klaue dataset',.TRUE.)
 
 ! write all the single reals
-io_real = (/ cbednl%voltage, cbednl%dmin, cbednl%convergence, cbednl%startthick, cbednl%thickinc /)
+io_real = (/ cbednl%voltage, cbednl%dmin, cbednl%convergence, cbednl%startthick, cbednl%thickinc, cbednl%camlen /)
 reallist(1) = 'voltage'
 reallist(2) = 'dmin'
 reallist(3) = 'convergence'
 reallist(4) = 'startthick'
 reallist(5) = 'thickinc'
+reallist(6) = 'camlen'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
