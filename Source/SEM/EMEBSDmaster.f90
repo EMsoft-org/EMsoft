@@ -335,9 +335,9 @@ end if
  !allocate(cell)        
  verbose = .TRUE.
  if (emnl%restart.eqv..TRUE.) then 
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose, nthreads=emnl%nthreads)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)
  else
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose, nthreads=emnl%nthreads)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
  end if
 
 ! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
@@ -360,7 +360,7 @@ end if
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
- call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose, nthreads=emnl%nthreads)
+ call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
 
 ! determine the point group number
  j=0

@@ -65,7 +65,7 @@ contains
 !> @date 08/09/18 MDG 5.4 added FSCATT interpolation option
 !--------------------------------------------------------------------------
 recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, &
-                                     verbose, existingHDFhead, initLUT, noLUT, interpolate, nthreads)
+                                     verbose, existingHDFhead, initLUT, noLUT, interpolate)
 !DEC$ ATTRIBUTES DLLEXPORT :: Initialize_Cell
 
 use local
@@ -78,7 +78,6 @@ use error
 use gvectors
 use diffraction
 use HDFsupport
-use omp_lib
 
 IMPLICIT NONE
 
@@ -96,7 +95,6 @@ type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 logical,INTENT(IN),OPTIONAL                :: noLUT
 logical,INTENT(IN),OPTIONAL                :: interpolate
-integer(kind=sgl),INTENT(IN),OPTIONAL      :: nthreads
 
 integer(kind=irg)                          :: istat, io_int(3), skip
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
@@ -230,40 +228,40 @@ if (compute) then
   end if
  end if
  
- if (present(nthreads)) then 
-    call OMP_SET_NUM_THREADS(nthreads)
-!$OMP PARALLEL PRIVATE(iz, ix, iy, gg, rlp)
-! note that the lookup table must be twice as large as the list of participating reflections,
-! since the Sgh matrix uses g-h as its index !!!  
-!$OMP DO SCHEDULE(DYNAMIC,5) 
-! now do the same for the other allowed reflections
-! note that the lookup table must be twice as large as the list of participating reflections,
-! since the dynamical matrix uses g-h as its index !!!  
-  ixlomp: do ix=-2*imh,2*imh
-  iylomp:  do iy=-2*imk,2*imk
-  izlomp:   do iz=-2*iml,2*iml
-          gg = (/ ix, iy, iz /)
-          if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
-  ! add the reflection to the look up table
-             if (interp.eqv..TRUE.) then          
-               call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
-             else
-               call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
-             end if
-!$OMP CRITICAL
-             cell%LUT(ix, iy, iz) = rlp%Ucg
-             cell%LUTqg(ix, iy, iz) = rlp%qg
-  ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-             if (cabs(rlp%Ucg).le.ddt) then 
-               cell%dbdiff(ix,iy,iz) = .TRUE.
-             end if
-!$OMP END CRITICAL
-          end if ! IsGAllowed
-         end do izlomp
-        end do iylomp
-      end do ixlomp
-!$OMP END PARALLEL 
- else
+!  if (present(nthreads)) then 
+!     call OMP_SET_NUM_THREADS(nthreads)
+! !$OMP PARALLEL DEFAULT(shared) PRIVATE(iz, ix, iy, gg, rlp)
+! ! note that the lookup table must be twice as large as the list of participating reflections,
+! ! since the Sgh matrix uses g-h as its index !!!  
+! !$OMP DO SCHEDULE(DYNAMIC,5) 
+! ! now do the same for the other allowed reflections
+! ! note that the lookup table must be twice as large as the list of participating reflections,
+! ! since the dynamical matrix uses g-h as its index !!!  
+!   ixlomp: do ix=-2*imh,2*imh
+!   iylomp:  do iy=-2*imk,2*imk
+!   izlomp:   do iz=-2*iml,2*iml
+!           gg = (/ ix, iy, iz /)
+!           if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+!   ! add the reflection to the look up table
+!              if (interp.eqv..TRUE.) then          
+!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
+!              else
+!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+!              end if
+! !$OMP CRITICAL
+!              cell%LUT(ix, iy, iz) = rlp%Ucg
+!              cell%LUTqg(ix, iy, iz) = rlp%qg
+!   ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+!              if (cabs(rlp%Ucg).le.ddt) then 
+!                cell%dbdiff(ix,iy,iz) = .TRUE.
+!              end if
+! !$OMP END CRITICAL
+!           end if ! IsGAllowed
+!          end do izlomp
+!         end do iylomp
+!       end do ixlomp
+! !$OMP END PARALLEL 
+!  else
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  
@@ -288,7 +286,7 @@ if (compute) then
          end do izl
         end do iyl
       end do ixl
- end if
+ ! end if
 
   if (present(verbose)) then
    if (verbose) then
