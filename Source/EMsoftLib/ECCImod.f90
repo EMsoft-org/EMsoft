@@ -295,6 +295,7 @@ use crystal
 use gvectors
 use constants
 use symmetry
+use typedefs
 
 IMPLICIT NONE
 
@@ -304,7 +305,7 @@ integer(kind=irg),INTENT(IN)            :: nn
 ! Sgh array changed to one dimensional vector instead of 2D array
 complex(kind=dbl),INTENT(INOUT) :: Sgh(nn)
 !f2py intent(in,out) ::  Sgh
-integer(kind=irg),INTENT(INOUT) :: nat(100)
+integer(kind=irg),INTENT(INOUT) :: nat(maxpasym)
 !f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(3), ikk, n, numset

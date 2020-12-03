@@ -191,7 +191,7 @@ integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
                            numk, timestart, timestop, numsites, nthreads, & ! number of independent incident beam directions
-                           ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
+                           ir,nat(maxpasym),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
@@ -335,9 +335,9 @@ end if
  !allocate(cell)        
  verbose = .TRUE.
  if (emnl%restart.eqv..TRUE.) then 
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose, nthreads=emnl%nthreads)
  else
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose, nthreads=emnl%nthreads)
  end if
 
 ! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
@@ -360,7 +360,7 @@ end if
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
- call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
+ call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose, nthreads=emnl%nthreads)
 
 ! determine the point group number
  j=0

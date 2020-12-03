@@ -1425,7 +1425,7 @@ real(kind=dbl)          :: ctmp(192,3), arg
 
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
                            numk, & ! number of independent incident beam directions
-                           ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, cancelerr, &
+                           ir,nat(maxpasym),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, cancelerr, &
                            numset,n,ix,iy,iz, nns, nnw, nref, Estart, ipg, isave, npx, nthreads,  &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp, nxten     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, &
