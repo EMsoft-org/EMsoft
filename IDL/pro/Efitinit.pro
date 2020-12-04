@@ -182,6 +182,15 @@ dset_id = H5D_OPEN(group2_id,'mLPSH')
 mLPSH = H5D_READ(dset_id)
 H5D_close,dset_id
 
+; check the size of the mLPNH array
+sz = size(mLPNH)
+if (sz[0] eq 3) then begin
+  print,'reshaping array from ', sz, ' to ', [sz[1],sz[2],sz[3],1]
+  mLPNH = reform(mLPNH,sz[1],sz[2],sz[3],1)
+  mLPSH = reform(mLPSH,sz[1],sz[2],sz[3],1)
+  numset = 1
+endif
+
 dset_id = H5D_OPEN(group2_id,'xtalname')
 Masterxtalname = H5D_READ(dset_id)
 H5D_close,dset_id
