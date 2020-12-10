@@ -1159,8 +1159,8 @@ select case (itype)
         
         dataset = 'Camera Elevation Angle'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
-        dataset = 'Camera Azimuthal Angle'
-        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
+        ! dataset = 'Camera Azimuthal Angle'
+        ! call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
         groupname = 'Pattern Center Calibration'
             hdferr = HDF_openGroup(groupname, pmHDF_head)
         dataset = 'x-star'

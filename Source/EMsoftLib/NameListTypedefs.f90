@@ -582,7 +582,6 @@ type EBSDNameListType
         real(kind=sgl)          :: L
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
-        real(kind=sgl)          :: omega
         real(kind=sgl)          :: xpc
         real(kind=sgl)          :: ypc
         real(kind=sgl)          :: energymin

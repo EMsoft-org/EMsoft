@@ -82,6 +82,7 @@ end program EMEBSDreflectors
 !> @date 06/06/18  MDG 1.2 modified discrete integration 
 !> @date 11/29/18  MDG 1.3 added kinematical X-ray intensities to output
 !> @date 03/01/20  MDG 1.4 add ability to compute a kinematical pattern 
+!> @date 12/09/20  MDG 1.5 improved layout of LaTeX table and added some print statements for long runs
 !--------------------------------------------------------------------------
 subroutine GetReflectors(rnl, progname, nmldeffile)
 
@@ -329,6 +330,7 @@ call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname,rnl%dmin, sngl(mcnl%EkeV), verbo
  call WriteValue(' Total number of family members  = ', oi_int, 1, "(I6)")
 
 ! compute d-spacings, g-spacings, theta
+call Message(' Computing d-spacings, g-spacings, and scattering angles')
  allocate(gcart(3,icnt),gcrys(3,icnt))
  do k=1,icnt
   g(1:3)=float(family(k,1,1:3))
@@ -352,6 +354,7 @@ keep(idx(1)) = .FALSE.   ! eliminate (000) from the list
 
 mhkl = int(maxval(gcrys))
 
+call Message(' Selecting lowest hkl values with largest structure factor ')
 do k=2,icnt-1
  if (keep(idx(k)).eqv..TRUE.) then
   valpos = idx(k)
@@ -406,13 +409,15 @@ scl = float(nx)
 ! set the number of OpenMP threads 
 call OMP_SET_NUM_THREADS(rnl%nthreads)
 io_int(1) = rnl%nthreads
-
-write (*,*) ' Total number of integrations to be carried out ',nkeep
+call WriteValue(' Setting # threads to ',io_int,1,"(I3)")
+io_int(1) = nkeep
+call WriteValue(' Total number of integrations to be carried out ',io_int,1,"(I6)")
 
 if (rnl%kinematical.eqv..TRUE.) then 
-  write (*,*) ' Computation of symmetrized kinematical pattern will slow things down a bit ... '
+  call Message(' Computation of symmetrized kinematical pattern will slow things down a bit ... ')
 end if 
 
+call Message(' Starting parallel integrations... (.=100, |=1000) ')
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL DEFAULT(PRIVATE) &
 !$OMP& SHARED(k, nx, cp, sp, icnt, keep, th, incrad, numphi, gcart, cell, scl, masterNH, masterSH) &
@@ -425,7 +430,7 @@ allocate(kinNH(-nx:nx,-nx:nx), kinSH(-nx:nx,-nx:nx))
 kinNH = 0.0
 kinSH = 0.0
 
-!$OMP DO SCHEDULE(STATIC,1)
+!$OMP DO SCHEDULE(STATIC,rnl%nthreads)
 do k=1,icnt-1   ! ignore the last point
  if (keep(k)) then
   ii = nint(th(k)/incrad)
@@ -506,8 +511,8 @@ do k=1,icnt-1   ! ignore the last point
     Vg(k) = 0.0
     VgX(k) = 0.0
  end if
- if (mod(k,50).eq.0) then
-  if (mod(k,500).eq.0) then
+ if (mod(k,100).eq.0) then
+  if (mod(k,1000).eq.0) then
      write (*,"('|')",advance="no")
    else 
      write (*,"('.')",advance="no")
