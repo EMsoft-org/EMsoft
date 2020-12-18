@@ -836,8 +836,9 @@ end subroutine CalcStar
 !> @date  03/21/13 MDG 3.0 clean up and updated IO
 !> @date  01/10/14 MDG 4.0 SG is now part of the unitcell type
 !> @date  06/05/14 MDG 4.1 made cell an argument instead of global variable; replaced itmp by argument
+!> @date  12/18/20 MDG 5.0 added optional argument for number of cells to be generated
 !--------------------------------------------------------------------------
-recursive subroutine CalcPositions(cell,switch)
+recursive subroutine CalcPositions(cell,switch,numcells)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcPositions
 
 use io
@@ -848,6 +849,7 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 character(1),INTENT(IN)         :: switch                       !< if switch='m', then multiple unit cells, otherwise single cell
+integer(kind=irg),INTENT(IN),OPTIONAL :: numcells(3)            !< number of cells (symmetrically from -N to N)
 
 logical                         :: inside                       !< auxiliary logical
 integer(kind=irg)               :: i,j,k,l,mm,icnt,celln(3),ncells,n,kk,ier, io_int(3)  !< various auxiliary variables
@@ -859,12 +861,20 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
 
 ! multiple cells ?
  if (switch.eq.'m') then 
-  call ReadValue('Number of unit cells in a, b and c direction ?: ', io_int,3)
-  do j=1,3
-   celln(j) = io_int(j)
-   sh(j) = 0.5_dbl*celln(j)+1.0_dbl
-  end do
-  ncells = celln(1)*celln(2)*celln(3)
+  if (present(numcells)) then  ! generate cells from -N to N along each axis
+    celln = numcells
+    do j=1,3
+     sh(j) = 0.5_dbl*celln(j)+1.0_dbl
+    end do
+    ncells = (2*celln(1)+1)*(2*celln(2)+1)*(2*celln(3)+1)
+  else
+    call ReadValue('Number of unit cells in a, b and c direction ?: ', io_int,3)
+    do j=1,3
+     celln(j) = io_int(j)
+     sh(j) = 0.5_dbl*celln(j)+1.0_dbl
+    end do
+    ncells = celln(1)*celln(2)*celln(3)
+  end if
  else
 ! no, just one cell
   do j=1,3
@@ -874,6 +884,52 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
   ncells = 1
  end if
 
+if (present(numcells)) then 
+! main loop
+! first allocate the apos variable (contains CARTESIAN coordinates
+! if switch is 'm', crystal coordinates otherwise)
+ if (allocated(cell%apos)) deallocate(cell%apos)
+ allocate (cell%apos(cell%ATOM_ntype, ncells * cell%SG%SYM_MATnum, 3),stat=ier)
+ if (ier.ne.0) call FatalError('CalcPositions',' unable to allocate memory for array cell%apos')
+
+ do i=1,cell%ATOM_ntype
+
+! for each atom in the asymmetric unit
+  call CalcOrbit(cell,i,n,ctmp)
+  cell%numat(i)=n
+  icnt=1
+
+! replicate in all cells
+  do j=-celln(1),celln(1)+1
+   ff(1)=dble(j)
+   do k=-celln(2),celln(2)+1
+    ff(2)=dble(k)
+    do l=-celln(3),celln(3)+1
+     ff(3)=dble(l)
+     do kk=1,cell%numat(i)
+      do mm=1,3
+       r(mm)=ctmp(kk,mm)+ff(mm)-sh(mm)
+      end do 
+! make sure the atom is actually inside the block of unit
+! cells, or on one of the edges/faces/corners
+       inside=.TRUE.
+       do mm=1,3
+        if ((r(mm)+sh(mm)).gt.(celln(mm)+1.0)) inside=.FALSE.
+       end do
+       if (inside) then
+        call TransSpace(cell,r,g,'d','c')
+        do mm=1,3
+         cell%apos(i,icnt,mm)=g(mm)
+        end do
+        icnt=icnt+1
+       end if
+     end do ! kk
+    end do ! l 
+   end do ! k
+  end do ! j
+  cell%numat(i)=icnt-1
+ end do  ! cell%ATOM_typ
+else 
 ! main loop
 ! first allocate the apos variable (contains CARTESIAN coordinates
 ! if switch is 'm', crystal coordinates otherwise)
@@ -927,6 +983,7 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
   end do ! j
   cell%numat(i)=icnt-1
  end do  ! cell%ATOM_type
+end if 
 
 end subroutine CalcPositions
 

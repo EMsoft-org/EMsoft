@@ -2852,6 +2852,90 @@ end subroutine GetEBSDMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetISEMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMISEmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl ISE master name list structure
+!
+!> @date 12/18/20  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetISEMasterNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetISEMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(ISEMasterNameListType),INTENT(INOUT)       :: emnl
+!f2py intent(in,out) ::  emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: iscale(3)
+character(3)            :: Notify
+character(fnlen)        :: outname
+character(fnlen)        :: tiffname
+character(fnlen)        :: xtalname
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /ISEmastervars/ npx,nthreads,Notify,xtalname,outname,iscale,tiffname 
+
+! set the input parameters to default values (except for xtalname, which must be present)
+npx = 500
+nthreads = 1
+iscale = (/ 3.0, 4.0, 1.0 /)
+Notify = 'Off'
+tiffname = 'undefined'
+outname = 'undefined'
+xtalname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=ISEmastervars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' crystal structure file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(outname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+  if (trim(tiffname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' tiff file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%npx = npx
+emnl%nthreads = nthreads
+emnl%iscale = iscale
+emnl%Notify = Notify
+emnl%outname= outname
+emnl%tiffname= tiffname
+emnl%xtalname = xtalname
+
+end subroutine GetISEMasterNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetEECMasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

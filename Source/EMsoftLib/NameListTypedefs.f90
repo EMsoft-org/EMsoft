@@ -495,6 +495,17 @@ type EBSDMasterNameListType
         logical                 :: uniform
 end type EBSDMasterNameListType
 
+! namelist for the ISEMaster program
+type ISEMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: iscale(3)
+        character(3)            :: Notify
+        character(fnlen)        :: outname
+        character(fnlen)        :: tiffname
+        character(fnlen)        :: xtalname
+end type ISEMasterNameListType
+
 ! namelist for the EMEECmaster program
 type EECMasterNameListType
         integer(kind=irg)       :: npx
