@@ -252,6 +252,12 @@ else()
                           $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-O3>
     )
 
+  if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER 9.9)
+    target_compile_options(EMsoftLib PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-fallow-invalid-boz>)
+    message(STATUS "Adjusting CMAKE_Fortran_FLAGS for gfortran-10 compatibility: '${CMAKE_Fortran_FLAGS}'")
+  endif()
+
+
   elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # First, Flags that should be used under any build condition
     target_compile_options(EMsoftLib PUBLIC 
