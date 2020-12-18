@@ -148,9 +148,8 @@ void PatternDisplayController::createMasterPatternImageGenerators()
   // Convert to Master Pattern Lambert Circle projection data and create generators
   m_MasterCircleImageGenerators.resize(mp_zDim);
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<float, float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3], m_MP_Data.mLPNH_dims[2], mp_zDim, m_MP_Data.mLPNH_dims[3],
-                                                ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare, m_MasterCircleImageGenerators,
-                                                m_MasterCircleImageGenLock);
+  createProjectionConversionTasks<float, float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3], m_MP_Data.mLPNH_dims[2], mp_zDim, m_MP_Data.mLPNH_dims[3], 1,
+                                                ModifiedLambertProjection::Square::NorthSquare, m_MasterCircleImageGenerators, m_MasterCircleImageGenLock);
   currentCount++;
 
   // Create the master pattern stereographic projection generators
@@ -191,17 +190,15 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   // Generate Monte Carlo circular projection data
   m_MCCircleImageGenerators.resize(static_cast<size_t>(mc_zDim));
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
-                                                  ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare, m_MCCircleImageGenerators,
-                                                  m_MCCircleImageGenLock, false, true);
+  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0], 1,
+                                                  ModifiedLambertProjection::Square::NorthSquare, m_MCCircleImageGenerators, m_MCCircleImageGenLock, false, true);
   currentCount++;
 
   // Generate Monte Carlo stereographic projection data
   m_MCStereoImageGenerators.resize(static_cast<size_t>(mc_zDim));
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
-                                                  ModifiedLambertProjection::ProjectionType::Stereographic, ModifiedLambertProjection::Square::NorthSquare, m_MCStereoImageGenerators,
-                                                  m_MCStereoImageGenLock, false, true);
+  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0], 0,
+                                                  ModifiedLambertProjection::Square::NorthSquare, m_MCStereoImageGenerators, m_MCStereoImageGenLock, false, true);
 
   QString mcDimStr = "";
   for(size_t i = 0; i < m_MP_Data.monteCarlo_dims.size(); i++)

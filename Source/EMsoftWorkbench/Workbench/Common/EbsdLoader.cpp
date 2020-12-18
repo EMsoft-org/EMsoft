@@ -2,9 +2,11 @@
 
 #include "EbsdLoader.h"
 
+#include "EbsdLib/Core/EbsdDataArray.hpp"
 #include "EbsdLib/Core/EbsdLibConstants.h"
 #include "EbsdLib/IO/TSL/AngReader.h"
 #include "EbsdLib/LaueOps/LaueOps.h"
+#include "EbsdLib/Math/EbsdMatrixMath.h"
 #include "EbsdLib/Utilities/ColorTable.h"
 
 #include <QtGui/QImage>
@@ -18,13 +20,13 @@ EbsdLoader::~EbsdLoader() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-DataArray<uint32_t>::Pointer loadCrystalStructures(AngReader* reader)
+EbsdDataArray<uint32_t>::Pointer loadCrystalStructures(AngReader* reader)
 {
-  QVector<AngPhase::Pointer> phases = reader->getPhaseVector();
+  std::vector<AngPhase::Pointer> phases = reader->getPhaseVector();
 
   // Initialize the zero'th element to unknowns. The other elements will
   // be filled in based on values from the data file
-  DataArray<uint32_t>::Pointer crystalStructures = DataArray<uint32_t>::CreateArray(phases.size() + 1, EbsdLib::AngFile::CrystalStructures);
+  EbsdDataArray<uint32_t>::Pointer crystalStructures = EbsdDataArray<uint32_t>::CreateArray(phases.size() + 1, EbsdLib::AngFile::CrystalStructures, true);
   crystalStructures->setValue(0, EbsdLib::CrystalStructure::UnknownCrystalStructure);
 
   if(phases.empty())
@@ -42,7 +44,7 @@ DataArray<uint32_t>::Pointer loadCrystalStructures(AngReader* reader)
 }
 
 // -----------------------------------------------------------------------------
-std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepath, std::array<float, 3>& refDirection)
+std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const std::string& filepath, std::array<float, 3>& refDirection)
 {
 
   AngReader reader;
@@ -56,13 +58,13 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
 
   int32_t xDim = reader.getXDimension();
   int32_t yDim = reader.getYDimension();
-  size_t totalPoints = static_cast<size_t>(xDim * yDim);
+  // size_t totalPoints = static_cast<size_t>(xDim * yDim);
 
   std::cout << "X Dim: " << xDim << std::endl;
   std::cout << "Y Dim: " << yDim << std::endl;
 
-  float xStep = reader.getXStep();
-  float yStep = reader.getYStep();
+  // float xStep = reader.getXStep();
+  // float yStep = reader.getYStep();
 
   err = reader.readFile();
   if(err < 0)
@@ -77,21 +79,27 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
 
   int32_t* phases = reader.getPhaseDataPointer();
 
-  QVector<AngPhase::Pointer> ensembles = reader.getPhaseVector();
-
+  std::vector<AngPhase::Pointer> ensembles(1);
   // Add a dummy Ang Phase to the front of the vector
-  ensembles.push_front(AngPhase::New());
+  ensembles[0] = AngPhase::New();
+  {
+    std::vector<AngPhase::Pointer> ens = reader.getPhaseVector();
+    for(const auto& e : ens)
+    {
+      ensembles.push_back(e);
+    }
+  }
 
   std::array<float, 3> normRefDir = refDirection; // Make a copy of the reference Direction
 
-  MatrixMath::Normalize3x1(normRefDir[0], normRefDir[1], normRefDir[2]);
+  EbsdMatrixMath::Normalize3x1(normRefDir[0], normRefDir[1], normRefDir[2]);
 
   /* ******** Begin the generation of the IPFColors *************/
 
-  DataArray<uint32_t>::Pointer crystalStructuresPtr = loadCrystalStructures(&reader);
-  DataArray<uint32_t>& crystalStructures = *crystalStructuresPtr;
+  EbsdDataArray<uint32_t>::Pointer crystalStructuresPtr = loadCrystalStructures(&reader);
+  EbsdDataArray<uint32_t>& crystalStructures = *crystalStructuresPtr;
 
-  std::vector<LaueOps::Pointer> ops = LaueOps::getOrientationOpsVector();
+  std::vector<LaueOps::Pointer> ops = LaueOps::GetAllOrientationOps();
   std::array<double, 3> refDir = {normRefDir[0], normRefDir[1], normRefDir[2]};
   std::array<double, 3> dEuler = {0.0, 0.0, 0.0};
   EbsdLib::Rgb argb = 0x00000000;

@@ -50,6 +50,7 @@
 
 #include "EbsdLib/Core/Orientation.hpp"
 #include "EbsdLib/Core/OrientationTransformation.hpp"
+#include "EbsdLib/Core/Quaternion.hpp"
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
@@ -474,21 +475,20 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
       return;
     }
 
-    OrientationD euArray(phi1->value() * EbsdLib::Constants::k_PiOver180, phi->value() * EbsdLib::Constants::k_PiOver180, phi2->value() * EbsdLib::Constants::k_PiOver180);
-    QuatType quat = OrientationTransformation::eu2qu<OrientationD, QuatType>(euArray, QuatType::Order::ScalarVector);
+    using QuatType = QuatD;
+    OrientationD euler(phi1->value() * EbsdLib::Constants::k_PiOver180D, phi->value() * EbsdLib::Constants::k_PiOver180D, phi2->value() * EbsdLib::Constants::k_PiOver180D);
+    QuatType quat = OrientationTransformation::eu2qu<OrientationD, QuatType>(euler, QuatType::Order::ScalarVector);
 
     QuatType resultQuat = quat * choiceQuat;
 
-    euArray = OrientationTransformation::qu2eu<QuatType, OrientationD>(resultQuat, QuatType::Order::VectorScalar);
-
-    double* eulerData = euArray.data();
+    euler = OrientationTransformation::qu2eu<QuatType, OrientationD>(resultQuat, QuatType::Order::VectorScalar);
 
     phi1->blockSignals(true);
     phi->blockSignals(true);
     phi2->blockSignals(true);
-    phi1->setValue(eulerData[0] *EbsdLib::Constants::k_180OverPi);
-    phi->setValue(eulerData[1] *EbsdLib::Constants::k_180OverPi);
-    phi2->setValue(eulerData[2] *EbsdLib::Constants::k_180OverPi);
+    phi1->setValue(euler[0] * EbsdLib::Constants::k_180OverPiD);
+    phi->setValue(euler[1] * EbsdLib::Constants::k_180OverPiD);
+    phi2->setValue(euler[2] * EbsdLib::Constants::k_180OverPiD);
     phi1->blockSignals(false);
     phi->blockSignals(false);
     phi2->blockSignals(false);
@@ -644,11 +644,11 @@ void PatternFit_UI::updateRotationQuaternions(double rot, double detValue)
   // Update the rotation quaternions for navigation
   MasterPatternFileReader::MasterPatternData mpData = m_Controller->getMPFileData();
 
-  double ang = rot * 0.5 *EbsdLib::Constants::k_PiOver180;
+  double ang = rot * 0.5 * EbsdLib::Constants::k_PiOver180D;
   double cang = cos(ang);
   double sang = sin(ang);
-  double eta = (mpData.sigma - detValue) *EbsdLib::Constants::k_PiOver180;
-  double delta =EbsdLib::Constants::k_Pi * 0.5 - eta;
+  double eta = (mpData.sigma - detValue) * EbsdLib::Constants::k_PiOver180D;
+  double delta = EbsdLib::Constants::k_PiD * 0.5 - eta;
   double ceta = cos(eta);
   double seta = sin(eta);
   double cdelta = cos(delta);
@@ -1230,9 +1230,9 @@ PatternFitController::SimulationData PatternFit_UI::getSimulationData() const
   data.sampleOmegaAngle = omega->value();
 
   data.angles.resize(3);
-  data.angles[0] = phi1->value() *EbsdLib::Constants::k_PiOver180;
-  data.angles[1] = phi->value() *EbsdLib::Constants::k_PiOver180;
-  data.angles[2] = phi2->value() *EbsdLib::Constants::k_PiOver180;
+  data.angles[0] = phi1->value() * EbsdLib::Constants::k_PiOver180D;
+  data.angles[1] = phi->value() * EbsdLib::Constants::k_PiOver180D;
+  data.angles[2] = phi2->value() * EbsdLib::Constants::k_PiOver180D;
 
   data.gammaValue = intensityGamma->value();
 
