@@ -51,6 +51,7 @@ IMPLICIT NONE
 contains 
 
 recursive function getISEintensity(k, atomcnt, atomlist, atomrad, rsphere, a, b) result(inten)
+!DEC$ ATTRIBUTES DLLEXPORT :: getISEintensity
 
 IMPLICIT NONE
 
