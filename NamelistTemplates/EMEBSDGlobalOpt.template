@@ -1,0 +1,112 @@
+ &EBSDDEdata
+!###################################################################
+! GLOBAL OPTIMIZATION PARAMETERS
+!###################################################################
+! Global optimization method 
+!(DE:diffferential evolution, PS: particle swarm)
+ globalopt='DE',
+! deformation tensor inference 
+!('n': orientation and pattern center refinement,
+!'y':deformattion tensor inference and pattern center refinement)
+ applyDeformation = 'n'
+! population size (10*number of variables)
+ NP=60,
+! maximum number of iterations [50,100]
+ itermax=100,
+! intermediate output after 'refresh' iterations (No intermediate output if refresh < 1)
+ refresh=0,
+! bounds for variables to be optimized (deformation tensor, 
+! misorientation [degree], normalized PC [% detector width])
+ bound = 0.001,2,2,
+! Hybrid Optimization with Nelder Mead Simplex to refine solution
+ hybrid='n',
+! objective function to be used (1: normalized dot product, 2: RMSE);
+ objective=1,
+
+!###################################################################
+! PARTICLE SWARM OPTIMIZATION PARAMETERS
+!###################################################################
+! inertia weight
+ w =1,
+! damping ratio of inertia coefficient
+ w_damp = 0.9,
+! cognitive learning factor
+ c1 = 2,
+! social learning factor
+ c2 = 2, 
+
+!###################################################################
+! DIFFERENTIAL EVOLUTION PARAMETERS
+!###################################################################
+! mutation strategy (default: DE/rand/1/bin, 1:DE/best/1/bin, 3: DE/rand-to-best/1/bin,
+! 4: DE/best/2/bin, 5: DE/rand/2/bin, 6: similar to 3 but with two scaling factor F_XC
+! F_CR)
+ strategy=2,
+! the expected fitness value to reach
+ VTR= -1,
+! crossover factor. a value between [0.5,0.9]
+ CR_XC=0.9,
+! mutation scaling factor. a value between [0.2,0.5] 
+ F_XC=0.5,
+! random mutation scaling factor for strategy 6. a value between [0.2,0.5] 
+ F_CR=0.5,
+
+!###################################################################
+! TARGET PATTERN INFORMATION (REQUIRED)
+!###################################################################
+! name of EBSD master output file; path relative to EMdatapathname
+ masterfile = 'Ni-master-20kV.h5',
+! name of the output data file (.h5) path relative to EMdatapathname
+ datafile='data.h5',
+! Pattern Resolution
+ numsx = 480, ! number of pattern pixels along x (Nx)
+ numsy = 480, ! and along y (Ny)
+! name of input file; path relative to EMdatapathname
+ targetfile = 'Ni-scan-LargeArea.h5',
+! number of patterns along x (width) and y (height) of the scan
+ ipf_wd = 101,
+ ipf_ht = 151,
+! input file type parameter: EMEBSD, TSLHDF, BrukerHDF
+ inputtype = 'EMEBSD',
+! Enter the HDF group names for pattern data set as individual strings (up to 10)
+! e.g. 'Scan 1' 'EBSD' 'Data' 'Pattern' '' '' '' '' '' ''
+ HDFstrings = 'EMData' 'EBSD' 'EBSDPatterns' '' '' '' '' '' '' '',
+! optimization for a single pattern
+ single_opt='y',
+! pattern coordinates to be used for single pattern optimization (0-based)
+ patx = 0,
+ paty = 0,
+! number of threads (default = 1)
+ nthreads = 1,
+ 
+!###################################################################
+! DEFAULT SIMULATION PARAMETERS (OPTIONAL)
+!###################################################################
+! include a realistic intensity background or not ...
+ includebackground = 'n',
+! maximum voltage for master pattern (kV)
+ energymax = 20,
+! minimum voltage for master pattern (kV)
+ energymin = 10,
+! detector pixel size (micron)
+ delta=50,
+! if the 'makedictionary' parameter is 'n', then we have the normal execution of the program
+! if set to 'y', then all patterns are pre-processed using the other parameters below
+ makedictionary = 'n',
+! should a circular mask be applied to the data? 'y', 'n'
+ maskpattern = 'n',
+! hi pass filter w parameter; 0.05 is a reasonable value
+ hipassw = 0.05,
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+! incident beam current [nA]
+ beamcurrent = 150.0,
+! beam dwell time [micro s]
+ dwelltime = 100.0,
+! binning mode (1, 2, 4, or 8)
+ binning = 1,
+! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
+ scalingmode = 'not',
+! gamma correction factor
+ gammavalue = 0,
+ /

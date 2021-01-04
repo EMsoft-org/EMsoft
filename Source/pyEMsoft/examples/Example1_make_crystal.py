@@ -1,8 +1,7 @@
 # this is an example that can be used to create a crystal structure
 
 import sys
-sys.path.append('../')
-import pyEMsoft
+from EMsoft import pyEMsoft
 
 # define the unitcell usinge typedefs
 LatCell = pyEMsoft.typedefs.unitcell()
