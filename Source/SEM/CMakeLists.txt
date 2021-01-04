@@ -76,6 +76,15 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
 
+  Add_EMsoft_Executable(TARGET EMISEmaster 
+                        SOURCES ${APP_DIR}/EMISEmaster.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                        TEMPLATE ${TMPLT_DIR}/EMISEmaster.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                        )
+
   Add_EMsoft_Executable(TARGET EMEBSDmasterSHT 
                         SOURCES ${APP_DIR}/EMEBSDmasterSHT.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 

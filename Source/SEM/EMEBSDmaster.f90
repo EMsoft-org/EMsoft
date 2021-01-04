@@ -191,7 +191,7 @@ integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
                            numk, timestart, timestop, numsites, nthreads, & ! number of independent incident beam directions
-                           ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
+                           ir,nat(maxpasym),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !

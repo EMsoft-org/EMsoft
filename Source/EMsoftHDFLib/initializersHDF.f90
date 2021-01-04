@@ -194,7 +194,8 @@ end if
  cell%LUT = cmplx(0.D0,0.D0)
  cell%LUTqg = cmplx(0.D0,0.D0)
  cell%dbdiff = .FALSE.
- ddt = 1.0e-5 
+ ! ddt = 1.0e-5 
+ ddt = 1.0e-10 
 
 ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
 ! list of linked reflections; in the old code, this was done at the same time, but it appears
@@ -227,30 +228,65 @@ if (compute) then
   end if
  end if
  
+!  if (present(nthreads)) then 
+!     call OMP_SET_NUM_THREADS(nthreads)
+! !$OMP PARALLEL DEFAULT(shared) PRIVATE(iz, ix, iy, gg, rlp)
+! ! note that the lookup table must be twice as large as the list of participating reflections,
+! ! since the Sgh matrix uses g-h as its index !!!  
+! !$OMP DO SCHEDULE(DYNAMIC,5) 
+! ! now do the same for the other allowed reflections
+! ! note that the lookup table must be twice as large as the list of participating reflections,
+! ! since the dynamical matrix uses g-h as its index !!!  
+!   ixlomp: do ix=-2*imh,2*imh
+!   iylomp:  do iy=-2*imk,2*imk
+!   izlomp:   do iz=-2*iml,2*iml
+!           gg = (/ ix, iy, iz /)
+!           if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+!   ! add the reflection to the look up table
+!              if (interp.eqv..TRUE.) then          
+!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
+!              else
+!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+!              end if
+! !$OMP CRITICAL
+!              cell%LUT(ix, iy, iz) = rlp%Ucg
+!              cell%LUTqg(ix, iy, iz) = rlp%qg
+!   ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+!              if (cabs(rlp%Ucg).le.ddt) then 
+!                cell%dbdiff(ix,iy,iz) = .TRUE.
+!              end if
+! !$OMP END CRITICAL
+!           end if ! IsGAllowed
+!          end do izlomp
+!         end do iylomp
+!       end do ixlomp
+! !$OMP END PARALLEL 
+!  else
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  
-ixl: do ix=-2*imh,2*imh
-iyl:  do iy=-2*imk,2*imk
-izl:   do iz=-2*iml,2*iml
-        gg = (/ ix, iy, iz /)
-        if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
-! add the reflection to the look up table
-           if (interp.eqv..TRUE.) then          
-             call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
-           else
-             call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
-           end if
-           cell%LUT(ix, iy, iz) = rlp%Ucg
-           cell%LUTqg(ix, iy, iz) = rlp%qg
-! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-           if (cabs(rlp%Ucg).le.ddt) then 
-             cell%dbdiff(ix,iy,iz) = .TRUE.
-           end if
-        end if ! IsGAllowed
-       end do izl
-      end do iyl
-    end do ixl
+  ixl: do ix=-2*imh,2*imh
+  iyl:  do iy=-2*imk,2*imk
+  izl:   do iz=-2*iml,2*iml
+          gg = (/ ix, iy, iz /)
+          if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+  ! add the reflection to the look up table
+             if (interp.eqv..TRUE.) then          
+               call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
+             else
+               call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+             end if
+             cell%LUT(ix, iy, iz) = rlp%Ucg
+             cell%LUTqg(ix, iy, iz) = rlp%qg
+  ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+             if (cabs(rlp%Ucg).le.ddt) then 
+               cell%dbdiff(ix,iy,iz) = .TRUE.
+             end if
+          end if ! IsGAllowed
+         end do izl
+        end do iyl
+      end do ixl
+ ! end if
 
   if (present(verbose)) then
    if (verbose) then

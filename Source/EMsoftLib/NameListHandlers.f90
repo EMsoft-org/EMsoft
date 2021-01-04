@@ -2852,6 +2852,90 @@ end subroutine GetEBSDMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetISEMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMISEmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl ISE master name list structure
+!
+!> @date 12/18/20  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetISEMasterNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetISEMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(ISEMasterNameListType),INTENT(INOUT)       :: emnl
+!f2py intent(in,out) ::  emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: iscale(3)
+character(3)            :: Notify
+character(fnlen)        :: outname
+character(fnlen)        :: tiffname
+character(fnlen)        :: xtalname
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /ISEmastervars/ npx,nthreads,Notify,xtalname,outname,iscale,tiffname 
+
+! set the input parameters to default values (except for xtalname, which must be present)
+npx = 500
+nthreads = 1
+iscale = (/ 3.0, 4.0, 1.0 /)
+Notify = 'Off'
+tiffname = 'undefined'
+outname = 'undefined'
+xtalname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=ISEmastervars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' crystal structure file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(outname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+  if (trim(tiffname).eq.'undefined') then
+  call FatalError('GetISEMasterNameList:',' tiff file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%npx = npx
+emnl%nthreads = nthreads
+emnl%iscale = iscale
+emnl%Notify = Notify
+emnl%outname= outname
+emnl%tiffname= tiffname
+emnl%xtalname = xtalname
+
+end subroutine GetISEMasterNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetEECMasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -3906,7 +3990,6 @@ real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
 real(kind=sgl)          :: xpc
 real(kind=sgl)          :: ypc
-real(kind=sgl)          :: omega
 real(kind=sgl)          :: energymin
 real(kind=sgl)          :: energymax
 real(kind=sgl)          :: gammavalue
@@ -3936,7 +4019,7 @@ character(fnlen)        :: datafile
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
-                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
+                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, spatialaverage, &
                         applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
                         maskradius, poisson, Fframe
 
@@ -3953,7 +4036,6 @@ thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
 ypc             = 0.0           ! [pixels]
-omega           = 0.0
 energymin       = 15.0          ! minimum energy to consider
 energymax       = 30.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
@@ -4063,7 +4145,6 @@ enl%masterfile = masterfile
 ! user definition, if any, in the namelist file is overwritten here...
 enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
 enl%datafile = datafile
-enl%omega = omega
 enl%spatialaverage = spatialaverage
 end subroutine GetEBSDNameList
 
@@ -4386,7 +4467,6 @@ real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
 real(kind=sgl)          :: xpc
 real(kind=sgl)          :: ypc
-real(kind=sgl)          :: omega
 real(kind=sgl)          :: energymin
 real(kind=sgl)          :: energymax
 real(kind=sgl)          :: gammavalue
@@ -4427,7 +4507,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          objective, outputfile, stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, &
                          eulerconvention, masterfile, targetfile, bitdepth, energyfile, beamcurrent, dwelltime, energymin, &
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
-                         energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
+                         energyaverage, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
                          ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe
 
@@ -4465,7 +4545,6 @@ thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
 ypc             = 0.0           ! [pixels]
-omega           = 0.0
 energymin       = 10.0          ! minimum energy to consider
 energymax       = 20.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
@@ -4593,7 +4672,6 @@ enl%datafile = datafile
 ! we require energyfile to be identical to masterfile, so the 
 ! user definition, if any, in the namelist file is overwritten here...
 enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
-enl%omega = omega
 enl%spatialaverage = spatialaverage
 
 p%patx = patx
@@ -5477,7 +5555,8 @@ integer(kind=irg)       :: numthick
 integer(kind=irg)       :: npix
 integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: voltage
-real(kind=sgl)          :: lauec(2)
+real(kind=sgl)          :: camlen
+real(kind=sgl)          :: klaue(2)
 real(kind=sgl)          :: dmin
 real(kind=sgl)          :: convergence
 real(kind=sgl)          :: startthick
@@ -5485,7 +5564,7 @@ real(kind=sgl)          :: thickinc
 character(fnlen)        :: xtalname
 character(fnlen)        :: outname
 
-namelist /CBEDlist/ xtalname, voltage, k, fn, dmin, convergence, lauec, &
+namelist /CBEDlist/ xtalname, voltage, k, fn, dmin, convergence, klaue, camlen, &
                     nthreads, startthick, thickinc, numthick, outname, npix, maxHOLZ
 
 k = (/ 0, 0, 1 /)               ! beam direction [direction indices]
@@ -5493,11 +5572,12 @@ fn = (/ 0, 0, 1 /)              ! foil normal [direction indices]
 maxHOLZ = 2                     ! maximum HOLZ layer index to be used for the output file; note that his number
                                 ! does not affect the actual computations; it only determines which reflection 
                                 ! families will end up in the output file
-lauec = (/ 0.0, 0.0 /)          ! Laue center coordinates
+klaue = (/ 0.0, 0.0 /)          ! Laue center coordinates
 numthick = 10                   ! number of increments
 npix = 256                      ! output arrays will have size npix x npix
 nthreads = 1                    ! number of computational threads
 voltage = 200.0                 ! acceleration voltage [kV]
+camlen = 1000.0                 ! camera length [mm]
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 convergence = 25.0              ! beam convergence angle [mrad]
 startthick = 10.0               ! starting thickness [nm]
@@ -5527,8 +5607,9 @@ cbednl%maxHOLZ = maxHOLZ
 cbednl%numthick = numthick
 cbednl%npix = npix
 cbednl%nthreads = nthreads
-cbednl%lauec = lauec
+cbednl%klaue = klaue
 cbednl%voltage = voltage
+cbednl%camlen = camlen
 cbednl%dmin = dmin
 cbednl%convergence = convergence
 cbednl%startthick = startthick
@@ -5855,6 +5936,7 @@ character(5)            :: progmode
 character(fnlen)        :: xtalname
 character(fnlen)        :: montagename
 character(fnlen)        :: defectfilename
+character(fnlen)        :: DDDfilename
 character(fnlen)        :: dispfile
 character(fnlen)        :: dataname
 character(fnlen)        :: ECPname
@@ -5864,7 +5946,7 @@ character(fnlen)        :: sgname
 namelist / ECCIlist / DF_L, DF_npix, DF_npiy, DF_slice, dmin, sgname, stdout, &
                       progmode, dispfile, ktmax, dkt, ECPname, summode, lauec, lauec2, &
                       dispmode, nthreads, xtalname, voltage, k, nktstep, &
-                      dataname, defectfilename, montagename
+                      dataname, defectfilename, montagename, DDDfilename
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -5887,6 +5969,7 @@ progmode = 'array'
 xtalname = 'undefined'
 montagename = 'undefined'
 defectfilename = 'undefined'
+DDDfilename = 'undefined'
 dispfile = 'displacements.data'
 dataname = 'ECCIout.data'
 ECPname = 'undefined'
@@ -5934,6 +6017,7 @@ eccinl%progmode = progmode
 eccinl%xtalname = xtalname
 eccinl%montagename = montagename
 eccinl%defectfilename = defectfilename
+eccinl%DDDfilename = DDDfilename
 eccinl%dispfile = dispfile
 eccinl%dataname = dataname
 eccinl%ECPname = ECPname

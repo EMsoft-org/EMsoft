@@ -1067,7 +1067,7 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
 ! this number depends on some externally supplied parameters, which we will get from a namelist
 ! file (which should be read only once by the Set_Bethe_Parameters routine), or from default values
 ! if there is no namelist file in the folder.
-        if (BetheParameter%cutoff.eq.0.0) call Set_Bethe_Parameters(BetheParameter)
+        if (BetheParameter%cutoff.eq.0.0) call Set_Bethe_Parameters(BetheParameter,silent=.TRUE.)
 
 
 ! reset the value of DynNbeams in case it was modified in a previous call 
@@ -1089,7 +1089,9 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
         BetheParameter%reflistindex = 0
         BetheParameter%weakreflistindex = 0
 
-        rltmpa => cell%reflist%next
+! line modified by MDG on 12/2/2020
+        ! rltmpa => cell%reflist%next
+        rltmpa => reflist%next
 
 ! deal with the transmitted beam first
     nn = 1              ! nn counts all the scattered beams that satisfy the cutoff condition
@@ -1100,7 +1102,6 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
     BetheParameter%reflistindex(nn) = 1
 
     rltmpa%sg = 0.D0    
-! write (*,*) 'DynNbeamsLinked = ',DynNbeamsLinked
 
 ! loop over all reflections in the linked list    
     rltmpa => rltmpa%next
@@ -1207,7 +1208,7 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
 
 ! here's where we extract the relevant information from the linked list (much faster
 ! than traversing the list each time...)
-        rltmpa => cell%reflist%next    ! reset the a list
+        rltmpa => reflist%next    ! reset the a list
         iweak = 0
         istrong = 0
         do ir=1,cell%DynNbeamsLinked
@@ -1684,7 +1685,10 @@ type(reflisttype),pointer			:: rltail
   
   nullify(listroot)
   nullify(rltail)
-    
+  kr = k
+  call NormVec(cell, kr, 'r') 
+  kr = kr/cell%mlambda 
+
   !io_real = (/ float(ga(1:3)), float(gb(1:3))/)
   !call WriteValue('basis vectors for this computation: ', io_real, 6, "(/'ga = ',3f10.5,/'gb = ',3f10.5,/')")
   gg = (/0,0,0/)
@@ -1701,7 +1705,7 @@ do ix=-imh,imh
 		if ((abs(gg(1))+abs(gg(2))+abs(gg(3))).ne.0) then  ! avoid double counting the origin
 			dval = 1.0/CalcLength(cell, float(gg), 'r' )
 			if ((IsGAllowed(cell,gg)).AND.(dval .gt. dmin)) then
-				sgp = Calcsg(cell,float(gg),k,FN)
+				sgp = Calcsg(cell,float(gg),kr,FN)
 				if  ((abs(gg(1)).le.imh).and.(abs(gg(2)).le.imk).and.(abs(gg(3)).le.iml) ) then
 					if (cell%dbdiff(gg(1), gg(2), gg(3))) then ! potential double diffraction reflection
 						if (abs(sgp).le.rBethe_d) then 
@@ -1711,6 +1715,7 @@ do ix=-imh,imh
 						end if 
 					else
 						r_g = la * abs(sgp)/abs(cell%LUT(gg(1), gg(2), gg(3)))
+            write (*,*) gg, sgp, r_g, rBethe_i
 						if (r_g.le.rBethe_i) then 
 							call AddReflection(rltail, listroot, cell, nref, gg )
 							rltail%sg = sgp

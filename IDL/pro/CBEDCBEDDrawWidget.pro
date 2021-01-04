@@ -96,6 +96,30 @@ widget_s.BFmax= WIDGET_TEXT(block2a, $
 			XSIZE=10, $
 			/ALIGN_LEFT)
 
+
+; and a save button
+saveCBEDPattern = WIDGET_BUTTON(block2a, $
+                        VALUE='Save', $
+                        /NO_RELEASE, $
+                        EVENT_PRO='CBEDCBEDDrawWidget_event', $
+                        /FRAME, $
+                        UVALUE='SAVECBEDPATTERN', $
+                        /ALIGN_LEFT)
+
+; and the save format selector
+vals = ['jpeg','tiff','bmp','mrc','hdf5']
+widget_s.imageformatbgroup = CW_BGROUP(block2a, $
+                        vals, $
+                        /ROW, $
+                        /NO_RELEASE, $
+                        /EXCLUSIVE, $
+                        FONT=fontstr, $
+                        LABEL_LEFT = 'File Format', $
+                        /FRAME, $
+                        EVENT_FUNC ='CBEDevent', $
+                        UVALUE='IMAGEFORMAT', $
+                        SET_VALUE=data.imageformat)
+
 ;------------------------------------------------------------
 ; realize the widget structure
 WIDGET_CONTROL,widget_s.CBEDDrawbase,/REALIZE

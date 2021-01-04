@@ -229,7 +229,7 @@ integer(c_size_t)                             :: cnum, cnuminfo
 
 ! dynamical calculation variables
 integer(kind=irg)                             :: nref, nns, nnw, iang, totstrong, totweak, numset, &
-                                                 gzero, ix, nat(100), numEbins, numzbins
+                                                 gzero, ix, nat(maxpasym), numEbins, numzbins
 real(kind=sgl)                                :: kk(3), FN(3), kkk(3), qu(4), testval, nabsl
 type(reflisttype),pointer                     :: reflist,firstw, rltmp
 complex(kind=dbl)                             :: czero

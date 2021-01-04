@@ -303,7 +303,8 @@ do ii=1,numw
         yoffset =  (numr-jj) * biny + 1
         do i=1,binx
           do j=1,biny
-           output_image(xoffset+i-1, yoffset+j-1) = ppp(i,biny-j+1)
+!          output_image(xoffset+i-1, yoffset+j-1) = ppp(i,biny-j+1)
+           output_image(xoffset+i-1, yoffset+j-1) = ppp(i,j)
           end do
         end do
     end do

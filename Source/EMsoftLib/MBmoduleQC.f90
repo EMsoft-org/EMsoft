@@ -576,7 +576,7 @@ integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
 !f2py intent(in,out) ::  Sgh
-integer(kind=irg),INTENT(INOUT)         :: nat(100)
+integer(kind=irg),INTENT(INOUT)         :: nat(maxpasym)
 !f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(5), ikk, n
@@ -663,7 +663,7 @@ integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
 !f2py intent(in,out) ::  Sgh
-integer(kind=irg),INTENT(INOUT)         :: nat(100)
+integer(kind=irg),INTENT(INOUT)         :: nat(maxpasym)
 !f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(6), ikk, n

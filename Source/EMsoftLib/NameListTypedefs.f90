@@ -495,6 +495,17 @@ type EBSDMasterNameListType
         logical                 :: uniform
 end type EBSDMasterNameListType
 
+! namelist for the ISEMaster program
+type ISEMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: iscale(3)
+        character(3)            :: Notify
+        character(fnlen)        :: outname
+        character(fnlen)        :: tiffname
+        character(fnlen)        :: xtalname
+end type ISEMasterNameListType
+
 ! namelist for the EMEECmaster program
 type EECMasterNameListType
         integer(kind=irg)       :: npx
@@ -582,7 +593,6 @@ type EBSDNameListType
         real(kind=sgl)          :: L
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
-        real(kind=sgl)          :: omega
         real(kind=sgl)          :: xpc
         real(kind=sgl)          :: ypc
         real(kind=sgl)          :: energymin
@@ -981,7 +991,8 @@ type CBEDNameListType
         integer(kind=irg)       :: k(3)
         integer(kind=irg)       :: fn(3)
         real(kind=sgl)          :: voltage
-        real(kind=sgl)          :: lauec(2)
+        real(kind=sgl)          :: camlen
+        real(kind=sgl)          :: klaue(2)
         real(kind=sgl)          :: dmin
         real(kind=sgl)          :: convergence
         real(kind=sgl)          :: startthick
@@ -1180,6 +1191,7 @@ type ECCINameListType
     character(fnlen)        :: montagename
     character(fnlen)        :: defectfilename
     character(fnlen)        :: dispfile
+    character(fnlen)        :: DDDfilename
     character(fnlen)        :: dataname
     character(fnlen)        :: ECPname
     character(fnlen)        :: sgname

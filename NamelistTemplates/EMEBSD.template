@@ -13,8 +13,6 @@
 ! pattern center coordinates in units of pixels
  xpc = 0.0,
  ypc = 0.0,
-! angle between normal of sample and detector
- omega = 0.0,
 ! transfer lens barrel distortion parameter
  alphaBD = 0.0,
 ! energy range in the intensity summation [keV]

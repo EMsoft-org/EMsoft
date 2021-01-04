@@ -149,7 +149,7 @@ character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
 
 integer(HSIZE_T)                        :: dims3(3), cnt3(3), offset3(3)
-integer(kind=irg)                       :: nn,i,j,k,npix,npiy,ii,jj,kkk, numset, t_interval,nat(100), montage_nx, montage_ny, &
+integer(kind=irg)                       :: nn,i,j,k,npix,npiy,ii,jj,kkk, numset, t_interval,nat(maxpasym), montage_nx, montage_ny, &
                                            DF_nums_new,DF_npix_new,DF_npiy_new, numstart,numstop, isg, TID, tickstart, &
                                            NTHR, SETNTHR, isym, ir, ga(3), gb(3),ic,g,numd,ix,iy,nkt,nbeams, ik, ig, &
                                            numk,ixp,iyp, io_int(6), skip, gg(3), error_cnt, dinfo, nref, hdferr, maxXY

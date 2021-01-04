@@ -3643,8 +3643,6 @@ else
   call JSONreadReal(json, ep, enl%xpc, defenl%xpc)
   ep = 'EBSDdata.ypc'
   call JSONreadReal(json, ep, enl%ypc, defenl%ypc)
-  ep = 'EBSDdata.omega'
-  call JSONreadReal(json, ep, enl%omega, defenl%omega)
   ep = 'EBSDdata.energymin'
   call JSONreadReal(json, ep, enl%energymin, defenl%energymin)
   ep = 'EBSDdata.energymax'

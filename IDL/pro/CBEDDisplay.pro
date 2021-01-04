@@ -34,6 +34,8 @@
 @CBEDcircles			; draw a schematic diffraction pattern along with Laue limiting circle
 @CBEDupdateLaue			; draw the Laue position on top of the CBED schematic
 @CBEDmoveLaue			; move CBED pattern from one Laue position to another one
+@write_mrc              ; creates an .mrc file with a CBED pattern 
+@write_hdf5_CBED        ; create an HDF5 file with a CBED pattern 
 
 ;
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
@@ -110,72 +112,72 @@ widget_s = {widgetstruct, $
             pathname:long(0), $                 ; pathname widget ID
             loadlacbedfile:long(0), $           ; load LACBED file button ID
             loadmbcbedfile:long(0), $           ; load MBCBED file button ID
-	    logfile: long(0), $			; logfile toggle widget ID
-	    logoffset: long(0), $		; logarithm offset parameter widget
+    	    logfile: long(0), $			; logfile toggle widget ID
+    	    logoffset: long(0), $		; logarithm offset parameter widget
             imx:long(0), $                 	; number of image pixels along x
             imy:long(0), $                 	; number of image pixels along y
             patx:long(0), $                 	; number of CBED pattern pixels along x
             paty:long(0), $                 	; number of CBED pattern pixels along y
             CBEDzoom:long(0), $                 ; CBED pattern zoom factor
             maxHOLZ:long(0), $                  ; maximum HOLZ layer number
-	    ga:long(0), $			; indices of horizontal g-vector
-	    startLACBED: long(0), $		; button to generate LACBED widget
-	    startCBED: long(0), $		; button to generate CBED widget
-	    startMBCBED: long(0), $		; button to generate MBCBED widget
-	    LACBEDbase: long(0), $		; LACBED widget base
-	    LACBEDDrawbase: long(0), $		; LACBED draw widget base
-	    CBEDbase: long(0), $		; CBED widget base
-	    CBEDDrawbase: long(0), $		; CBED Draw widget base
-	    MBCBEDDrawbase: long(0), $		; MBCBED Draw widget base
-	    CBDraw: long(0), $			; Draw widget base for diffraction disk outline
-	    MBDraw: long(0), $			; Draw widget base for MBCBED
-	    MBCBEDbase: long(0), $		; MBCBED widget base
-	    LACBEDthicklist: long(0), $		; LACBED thickness drop list
-	    MBCBEDthicklist: long(0), $		; MBCBED thickness drop list
-	    dfdisplaymode: long(0), $		; dark field display mode (0=single; 1=symmetrize; 2=Eades)
-	    LACBEDdroplist0: long(0), $		; droplist for ZOLZ
-	    LACBEDdroplist1: long(0), $		; droplist for HOLZ layer 1
-	    LACBEDdroplist2: long(0), $		; droplist for HOLZ layer 2
-	    LACBEDdroplist3: long(0), $		; droplist for HOLZ layer 3  [for now, a maximum of 3 HOLZ layers are included]
-	    gsel: long(0), $			; selected g-vector widget
-	    fn: long(0), $			; foil normal widget 
-	    minten: long(0), $			; minimum intensity cutoff
-	    diskrotation: long(0), $		; disk rotation angle [CW, degrees]
-	    imagelegendbgroup:long(0), $	; image legend button group
-	    imageformatbgroup:long(0), $	; image format button group
-	    cbedlegendbgroup:long(0), $		; cbed legend button group
-	    cbedformatbgroup:long(0), $		; cbed format button group
-	    cbedmodebgroup:long(0), $		; cbed intensity mode button group
-	    mbcbedformatbgroup:long(0), $	; mbcbed format button group
-	    mbcbedmodebgroup:long(0), $		; mbcbed intensity mode button group
-	    saveimage:long(0), $		; save image button
-	    savecbed:long(0), $			; save cbed pattern button
-	    bfrho: long(0), $			; Bright Field radius in mrad
-	    eadesrhoin: long(0), $		; Eades pattern inner radius in mrad
-	    eadesrhoout: long(0), $		; Eades pattern outer radius in mrad
-	    detsegm: long(0), $			; number of HAADF detector segments
-	    angsegm: long(0), $			; off set angle for first HAADF detector segment
-	    patang: long(0), $			; maximum CBED pattern angle (from input file)
+    	    ga:long(0), $			; indices of horizontal g-vector
+    	    startLACBED: long(0), $		; button to generate LACBED widget
+    	    startCBED: long(0), $		; button to generate CBED widget
+    	    startMBCBED: long(0), $		; button to generate MBCBED widget
+    	    LACBEDbase: long(0), $		; LACBED widget base
+    	    LACBEDDrawbase: long(0), $		; LACBED draw widget base
+    	    CBEDbase: long(0), $		; CBED widget base
+    	    CBEDDrawbase: long(0), $		; CBED Draw widget base
+    	    MBCBEDDrawbase: long(0), $		; MBCBED Draw widget base
+    	    CBDraw: long(0), $			; Draw widget base for diffraction disk outline
+    	    MBDraw: long(0), $			; Draw widget base for MBCBED
+    	    MBCBEDbase: long(0), $		; MBCBED widget base
+    	    LACBEDthicklist: long(0), $		; LACBED thickness drop list
+    	    MBCBEDthicklist: long(0), $		; MBCBED thickness drop list
+    	    dfdisplaymode: long(0), $		; dark field display mode (0=single; 1=symmetrize; 2=Eades)
+    	    LACBEDdroplist0: long(0), $		; droplist for ZOLZ
+    	    LACBEDdroplist1: long(0), $		; droplist for HOLZ layer 1
+    	    LACBEDdroplist2: long(0), $		; droplist for HOLZ layer 2
+    	    LACBEDdroplist3: long(0), $		; droplist for HOLZ layer 3  [for now, a maximum of 3 HOLZ layers are included]
+    	    gsel: long(0), $			; selected g-vector widget
+    	    fn: long(0), $			; foil normal widget 
+    	    minten: long(0), $			; minimum intensity cutoff
+    	    diskrotation: long(0), $		; disk rotation angle [CW, degrees]
+    	    imagelegendbgroup:long(0), $	; image legend button group
+    	    imageformatbgroup:long(0), $	; image format button group
+    	    cbedlegendbgroup:long(0), $		; cbed legend button group
+    	    cbedformatbgroup:long(0), $		; cbed format button group
+    	    cbedmodebgroup:long(0), $		; cbed intensity mode button group
+    	    mbcbedformatbgroup:long(0), $	; mbcbed format button group
+    	    mbcbedmodebgroup:long(0), $		; mbcbed intensity mode button group
+    	    saveimage:long(0), $		; save image button
+    	    savecbed:long(0), $			; save cbed pattern button
+    	    bfrho: long(0), $			; Bright Field radius in mrad
+    	    eadesrhoin: long(0), $		; Eades pattern inner radius in mrad
+    	    eadesrhoout: long(0), $		; Eades pattern outer radius in mrad
+    	    detsegm: long(0), $			; number of HAADF detector segments
+    	    angsegm: long(0), $			; off set angle for first HAADF detector segment
+    	    patang: long(0), $			; maximum CBED pattern angle (from input file)
             detdraw:long(0), $                  ; detector draw widget ID
             detdrawID:long(0), $                ; detector draw window ID
-	    logodraw: long(0), $		; logo widget base 
-	    logodrawID: long(0), $		; logo widget base ID
-	    BFdraw: long(0), $			; BF widget
-	    BFdrawID: long(0), $		; BF widget ID
-	    DFdraw: long(0), $			; DF widget
-	    DFdrawID: long(0), $		; DF widget ID
-	    HAADFdraw: long(0), $		; HAADF widget
-	    HAADFdrawID: long(0), $		; HAADF widget ID
-	    CBEDdraw: long(0), $		; CBED widget
-	    CBEDdrawID: long(0), $		; CBED widget ID
-	    BFmin: long(0), $			; BF image minimum intensity
-	    BFmax: long(0), $			; BF image maximum intensity
-	    DFmin: long(0), $			; DF image minimum intensity
-	    DFmax: long(0), $			; DF image maximum intensity
-	    HAADFmin: long(0), $		; HAADF image minimum intensity
-	    HAADFmax: long(0), $		; HAADF image maximum intensity
-	    CBEDmin: long(0), $			; CBED pattern minimum intensity
-	    CBEDmax: long(0), $			; CBED atptern maximum intensity
+    	    logodraw: long(0), $		; logo widget base 
+    	    logodrawID: long(0), $		; logo widget base ID
+    	    BFdraw: long(0), $			; BF widget
+    	    BFdrawID: long(0), $		; BF widget ID
+    	    DFdraw: long(0), $			; DF widget
+    	    DFdrawID: long(0), $		; DF widget ID
+    	    HAADFdraw: long(0), $		; HAADF widget
+    	    HAADFdrawID: long(0), $		; HAADF widget ID
+    	    CBEDdraw: long(0), $		; CBED widget
+    	    CBEDdrawID: long(0), $		; CBED widget ID
+    	    BFmin: long(0), $			; BF image minimum intensity
+    	    BFmax: long(0), $			; BF image maximum intensity
+    	    DFmin: long(0), $			; DF image minimum intensity
+    	    DFmax: long(0), $			; DF image maximum intensity
+    	    HAADFmin: long(0), $		; HAADF image minimum intensity
+    	    HAADFmax: long(0), $		; HAADF image maximum intensity
+    	    CBEDmin: long(0), $			; CBED pattern minimum intensity
+    	    CBEDmax: long(0), $			; CBED atptern maximum intensity
             Lauex:long(0), $                    ; Laue center x-coordinate
             Lauey:long(0), $                    ; Laue center y-coordinate
             camlen:long(0), $                   ; default camera length (mm)
@@ -189,14 +191,14 @@ widget_s = {widgetstruct, $
             thetac:long(0), $                   ; beam divergence angle (mrad)
             aprad:long(0), $               	; aperture radius widget
             dfmode:long(0), $               	; set k/set g selection mode widget
-	    symCPG: long(0), $			; crystal point group
-	    symLPG: long(0), $			; Laue point group
-	    symDPG: long(0), $			; diffraction point group
-	    symPDG: long(0), $			; projection diffraction point group
-	    symBFG: long(0), $			; Bright Field point group
-	    symWPG: long(0), $			; Whole Pattern point group
-	    symDFG: long(0), $			; General Dark Field point group
-	    symDFS: long(0), $			; Special Dark Field point group
+    	    symCPG: long(0), $			; crystal point group
+    	    symLPG: long(0), $			; Laue point group
+    	    symDPG: long(0), $			; diffraction point group
+    	    symPDG: long(0), $			; projection diffraction point group
+    	    symBFG: long(0), $			; Bright Field point group
+    	    symWPG: long(0), $			; Whole Pattern point group
+    	    symDFG: long(0), $			; General Dark Field point group
+    	    symDFS: long(0), $			; Special Dark Field point group
             sectormode:long(0), $               ; single or multiple sector mode
             diffractionmode:long(0), $          ; HAADF or regular dark field diffraction mode
             gosector:long(0), $                 ; compute image for multiple sector mode
@@ -240,7 +242,7 @@ data = {datastruct, $
 	galen: float(0), $			    ; length of horizontal g-vector
 	addlog: float(0.0001), $		; factor to add for logarithmic CBED display
 	imagelegend: long(0), $			; display image scale bar toggle (0=do not display, 1=display)
-	imageformat: long(0), $			; image output format selector (0=jpeg, 1=tiff, 2=bmp)
+	imageformat: long(0), $			; image output format selector (0=jpeg, 1=tiff, 2=bmp, 3=mrc, 4=hdf5)
 	cbedlegend: long(0), $			; display cbed scale bar toggle (0=do not display, 1=display)
 	cbedformat: long(0), $			; cbed output format selector (0=jpeg, 1=tiff, 2=bmp)
 	cbedmode: long(0), $			; cbed intensity mode toggle (0=normal, 1=logarithmic)

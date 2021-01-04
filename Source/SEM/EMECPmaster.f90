@@ -203,8 +203,6 @@ character(100)                     :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
-nullify(HDF_head%next)
-
 call timestamp(datestring=dstr, timestring=tstrb)
 call Time_tick(tickstart)
 
@@ -216,7 +214,6 @@ frac = 0.05
 ! first, we need to load the data from the MC program.
 !=============================================================
 
-call Message('opening '//trim(ecpnl%energyfile), frm = "(A)" )
 xtaldataread = .FALSE.
 
 ! Initialize FORTRAN interface.
@@ -229,14 +226,16 @@ inquire(file=trim(energyfile), exist=f_exists)
 if (.not.f_exists) then
     call FatalError('ComputeMasterPattern','Monte Carlo input file does not exist')
 end if
+call Message('opening '//trim(energyfile), frm = "(A)" )
 
 ! open the MC file using the default properties.
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can open the file and read all the information
-datagroupname = '/EMData/MCOpenCL'
+datagroupname = '/EMheader/MCOpenCL'
 call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ECmasterpattern','This HDF file does not contain any Monte Carlo data')
