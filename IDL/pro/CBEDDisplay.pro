@@ -38,7 +38,7 @@
 @write_hdf5_CBED        ; create an HDF5 file with a CBED pattern 
 
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
