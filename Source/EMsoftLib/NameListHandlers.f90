@@ -4313,12 +4313,12 @@ integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
 real(kind=sgl)          :: spotsize
-real(kind=sgl)          :: omega
 real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 logical                 :: sampleInteractionVolume
 character(3)            :: scalingmode
+character(4)            :: Fframe
 character(fnlen)        :: deformationfile
 character(fnlen)        :: ivolfile
 character(fnlen)        :: masterfile
@@ -4328,7 +4328,7 @@ character(fnlen)        :: tmpfspath
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, spotsize, &
                              masterfile, datafile, beamcurrent, dwelltime, gammavalue, tmpfspath, &
-                             scalingmode, nthreads, omega, ivolfile, sampleInteractionVolume
+                             scalingmode, Fframe, nthreads, ivolfile, sampleInteractionVolume
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -4338,11 +4338,11 @@ nthreads        = 1             ! number of OpenMP threads
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 spotsize        = 2.0           ! [nanometer]
-omega           = 0.0
 gammavalue      = 1.0           ! gamma factor
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 sampleInteractionVolume = .FALSE.  ! should we sample an MC-generated interaction volume?
+Fframe          = 'crys'        ! reference frame for the deformation tensor 
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 ivolfile        = 'undefined'   ! filename
 deformationfile = 'undefined'   ! filename
@@ -4394,12 +4394,12 @@ enl%gammavalue = gammavalue
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%scalingmode = scalingmode
+enl%Fframe = Fframe
 enl%sampleInteractionVolume = sampleInteractionVolume
 enl%deformationfile = deformationfile
 enl%masterfile = masterfile
 enl%ivolfile = ivolfile
 enl%datafile = datafile
-enl%omega = omega
 enl%tmpfspath = tmpfspath
 
 end subroutine GetEBSDdefectNameList
