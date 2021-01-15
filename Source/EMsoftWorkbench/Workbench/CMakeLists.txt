@@ -217,10 +217,14 @@ set(EXE_LINK_LIBRARIES
   EMsoftWrapperLib 
   H5Support
   SIMPLib
-  ghcFilesystem::ghc_filesystem
   EbsdLib::EbsdLib
   )
-
+if(APPLE)
+  set(EXE_LINK_LIBRARIES 
+    ${EMSOFT_hdf5LinkLibs} 
+    ghcFilesystem::ghc_filesystem
+  )
+endif()
 
 BuildQtAppBundle(
     TARGET ${PROJECT_NAME}
