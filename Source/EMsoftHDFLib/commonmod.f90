@@ -100,7 +100,7 @@ Jres = sum(ksqarray) / dble(dimx) / dble(dimy)
 
 call fftw_free(p)
 call fftw_free(o)
-call fftw_cleanup()
+! call fftw_cleanup()
 
 end subroutine init_getEBSDIQ
 
@@ -121,6 +121,7 @@ end subroutine init_getEBSDIQ
 !> @param pattern input EBSD pattern
 !
 !> @date 02/07/16 MDG 1.0 original
+!> @date 07/19/20 MDG 1.1 removed problematic fftw_cleanup call
 !--------------------------------------------------------------------------
 recursive function computeEBSDIQ(dimx, dimy, pattern, ksqarray, Jres, planf) result(Q)
 !DEC$ ATTRIBUTES DLLEXPORT :: computeEBSDIQ
@@ -171,7 +172,6 @@ Q = 1.0 - J/Jres/wtot
 
 call fftw_free(p)
 call fftw_free(o)
-call fftw_cleanup()
 
 end function computeEBSDIQ
 

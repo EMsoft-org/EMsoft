@@ -103,6 +103,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
   ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
+  ${EMsoftLib_SOURCE_DIR}/so2.f90
   ${EMsoftLib_SOURCE_DIR}/so3.f90
   ${EMsoftLib_SOURCE_DIR}/spsort.f
   ${EMsoftLib_SOURCE_DIR}/STEMmodule.f90
@@ -118,6 +119,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/detectors.f90
   ${EMsoftLib_SOURCE_DIR}/DSHT.f90
   ${EMsoftLib_SOURCE_DIR}/fft_wrap.f90
+  ${EMsoftLib_SOURCE_DIR}/ISEmod.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
@@ -249,6 +251,12 @@ else()
     target_compile_options(EMsoftLib PUBLIC $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-funroll-all-loops>
                           $<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Release>>:-O3>
     )
+
+  if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER 9.9)
+    target_compile_options(EMsoftLib PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-fallow-invalid-boz>)
+    message(STATUS "Adjusting CMAKE_Fortran_FLAGS for gfortran-10 compatibility: '${CMAKE_Fortran_FLAGS}'")
+  endif()
+
 
   elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # First, Flags that should be used under any build condition

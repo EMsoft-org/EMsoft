@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -252,7 +252,7 @@ izl:   do iz=-iml,iml
         if ((abs(ix)+abs(iy)+abs(iz)).ne.0) then  ! avoid double counting the origin
          gg = (/ ix, iy, iz /)
          if (IsGAllowed(cell,gg)) then ! allowed by the lattice centering, if any
-! first we need to determine the parallel and perpendicular components of this g vector with respect to the beam direction in reciprocal space
+! first we need to determine the parallel and perpendicular components of this g vector wrt the beam direction in reciprocal space
           gdk = CalcDot(cell,float(gg),kstar,'r')       ! projection of gg onto k*
           gpara = gdk * kstar
           gperp = float(gg) - gpara

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -652,6 +652,10 @@ end if
     nbatches = 0
     ninlastbatch = numangles/nthreads+1
     nlastremainder = numangles - (nthreads-1)*ninlastbatch
+    if (nlastremainder.le.0) then 
+      ninlastbatch = numangles/nthreads
+      nlastremainder = numangles - (nthreads-1)*ninlastbatch
+    end if
     nlastbatches = 1
     nextra = 0
     if (nlastremainder.gt.0) nextra = 1 
@@ -1486,6 +1490,10 @@ includeFmatrix = .TRUE.
     nbatches = 0
     ninlastbatch = numangles/nthreads+1
     nlastremainder = numangles - (nthreads-1)*ninlastbatch
+    if (nlastremainder.le.0) then 
+      ninlastbatch = numangles/nthreads
+      nlastremainder = numangles - (nthreads-1)*ninlastbatch
+    end if
     nlastbatches = 1
     nextra = 0
     if (nlastremainder.gt.0) nextra = 1 

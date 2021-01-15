@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2017-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2017-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -167,7 +167,7 @@ type(DynType),save              					:: Dyn
 ! variables for dynamical diffraction calculation
 real(kind=sgl),allocatable							:: svals(:), Iarray(:,:,:)
 complex(kind=dbl),allocatable						:: DynMat(:,:), Lgh(:,:), Sghtmp(:,:,:), Sgh(:,:)
-integer(kind=irg)									:: nat(100), ipx, ipy, nns, nnw, nref
+integer(kind=irg)									:: nat(maxpasym), ipx, ipy, nns, nnw, nref
 real(kind=sgl),allocatable							:: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)
 
 ! opnemp variables

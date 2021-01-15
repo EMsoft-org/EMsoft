@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -607,7 +607,7 @@ space = 'r'
 
 ! get the crystal structure from the *.xtal file
 verbose = .TRUE.
-call Initialize_Cell(cell,Dyn,rlp,knl%xtalname,knl%dmin, sngl(knl%voltage), verbose)
+call Initialize_Cell(cell,Dyn,rlp,knl%xtalname,knl%dmin, knl%voltage, verbose)
 
 ! compute the range of reflections for the lookup table and allocate the table
 ! The master list is easily created by brute force

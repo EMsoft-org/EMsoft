@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -27,20 +27,22 @@
 ! ###################################################################
 
 !--------------------------------------------------------------------------
-! EMsoft:EMFitOrientationPS.f90
+! EMsoft:EMFitOrientation.f90
 !--------------------------------------------------------------------------
 !
-! PROGRAM: EMFitOrientationPS
+! PROGRAM: EMFitOrientation
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
 !
 !> @brief Refine the orientation in a dot product file by searching orientation
 !> space around the best indexed point and optionally include pseudosymmetric variants
+!> We also include the option to correct the pattern center for large area scans
 !
 !> @date 08/01/16  SS 1.0 original
 !> @date 03/12/18 MDG 1.1 replaced HDF5 dot product file reading by subroutine call
 !> @date 04/01/18 MDG 2.0 merged various versions of the orientation fit/refine into a single program
 !> @date 11/19/18 MDG 2.1 correction of bug caused by incorrectly initialized CIlist array
+!> @date 05/09/20 MDG 2.2 add pattern center correction 
 !--------------------------------------------------------------------------
 program EMFitOrientation
 

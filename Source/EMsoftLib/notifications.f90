@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -193,6 +193,8 @@ integer(kind=irg)            :: status
 
 character(fnlen)             :: notifymode, platform
 integer(kind=irg)            :: ierr
+
+status = 0
 
 platform = EMsoft_getEMsoftplatform()
 if (trim(platform).ne.'Windows') then

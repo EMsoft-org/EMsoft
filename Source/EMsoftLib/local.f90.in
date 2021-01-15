@@ -40,7 +40,7 @@
 !> defines the kind-parameters for short and long integers, and single/double
 !> precision reals, as well as a few other global variables (path variables etc).
 !
-!> @note all errorCode values in this file start with 999xxx 
+!> @note all errorCode values in this file start with 999xx 
 !
 !> @date 1/8/99   MDG 1.0 original
 !> @date 5/6/01   MDG 2.0 f90
@@ -574,9 +574,9 @@ else
   if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then 
     write (error_unit,"(A)") 'EMsoftpathname was not defined in the json file'
     write (error_unit,"(A)") 'EMSOFTPATHNAME environment variable was NOT defined as a backup.'
-    status = 999001
+    status = 99901
     write (error_unit,"(' status = ',I10)") status
-    STOP 999001
+    STOP 99901
   end if
 end if 
 
@@ -1582,7 +1582,7 @@ if (present(config)) then
       write (*,*) '-------'
       write (*,*) 'WARNING: An older configuration file already exists in the .config/EMsoft folder'
       write (*,*) '         The existing file will be renamed and a new file created.'
-      write (*,"(/'          Do you want to continue ? (y/n) ',$)")
+      write (*,"(/'          Do you want to continue ? (y/n) ')",ADVANCE='No')
       read(*,"(A1)") yesno
       if (yesno.eq.'n') then
         stop 'program terminated'
@@ -1652,16 +1652,16 @@ if (present(config)) then
 
     write (*,*) '------'
     write (*,*) 'Please respond to the following questions (each entry < 132 characters)'
-    write(*,"(A,$)") '  Enter your user name : '
+    write(*,"(A)", ADVANCE='No') '  Enter your user name : '
     read(*,"(A)") username
     write (dataunit,"(A,A,'UserName',A,': ',A,A,A,',')") tab, edp, edp, edp, trim(username), edp
 
-    write(*,"(A,$)") '  Enter your email address : '
-    read(*,"(A,$)") useremail
+    write(*,"(A)", ADVANCE='No') '  Enter your email address : '
+    read(*,"(A)") useremail
     write (dataunit,"(A,A,'UserEmail',A,': ',A,A,A,',')") tab, edp, edp, edp, trim(useremail), edp
 
-    write(*,"(A,$)") '  Enter your affiliation : '
-    read(*,"(A,$)") userlocn
+    write(*,"(A)", ADVANCE='No') '  Enter your affiliation : '
+    read(*,"(A)") userlocn
     write (dataunit,"(A,A,'UserLocation',A,': ',A,A,A)") tab, edp, edp, edp, trim(userlocn), edp
 
     write (dataunit,"('}')")

@@ -1,5 +1,5 @@
 !###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -239,7 +239,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: strin
-character(kind=c_char)                      :: cstrout(len_trim(strin)+1)
+character(kind=c_char)                      :: cstrout(fnlen)
 
 integer(kind=irg)                           :: slen, i
 

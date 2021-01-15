@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -3643,8 +3643,6 @@ else
   call JSONreadReal(json, ep, enl%xpc, defenl%xpc)
   ep = 'EBSDdata.ypc'
   call JSONreadReal(json, ep, enl%ypc, defenl%ypc)
-  ep = 'EBSDdata.omega'
-  call JSONreadReal(json, ep, enl%omega, defenl%omega)
   ep = 'EBSDdata.energymin'
   call JSONreadReal(json, ep, enl%energymin, defenl%energymin)
   ep = 'EBSDdata.energymax'

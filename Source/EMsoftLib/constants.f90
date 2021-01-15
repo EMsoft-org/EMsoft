@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -111,17 +111,17 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 
 
 ! various physical constants
-!> cPi		    = pi [dimensionless]
-!> cLight	    = velocity of light [m/s]
-!> cPlanck	    = Planck''s constant [Js]
-!> cBoltzmann	= Boltmann constant [J/K]
-!> cPermea	    = permeability of vacuum [4pi 10^7 H/m]
-!> cPermit	    = permittivity of vacuum [F/m]
-!> cCharge	    = electron charge [C]
-!> cRestmass	= electron rest mass [kg]
-!> cMoment	    = electron magnetic moment [J/T]
-!> cJ2eV	    = Joules per eV
-!> cAvogadro	= Avogadro's constant [mol^-1]
+!> cPi        = pi [dimensionless]
+!> cLight      = velocity of light [m/s]
+!> cPlanck      = Planck''s constant [Js]
+!> cBoltzmann  = Boltmann constant [J/K]
+!> cPermea      = permeability of vacuum [4pi 10^7 H/m]
+!> cPermit      = permittivity of vacuum [F/m]
+!> cCharge      = electron charge [C]
+!> cRestmass  = electron rest mass [kg]
+!> cMoment      = electron magnetic moment [J/T]
+!> cJ2eV      = Joules per eV
+!> cAvogadro  = Avogadro's constant [mol^-1]
 !
 ! The values of several of these constants have been updated to the new SI 2019 exact values [MDG, 01/22/19]
 ! The exact values below are the ones for cLight, cPlanck, cBoltzmann, cCharge; the others are derived using 
@@ -367,7 +367,7 @@ type LambertParametersType
                                                 -2.401996891720091D-7, 4.386887017466388D-8, &
                                                 -3.5917775353564864D-9 /)
 
-	real(kind=dbl)          :: BP(12)= (/ 0.D0, 1.D0, 0.577350269189626D0, 0.414213562373095D0, 0.D0,  &
+  real(kind=dbl)          :: BP(12)= (/ 0.D0, 1.D0, 0.577350269189626D0, 0.414213562373095D0, 0.D0,  &
                                              0.267949192431123D0, 0.D0, 0.198912367379658D0, 0.D0, &
                                              0.158384440324536D0, 0.D0, 0.131652497587396D0/)       ! used for Fundamental Zone determination in so3 module
 end type LambertParametersType

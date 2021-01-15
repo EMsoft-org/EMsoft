@@ -207,6 +207,7 @@ namespace EMsoftWorkbenchConstants
 
     const QString InputCrystalFileName = "Crystal Structure File Name";
     const QString InputMonteCarloFileName = "Monte Carlo File Name";
+    const QString EnergyFileName = "Energy File Name";
 
     const QString CompParam = "Computational Parameters";
     const QString SmallestDSpacing = "Smallest D-Spacing To Consider";

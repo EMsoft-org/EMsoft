@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -394,7 +394,7 @@ recursive subroutine GenerateSymmetry(cell,dopg)
 IMPLICIT NONE
 
 type(unitcell)          :: cell
-logical,INTENT(IN)              :: dopg                         !< logical to determine if point group matrices are to be computed as well
+logical,INTENT(IN)              :: dopg                         !< logical to determine if point group matrices are to be computed 
 
 integer(kind=irg)               :: i,j,k,nsym,k1,k2,l1,l2       !< loop counters (mostly)
 real(kind=dbl)                  :: q,sm                         !< auxiliary variables.
@@ -836,8 +836,9 @@ end subroutine CalcStar
 !> @date  03/21/13 MDG 3.0 clean up and updated IO
 !> @date  01/10/14 MDG 4.0 SG is now part of the unitcell type
 !> @date  06/05/14 MDG 4.1 made cell an argument instead of global variable; replaced itmp by argument
+!> @date  12/18/20 MDG 5.0 added optional argument for number of cells to be generated
 !--------------------------------------------------------------------------
-recursive subroutine CalcPositions(cell,switch)
+recursive subroutine CalcPositions(cell,switch,numcells)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcPositions
 
 use io
@@ -848,23 +849,32 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 character(1),INTENT(IN)         :: switch                       !< if switch='m', then multiple unit cells, otherwise single cell
+integer(kind=irg),INTENT(IN),OPTIONAL :: numcells(3)            !< number of cells (symmetrically from -N to N)
 
 logical                         :: inside                       !< auxiliary logical
 integer(kind=irg)               :: i,j,k,l,mm,icnt,celln(3),ncells,n,kk,ier, io_int(3)  !< various auxiliary variables
 real(kind=dbl)                  :: ctmp(192,3),ff(3),sh(3)      !< auxiliary variables  
-real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary variables	
+real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary variables  
 
 ! make sure all coordinates are reduced to the fundamental unit cell
  cell%SG%SYM_reduce=.TRUE.
 
 ! multiple cells ?
  if (switch.eq.'m') then 
-  call ReadValue('Number of unit cells in a, b and c direction ?: ', io_int,3)
-  do j=1,3
-   celln(j) = io_int(j)
-   sh(j) = 0.5_dbl*celln(j)+1.0_dbl
-  end do
-  ncells = celln(1)*celln(2)*celln(3)
+  if (present(numcells)) then  ! generate cells from -N to N along each axis
+    celln = numcells
+    do j=1,3
+     sh(j) = 0.5_dbl*celln(j)+1.0_dbl
+    end do
+    ncells = (2*celln(1)+1)*(2*celln(2)+1)*(2*celln(3)+1)
+  else
+    call ReadValue('Number of unit cells in a, b and c direction ?: ', io_int,3)
+    do j=1,3
+     celln(j) = io_int(j)
+     sh(j) = 0.5_dbl*celln(j)+1.0_dbl
+    end do
+    ncells = celln(1)*celln(2)*celln(3)
+  end if
  else
 ! no, just one cell
   do j=1,3
@@ -874,6 +884,52 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
   ncells = 1
  end if
 
+if (present(numcells)) then 
+! main loop
+! first allocate the apos variable (contains CARTESIAN coordinates
+! if switch is 'm', crystal coordinates otherwise)
+ if (allocated(cell%apos)) deallocate(cell%apos)
+ allocate (cell%apos(cell%ATOM_ntype, ncells * cell%SG%SYM_MATnum, 3),stat=ier)
+ if (ier.ne.0) call FatalError('CalcPositions',' unable to allocate memory for array cell%apos')
+
+ do i=1,cell%ATOM_ntype
+
+! for each atom in the asymmetric unit
+  call CalcOrbit(cell,i,n,ctmp)
+  cell%numat(i)=n
+  icnt=1
+
+! replicate in all cells
+  do j=-celln(1),celln(1)+1
+   ff(1)=dble(j)
+   do k=-celln(2),celln(2)+1
+    ff(2)=dble(k)
+    do l=-celln(3),celln(3)+1
+     ff(3)=dble(l)
+     do kk=1,cell%numat(i)
+      do mm=1,3
+       r(mm)=ctmp(kk,mm)+ff(mm)-sh(mm)
+      end do 
+! make sure the atom is actually inside the block of unit
+! cells, or on one of the edges/faces/corners
+       inside=.TRUE.
+       do mm=1,3
+        if ((r(mm)+sh(mm)).gt.(celln(mm)+1.0)) inside=.FALSE.
+       end do
+       if (inside) then
+        call TransSpace(cell,r,g,'d','c')
+        do mm=1,3
+         cell%apos(i,icnt,mm)=g(mm)
+        end do
+        icnt=icnt+1
+       end if
+     end do ! kk
+    end do ! l 
+   end do ! k
+  end do ! j
+  cell%numat(i)=icnt-1
+ end do  ! cell%ATOM_typ
+else 
 ! main loop
 ! first allocate the apos variable (contains CARTESIAN coordinates
 ! if switch is 'm', crystal coordinates otherwise)
@@ -927,6 +983,7 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
   end do ! j
   cell%numat(i)=icnt-1
  end do  ! cell%ATOM_type
+end if 
 
 end subroutine CalcPositions
 
@@ -1265,11 +1322,11 @@ use constants
 IMPLICIT NONE
 
 type(unitcell)          :: cell
-integer(kind=irg),INTENT(INOUT) :: isym                         !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
-!f2py intent(in,out) ::  isym                         !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
-integer(kind=irg),INTENT(IN)            :: k(3)                 !< input zone axis indices
-integer(kind=irg),INTENT(OUT)           :: gone(3)              !< output first vector
-integer(kind=irg),INTENT(OUT)           :: gtwo(3)              !< output second vector
+integer(kind=irg),INTENT(INOUT) :: isym             !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
+!f2py intent(in,out) ::  isym                       !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
+integer(kind=irg),INTENT(IN)            :: k(3)     !< input zone axis indices
+integer(kind=irg),INTENT(OUT)           :: gone(3)  !< output first vector
+integer(kind=irg),INTENT(OUT)           :: gtwo(3)  !< output second vector
 
 integer(kind=irg)                       :: ga(3),gb(3),nzero(3),u,v,w,snz,ml(4),igsave(3)       !< auxiliary variables
 integer(kind=irg)                       :: ima,imb,ina,inb,el(6),denom,minsum,inm,il(48),jcnt,num !< auxiliary variables
@@ -1671,501 +1728,501 @@ logical                                 :: found
 ! there are errors remaining... Please report any potential errors to the author.
 select case (pgn)
  case (32) ! m -3 m
- 	select case (ng)
- 		case (6)
- 			dgn = 19 ! 4mm1R
- 		case (8)
- 			dgn = 24 ! 6RmmR
- 		case (12)
- 			dgn = 12 ! 2mm1R
- 		case (24)
- 			dgn = 11 ! 2RmmR
- 		case (48)
- 			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+  select case (ng)
+     case (6)
+       dgn = 19 ! 4mm1R
+     case (8)
+       dgn = 24 ! 6RmmR
+     case (12)
+       dgn = 12 ! 2mm1R
+     case (24)
+       dgn = 11 ! 2RmmR
+     case (48)
+       dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (31) ! -4 3 m
- 	select case (ng)
- 		case (4)
- 			dgn = 23 ! 3m
- 		case (6)
- 			dgn = 18 !4RmmR
- 		case (12)
- 			if (mina.eq.0) then
-				dgn = 8 ! m1R 
-			else 
-				dgn = 7 ! m
-			end if 
- 		case (24)
- 			if (mina.eq.0) then
-				dgn = 6 ! mR 
-			else 
-				dgn = 1 ! 1
-			end if 
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (4)
+       dgn = 23 ! 3m
+     case (6)
+       dgn = 18 !4RmmR
+     case (12)
+       if (mina.eq.0) then
+        dgn = 8 ! m1R 
+      else 
+        dgn = 7 ! m
+      end if 
+     case (24)
+       if (mina.eq.0) then
+        dgn = 6 ! mR 
+      else 
+        dgn = 1 ! 1
+      end if 
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (30) ! 432
- 	select case (ng)
- 		case (6)
- 			dgn = 16 ! 4mRmR
- 		case (8)
- 			dgn = 22 ! 3mR 
- 		case (12)
- 			dgn = 9  ! 2mRmR
- 		case (24)
-  			if (mina.eq.0) then
-  				dgn = 6 ! mR
-  			else
- 		  if ( (auvw(1).eq.auvw(2)).or.(auvw(1).eq.auvw(3)).or.(auvw(2).eq.auvw(3)) ) then
-				dgn = 6 ! mR
-			  else
-				dgn = 1 ! 1
-			  end if
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (6)
+       dgn = 16 ! 4mRmR
+     case (8)
+       dgn = 22 ! 3mR 
+     case (12)
+       dgn = 9  ! 2mRmR
+     case (24)
+        if (mina.eq.0) then
+          dgn = 6 ! mR
+        else
+       if ( (auvw(1).eq.auvw(2)).or.(auvw(1).eq.auvw(3)).or.(auvw(2).eq.auvw(3)) ) then
+        dgn = 6 ! mR
+        else
+        dgn = 1 ! 1
+        end if
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (29) ! m3
- 	select case (ng)
- 		case (6)
- 			dgn = 12 ! 2mm1R
- 		case (8)
- 			dgn = 21 ! 6R 
- 		case (12)
- 			dgn = 11 ! 2RmmR
- 		case (24)
- 			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (6)
+       dgn = 12 ! 2mm1R
+     case (8)
+       dgn = 21 ! 6R 
+     case (12)
+       dgn = 11 ! 2RmmR
+     case (24)
+       dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (28) ! 23
- 	select case (ng)
- 		case (4)
- 			dgn = 20 ! 3
- 		case (6)
- 			dgn = 9  ! 2mRmR 
-		case (12)
-  			if (mina.eq.0) then
-  				dgn = 6 ! mR
-  			else
- 				dgn = 1 ! 1
- 			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (4)
+       dgn = 20 ! 3
+     case (6)
+       dgn = 9  ! 2mRmR 
+    case (12)
+        if (mina.eq.0) then
+          dgn = 6 ! mR
+        else
+         dgn = 1 ! 1
+       end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (27) ! 6/mmm
- 	select case (ng)
- 		case (2)
- 			dgn = 31 ! 6mm1R
- 		case (6)
- 			dgn = 12 ! 2mm1R
- 		case (12)
- 			dgn = 11 ! 2RmmR 
-		case (24)
- 			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 31 ! 6mm1R
+     case (6)
+       dgn = 12 ! 2mm1R
+     case (12)
+       dgn = 11 ! 2RmmR 
+    case (24)
+       dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (26) ! -6m2
- 	select case (ng)
- 		case (2)
- 			dgn = 30 ! 3m1R
- 		case (3)
- 			dgn = 10 ! 2mm
- 		case (6)
- 			if (auvw(3).ne.0) then
-				dgn = 7 ! m 
-			else  ! check if [11.0] is part of kstar
-				found = .FALSE.
-				do i=1,ng
-					s = sum( int(kstar(i,1:3)) - (/ 1, 1, 0 /) )
-					if (s.eq.0) found=.TRUE.
-				end do
-				if (found) then 
-					dgn = 8 ! m1R
-				else
-					dgn = 7 ! m
-				end if 
-			end if
-		case (12)
- 			found = .FALSE.
-			do i=1,ng
-				s = kstar(i,1)-kstar(i,2)
-				if (s.eq.0) found=.TRUE.
-			end do
-			if (found) then
-				dgn = 6  ! mR
-			else
-				dgn = 1  ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 30 ! 3m1R
+     case (3)
+       dgn = 10 ! 2mm
+     case (6)
+       if (auvw(3).ne.0) then
+        dgn = 7 ! m 
+      else  ! check if [11.0] is part of kstar
+        found = .FALSE.
+        do i=1,ng
+          s = sum( int(kstar(i,1:3)) - (/ 1, 1, 0 /) )
+          if (s.eq.0) found=.TRUE.
+        end do
+        if (found) then 
+          dgn = 8 ! m1R
+        else
+          dgn = 7 ! m
+        end if 
+      end if
+    case (12)
+       found = .FALSE.
+      do i=1,ng
+        s = kstar(i,1)-kstar(i,2)
+        if (s.eq.0) found=.TRUE.
+      end do
+      if (found) then
+        dgn = 6  ! mR
+      else
+        dgn = 1  ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (25) ! 6mm
- 	select case (ng)
- 		case (1)
- 			dgn = 29 ! 6mm
- 		case (6)
- 			if (auvw(3).eq.0) then  
-				dgn = 8 ! m1R
-			else
- 				dgn = 7 ! m
-			end if
- 		case (12)
- 			if (auvw(3).eq.0) then  
-				dgn = 6 ! mR
-			else
- 				dgn = 1 ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (1)
+       dgn = 29 ! 6mm
+     case (6)
+       if (auvw(3).eq.0) then  
+        dgn = 8 ! m1R
+      else
+         dgn = 7 ! m
+      end if
+     case (12)
+       if (auvw(3).eq.0) then  
+        dgn = 6 ! mR
+      else
+         dgn = 1 ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (24) ! 622
- 	select case (ng)
- 		case (2)
- 			dgn = 28 ! 6mRmR
- 		case (6)
-			dgn = 9  ! 2mRmR
- 		case (12)   ! there are three cases that produce mR, and one that produces 1
- 			found = .FALSE.
- 			if (auvw(3).eq.0) found=.TRUE.
- 			do i=1,ng  ! look for [hh.l]
-				s = kstar(i,1)-kstar(i,2)
-				if (s.eq.0) found=.TRUE.
-			end do
- 			do i=1,ng  ! look for [h -h.l]
-				s = kstar(i,1)+kstar(i,2)
-				if (s.eq.0) found=.TRUE.
-			end do
- 			if (found) then  
-				dgn = 6 ! mR
-			else
- 				dgn = 1 ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 28 ! 6mRmR
+     case (6)
+      dgn = 9  ! 2mRmR
+     case (12)   ! there are three cases that produce mR, and one that produces 1
+       found = .FALSE.
+       if (auvw(3).eq.0) found=.TRUE.
+       do i=1,ng  ! look for [hh.l]
+        s = kstar(i,1)-kstar(i,2)
+        if (s.eq.0) found=.TRUE.
+      end do
+       do i=1,ng  ! look for [h -h.l]
+        s = kstar(i,1)+kstar(i,2)
+        if (s.eq.0) found=.TRUE.
+      end do
+       if (found) then  
+        dgn = 6 ! mR
+      else
+         dgn = 1 ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (23) ! 6/m
- 	select case (ng)
- 		case (2)
- 			dgn = 27 ! 61R
- 		case (6)
- 			dgn = 11 ! 2RmmR 
- 		case (12)
-			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 27 ! 61R
+     case (6)
+       dgn = 11 ! 2RmmR 
+     case (12)
+      dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (22) ! -6
- 	select case (ng)
- 		case (2)
- 			dgn = 26 ! 31R
- 		case (3)
- 			dgn = 7  ! m 
- 		case (6)
-			dgn = 1  ! 1
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 26 ! 31R
+     case (3)
+       dgn = 7  ! m 
+     case (6)
+      dgn = 1  ! 1
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (21) ! -6
- 	select case (ng)
- 		case (1)
- 			dgn = 25 ! 6
- 		case (6)
-			if (auvw(3).eq.0) then
-				dgn = 6  ! mR
-			else
-				dgn = 1  ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (1)
+       dgn = 25 ! 6
+     case (6)
+      if (auvw(3).eq.0) then
+        dgn = 6  ! mR
+      else
+        dgn = 1  ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (20) ! -3m
- 	select case (ng)
- 		case (2)
- 			dgn = 24 ! 6RmmR
- 		case (6)
-			if (auvw(3).eq.0) then
-				found = .FALSE.
-				do i=1,ng
-					s = kstar(i,1)+kstar(i,2)
-					if (s.eq.0) found=.TRUE.
-				end do
-				if (found) then
-					dgn = 11  ! 2RmmR
-				else
-					dgn = 5  ! 21R
-				end if
-			else
-				dgn = 11  ! 2RmmR
-			end if
-  		case (12)
-			dgn = 4  ! 2R
-		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 24 ! 6RmmR
+     case (6)
+      if (auvw(3).eq.0) then
+        found = .FALSE.
+        do i=1,ng
+          s = kstar(i,1)+kstar(i,2)
+          if (s.eq.0) found=.TRUE.
+        end do
+        if (found) then
+          dgn = 11  ! 2RmmR
+        else
+          dgn = 5  ! 21R
+        end if
+      else
+        dgn = 11  ! 2RmmR
+      end if
+      case (12)
+      dgn = 4  ! 2R
+    case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (19) ! -3m1
- 	select case (ng)
- 		case (1)
- 			dgn = 23 ! 3m
- 		case (3)
-			if (auvw(3).eq.0) then
-				dgn = 2  ! 1R
-			else
-				dgn = 7  ! m
-			end if
-  		case (6)
-			dgn = 1  ! 1
-		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (1)
+       dgn = 23 ! 3m
+     case (3)
+      if (auvw(3).eq.0) then
+        dgn = 2  ! 1R
+      else
+        dgn = 7  ! m
+      end if
+      case (6)
+      dgn = 1  ! 1
+    case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (18) ! 321
- 	select case (ng)
- 		case (2)
- 			dgn = 22 ! 3mR
- 		case (3)
-			dgn = 3  ! 2
-  		case (6)
-			found = .FALSE.
-			do i=1,ng
-				s = kstar(i,1)+kstar(i,2)
-				if (s.eq.0) found=.TRUE.
-			end do
-			if (found) then
-				dgn = 6  ! mR
-			else
-				dgn = 1  ! 1
-			end if
-		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 22 ! 3mR
+     case (3)
+      dgn = 3  ! 2
+      case (6)
+      found = .FALSE.
+      do i=1,ng
+        s = kstar(i,1)+kstar(i,2)
+        if (s.eq.0) found=.TRUE.
+      end do
+      if (found) then
+        dgn = 6  ! mR
+      else
+        dgn = 1  ! 1
+      end if
+    case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (17) ! -3
- 	select case (ng)
- 		case (2)
- 			dgn = 21 ! 6R
- 		case (6)
- 			dgn = 4  ! 2R 
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 21 ! 6R
+     case (6)
+       dgn = 4  ! 2R 
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (16) ! 3
- 	select case (ng)
- 		case (1)
- 			dgn = 20 ! 3
- 		case (3)
- 			dgn = 1  ! 1 
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (1)
+       dgn = 20 ! 3
+     case (3)
+       dgn = 1  ! 1 
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  !------------
  case (15) ! 4/mmm
- 	select case (ng)
- 		case (2)
- 			dgn = 19 ! 4mm1R
- 		case (4)
- 			dgn = 12 ! 2mm1R 
- 		case (8)
-			dgn = 11 ! 2RmmR
- 		case (16)
- 			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 19 ! 4mm1R
+     case (4)
+       dgn = 12 ! 2mm1R 
+     case (8)
+      dgn = 11 ! 2RmmR
+     case (16)
+       dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (14) ! 4/mmm
- 	select case (ng)
- 		case (2)
- 			dgn = 18 ! 4RmmR
- 		case (4)
- 			if (nz.eq.2) then
-				dgn = 9 ! 2mRmR
-			else
-				if (nz.eq.1) then
-					dgn = 8 ! m1R
-				else
-					dgn = 7 ! m
-				end if
-			end if 
- 		case (8)
-			if (nz.eq.1) then
-				dgn = 6 ! mR
-			else
-				dgn = 1  ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
- 	end select
+   select case (ng)
+     case (2)
+       dgn = 18 ! 4RmmR
+     case (4)
+       if (nz.eq.2) then
+        dgn = 9 ! 2mRmR
+      else
+        if (nz.eq.1) then
+          dgn = 8 ! m1R
+        else
+          dgn = 7 ! m
+        end if
+      end if 
+     case (8)
+      if (nz.eq.1) then
+        dgn = 6 ! mR
+      else
+        dgn = 1  ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+   end select
  case (13) ! 4mmm
- 	select case (ng)
- 		case (1)
- 			dgn = 17 ! 4mm
- 		case (4)
- 			if ( (nz.eq.2).or. ( (nz.eq.1).and.(auvw(3).eq.0))  ) then
-				dgn = 8 ! m1R
-			else
-				dgn = 7 ! m
-			end if 
- 		case (8)
-			if (nz.eq.1) then
-				dgn = 6 ! mR
-			else
-				dgn = 1  ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (1)
+       dgn = 17 ! 4mm
+     case (4)
+       if ( (nz.eq.2).or. ( (nz.eq.1).and.(auvw(3).eq.0))  ) then
+        dgn = 8 ! m1R
+      else
+        dgn = 7 ! m
+      end if 
+     case (8)
+      if (nz.eq.1) then
+        dgn = 6 ! mR
+      else
+        dgn = 1  ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (12) ! 422
- 	select case (ng)
- 		case (2)
- 			dgn = 16 ! 4mRmR
- 		case (4)
-			dgn = 9  ! 2mRmR
- 		case (8)
- 			auvw = auvw - auvw(1)
-			if ( (auvw(2).ne.0).and.(auvw(3).ne.0) ) then
-				dgn = 1 ! 1
-			else
-				dgn = 6 ! mR
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+       dgn = 16 ! 4mRmR
+     case (4)
+      dgn = 9  ! 2mRmR
+     case (8)
+       auvw = auvw - auvw(1)
+      if ( (auvw(2).ne.0).and.(auvw(3).ne.0) ) then
+        dgn = 1 ! 1
+      else
+        dgn = 6 ! mR
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
 !------------
  case (11) ! 4/m
- 	select case (ng)
- 		case (2)
- 			dgn = 15 ! 41R
- 		case (4)
-			dgn = 11 ! 2RmmR
- 		case (8)
-			dgn = 4  ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+       dgn = 15 ! 41R
+     case (4)
+      dgn = 11 ! 2RmmR
+     case (8)
+      dgn = 4  ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (10) ! -4
- 	select case (ng)
- 		case (2)
- 			dgn = 14 ! 4R
- 		case (4)
-			if (auvw(3).eq.0) then 
-				dgn = 6 ! mR
-			else
-				dgn = 1 ! 1
-			end if				
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+       dgn = 14 ! 4R
+     case (4)
+      if (auvw(3).eq.0) then 
+        dgn = 6 ! mR
+      else
+        dgn = 1 ! 1
+      end if        
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (9) ! 4
- 	select case (ng)
- 		case (1)
- 			dgn = 13 ! 4
- 		case (4)
-			if (auvw(3).eq.0) then 
-				dgn = 6 ! mR
-			else
-				dgn = 1 ! 1
-			end if				
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (1)
+       dgn = 13 ! 4
+     case (4)
+      if (auvw(3).eq.0) then 
+        dgn = 6 ! mR
+      else
+        dgn = 1 ! 1
+      end if        
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
 !------------
  case (8) ! mmm
- 	select case (ng)
- 		case (2)
- 			dgn = 12 ! 2mm1R
- 		case (4)
- 			dgn = 11 ! 2RmmR
- 		case (8)
-			dgn = 4 ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+       dgn = 12 ! 2mm1R
+     case (4)
+       dgn = 11 ! 2RmmR
+     case (8)
+      dgn = 4 ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (7) ! mm2
- 	select case (ng)
- 		case (1)
- 			dgn = 10 ! 2mm
- 		case (2)
- 			if (nz.eq.1) then
- 				dgn = 8 ! m1R
- 			else
-				dgn = 7 ! m
-			end if
- 		case (4)
- 			if (auvw(3).eq.0) then
-				dgn = 6 ! mR
-			else
-				dgn = 1 ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (1)
+       dgn = 10 ! 2mm
+     case (2)
+       if (nz.eq.1) then
+         dgn = 8 ! m1R
+       else
+        dgn = 7 ! m
+      end if
+     case (4)
+       if (auvw(3).eq.0) then
+        dgn = 6 ! mR
+      else
+        dgn = 1 ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (6) ! 222
- 	select case (ng)
- 		case (2)
- 			dgn = 9 ! 2mRmR
- 		case (4)
- 			if (nz.eq.1) then
-				dgn = 6 ! mR
-			else
-				dgn = 1 ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+       dgn = 9 ! 2mRmR
+     case (4)
+       if (nz.eq.1) then
+        dgn = 6 ! mR
+      else
+        dgn = 1 ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
 !------------
  case (5) ! 2/m
- 	select case (ng)
- 		case (2)
-			if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
-				dgn = 5  ! 21R
-			else
-				dgn = 11 ! 2RmmR
-			end if
- 		case (4)
- 			dgn = 4 ! 2R
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (2)
+      if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
+        dgn = 5  ! 21R
+      else
+        dgn = 11 ! 2RmmR
+      end if
+     case (4)
+       dgn = 4 ! 2R
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (4) ! m
- 	select case (ng)
- 		case (1)
-			dgn = 7 ! m 	
- 		case (2)
-			if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
-				dgn = 2 ! 1R
-			else
- 				dgn = 1 ! 1
-			end if
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+     case (1)
+      dgn = 7 ! m   
+     case (2)
+      if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
+        dgn = 2 ! 1R
+      else
+         dgn = 1 ! 1
+      end if
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
  case (3) ! 2
- 	select case (ng)
-  		case (1)
-			if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
-				dgn = 3 ! 2
-			else
-				dgn = 6 ! mR
-			end if
- 		case (2)
-			dgn = 1 ! 1
- 		case default
-			call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
-	end select
+   select case (ng)
+      case (1)
+      if (sum(iabs( uvw - (/0, 1, 0/) )).eq.0) then
+        dgn = 3 ! 2
+      else
+        dgn = 6 ! mR
+      end if
+     case (2)
+      dgn = 1 ! 1
+     case default
+      call Message(' -> incorrect number of equivalent directions in point group '//PGTHD(pgn), frm = "(A)")
+  end select
 !------------
  case (2) ! -1
- 	dgn = 4 ! 2R
+   dgn = 4 ! 2R
  case (1) ! 1
- 	dgn = 1 ! 1
+   dgn = 1 ! 1
  case default
-	write (*,*) 'unknown point group'
-	dgn = 0
+  write (*,*) 'unknown point group'
+  dgn = 0
 end select
 
 end function GetDiffractionGroup

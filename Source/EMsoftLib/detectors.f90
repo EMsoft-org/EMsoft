@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -95,7 +95,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy, elp  ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy, elp  
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -225,7 +225,9 @@ deallocate(z)
     end do
   end do 
 
-if (present(verbose)) call Message(' -> completed detector generation', frm = "(A)")
+if (present(verbose)) then
+  if (verbose.eqv..TRUE.) call Message(' -> completed detector generation', frm = "(A)")
+end if 
 
 !====================================
 end subroutine GenerateEBSDDetector
@@ -281,12 +283,12 @@ real(kind=sgl),INTENT(INOUT)            :: accum_e_detector(numE,nsx,nsy)
 real(kind=sgl),INTENT(IN)               :: patcntr(3)
 logical,INTENT(IN),OPTIONAL             :: bg
 
-real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)    ! scintillator coordinate ararays [microns]
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp   
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -462,12 +464,12 @@ real(kind=sgl),INTENT(INOUT)                  :: tgz(nsx,nsy)
 !f2py intent(in,out) ::  tgz      
 real(kind=dbl),INTENT(IN)                     :: patcntr(3)
       
-real(kind=sgl),allocatable                    :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),allocatable                    :: scin_x(:), scin_y(:), testarray(:,:)  ! scintillator coordinate ararays [microns]
 real(kind=sgl),parameter                      :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                                :: alp, ca, sa, cw, sw
 real(kind=sgl)                                :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable                    :: z(:,:)           
-integer(kind=irg)                             :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
+integer(kind=irg)                             :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp   
 real(kind=sgl)                                :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                                :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
 real(kind=sgl)                                :: ixy(2)

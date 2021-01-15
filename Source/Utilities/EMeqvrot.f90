@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -120,6 +120,7 @@ do while (next)
 
   do k=1,num
     qus = quat_mult( dict%Pm(1:4,k), qu )
+    if (qus(1).lt.0.0) qus = -qus
     res = init_orientation(qus,'qu')
     ro = res%rodrigues
     ax = res%axang

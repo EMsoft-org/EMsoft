@@ -414,14 +414,9 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
   // have a second setting.
   {
     std::vector<int> v = {48, 50, 59, 68, 70, 85, 86, 88, 125, 126, 129, 130, 133, 134, 137, 138, 141, 142, 201, 203, 222, 224, 227, 228};
-    std::transform(v.begin(), v.end(), v.begin(), std::bind2nd(std::plus<int>(), -data.spaceGroupNumber));
-    for(int &value : v)
-    {
-      if(value < 0)
-      {
-        value *= -1;
-      }
-    }
+
+    std::transform(v.begin(), v.end(), v.begin(), [data](int32_t n) { return std::abs(n - data.spaceGroupNumber); });
+
     double minp = *std::min_element(v.begin(), v.end());
     if((minp > 0) && (data.spaceGroupSetting == 2))
     { // this is the second setting

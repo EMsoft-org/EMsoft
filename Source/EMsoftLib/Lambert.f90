@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -1691,11 +1691,11 @@ real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN)               :: Radius
-real(kind=sgl),INTENT(IN),OPTIONAL 		:: quat(4)
+real(kind=sgl),INTENT(IN),OPTIONAL      :: quat(4)
 real(kind=sgl)                          :: res(3)
 
 real(kind=sgl)                          :: q, qq
-logical 								:: torot
+logical                                 :: torot
 
 torot = .FALSE.
 if(present(quat)) torot = .TRUE.
@@ -1743,11 +1743,11 @@ real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN)               :: Radius
-real(kind=dbl),INTENT(IN),OPTIONAL 		:: quat(4)
+real(kind=dbl),INTENT(IN),OPTIONAL     :: quat(4)
 real(kind=dbl)                          :: res(3)
 
 real(kind=dbl)                          :: q, qq
-logical 								:: torot
+logical                 :: torot
 
 torot = .FALSE.
 if(present(quat)) torot = .TRUE.

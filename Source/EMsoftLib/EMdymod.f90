@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -177,7 +177,7 @@ contains
 !> @date 01/12/15 MDG 1.3 added arguments and functionality for interface with DREAM.3D and other calling programs
 !> @date 01/13/15 MDG 1.4 after split with EMsoftCgetEBSDPatterns subroutine, removed DREAM.3D interfacing stuff
 !> @date 07/10/16 MDG 1.5 added energy min/max parameters
-!> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs to be returned from Lambert projection routines
+!> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs  from Lambert projection routines
 !> @date 08/25/16 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
 !> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
@@ -241,7 +241,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, pcxd, pcyd, xx, yy     ! distances
-integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, epl ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, epl 
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -472,7 +472,7 @@ end subroutine getEBSDPatterns
 !> @date 01/12/15 MDG 1.3 added arguments and functionality for interface with DREAM.3D and other calling programs
 !> @date 01/13/15 MDG 1.4 after split with EMsoftCgetEBSDPatterns subroutine, removed DREAM.3D interfacing stuff
 !> @date 07/10/16 MDG 1.5 added energy min/max parameters
-!> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs to be returned from Lambert projection routines
+!> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs from Lambert projection routines
 !> @date 08/25/16 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
 !> @date 04/24/17 MDG 1.8 forked from original routine without SAVEd variables
 !> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
@@ -536,7 +536,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, pcxd, pcyd, xx, yy     ! distances
-integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, elp ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, elp 
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -2209,7 +2209,8 @@ real(c_double), dimension(:), pointer           :: XU
 
 ! the following line just helps in identifying the correct order of the subroutine arguments...
 !                                        
-!subroutine BOBYQA(nipar, nfpar, ninit, ipar, fpar, initmeanval, expt, N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT, MAXFUN, ECPCALFUN, ACCUM_E, mLPNH, mLPSH)
+!subroutine BOBYQA(nipar, nfpar, ninit, ipar, fpar, initmeanval, expt, N, NPT, X, XL, XU, RHOBEG, RHOEND, 
+!                  IPRINT, MAXFUN, ECPCALFUN, ACCUM_E, mLPNH, mLPSH)
 !
 ! transform the C pointers above to fortran pointers, and use them in the regular function call
 nipar = 9
@@ -2289,7 +2290,7 @@ real(c_double), dimension(:), pointer           :: XU
 
 ! the following line just helps in identifying the correct order of the subroutine arguments...
 !                                        1      2     3       4           5           6   7   8   9        10
-!subroutine BOBYQA(nipar, nfpar, ninit, ipar, fpar, fname, initmeanval, expt, N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT, MAXFUN, EBSDCALFUN)
+!subroutine BOBYQA(nipar,nfpar,ninit,ipar,fpar,fname,initmeanval,expt,N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,MAXFUN,EBSDCALFUN)
 !
 ! transform the C pointers above to fortran pointers, and use them in the regular function call
 nipar = 9
@@ -2319,5 +2320,50 @@ call c_f_pointer(argv(12),mLPSH,(/2*ipar(6)+1, 2*ipar(6)+1, ipar(4), ipar(7)/))
 efitEBSDWrapper = 1._c_float
 
 end function efitEBSDWrapper
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:adhisteqWrapper
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief wrapper routine to test the adhisteq filter and compare to IDL results
+!
+!> @param argc number of argument
+!> @param argv pointers to subroutine parameters
+!
+!> @date 07/18/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function adhisteqWrapper(argc, argv) bind(c, name='adhisteqWrapper') 
+!DEC$ ATTRIBUTES DLLEXPORT :: adhisteqWrapper
+
+use,INTRINSIC :: ISO_C_BINDING
+use local
+use filters
+
+INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
+type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+REAL(c_float)                                   :: adhisteqWrapper
+
+! wrapper function dependent declarations; they are all pointers 
+! since we pass everything by reference from IDL 
+integer(c_size_t)                               :: nipar
+integer(c_size_t),dimension(:), pointer         :: ipar
+integer(c_size_t), dimension(:,:), pointer      :: image
+integer(c_size_t), dimension(:,:), pointer      :: imahe
+
+! transform the C pointers above to fortran pointers, and use them in the regular function call
+nipar = 3
+call c_f_pointer(argv(1),ipar,(/nipar/)) 
+call c_f_pointer(argv(2),image,(/ipar(2),ipar(3)/))
+call c_f_pointer(argv(3),imahe,(/ipar(2),ipar(3)/))
+
+imahe = adhisteq( int(ipar(1)), int(ipar(2)), int(ipar(3)), int(image) ) 
+
+adhisteqWrapper = 1._c_float
+
+end function adhisteqWrapper
+
+
 
 end module EMdymod

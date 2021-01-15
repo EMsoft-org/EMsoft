@@ -9,6 +9,8 @@
 !
 ! 'dynamic' for on the fly indexing or 'static' for pre calculated dictionary
  indexingmode = 'dynamic',
+! use the normalized dot product 'ndp' or the normalized cross correlation 'ncc' as the similarity metric
+ similaritymetric = 'ndp',
 !
 !###################################################################
 ! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
@@ -41,7 +43,7 @@
  maskfile = 'undefined',
 ! mask or not
  maskpattern = 'n',
-! mask radius (in pixels, AFTER application of the binning operation)
+! mask radius (in pixels, BEFORE application of the binning operation)
  maskradius = 240,
 ! hi pass filter w parameter; 0.05 is a reasonable value
  hipassw = 0.05,
@@ -52,39 +54,49 @@
 ! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'
 !###################################################################
 !
-! number of cubochoric points to generate list of orientations
- ncubochoric = 100,
-! distance between scintillator and illumination point [microns]
- L = 15000.0,
-! tilt angle of the camera (positive below horizontal, [degrees])
- thetac = 10.0,
-! CCD pixel size on the scintillator surface [microns]
- delta = 50.0,
-! number of CCD pixels along x and y
+! size of the *Experimental* patterns in pixels, and the binning factor to be used.
+! Note that the binning factor is *only* applied to the experimental patterns. The 
+! dictionary patterns will be declared to have the binned size. 
+ exptnumsx = 640,
+ exptnumsy = 480,
+ binning = 1, 
+! size of the *Dictionary* patterns in pixels; this will be set to be equal to the size
+! of the experimental patterns divided by the binning factor by the EMEBSDDI program.
+! You can set the next two parameters to the correct values if you wish, but these 
+! parameters will be overwritten by the program. 
  numsx = 640,
  numsy = 480,
-! pattern center coordinates in units of pixels
- xpc = 0.0,
- ypc = 0.0,
+! number of cubochoric points to generate list of orientations for the dictionary
+ ncubochoric = 100,
+! tilt angle of the camera (positive below horizontal, [degrees])
+ thetac = 10.0,
 ! angle between normal of sample and detector
  omega = 0.0,
+! distance between scintillator and illumination point [microns]
+ L = 15000.0,
+! the following three parameters require some careful consideration.  
+!=================================================================================================!
+! Please check the wiki EMEBSDDI help page for detailed information on how to set these parameters!
+! This process has changed starting with EMsoft 5.0.3.                                            !
+!=================================================================================================!
+! detector pixel size [microns]
+ delta = 50.0,
+! pattern center coordinates in units of pixels, origin at center of detector
+ xpc = 0.0,
+ ypc = 0.0,
+!=================================================================================================!
 ! minimum and maximum energy to use for interpolation [keV]
  energymin = 10.0,
  energymax = 20.0,
-! the following option has been disabled starting version 4.3
-! spatial averaging method ('y' or 'n' ;can't be used with approximate energy average)
-! spatialaverage = 'n',
 ! incident beam current [nA]
  beamcurrent = 150.0,
 ! beam dwell time [micro s]
  dwelltime = 100.0,
-! binning mode (1, 2, 4, or 8)
- binning = 1,
 ! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
  scalingmode = 'not',
 ! gamma correction factor
  gammavalue = 1.0,
-!
+
 !###################################################################
 ! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################

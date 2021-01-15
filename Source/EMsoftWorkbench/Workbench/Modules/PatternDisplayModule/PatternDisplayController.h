@@ -164,7 +164,7 @@ private slots:
 
   void checkImageGenerationCompletion() const;
 
-  void patternThreadFinished();
+  void patternThreadFinished(int maxThreadCount);
 
   void cancelGeneration();
 
@@ -213,7 +213,7 @@ private:
   QSemaphore m_MCStereoImageGenLock;
 
   int32_t m_NumOfFinishedPatternThreads = 0;
-  std::vector<QSharedPointer<QFutureWatcher<void>>> m_PatternWatchers;
+  std::vector<std::unique_ptr<QFutureWatcher<void>>> m_PatternWatchers;
 
   /**
    * @brief createMasterPatternImageGenerators Helper function that creates all the image generators for the master pattern images
@@ -250,9 +250,8 @@ private:
 
   // -----------------------------------------------------------------------------
   template <typename T, typename U>
-  void createProjectionConversionTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
-                                       ModifiedLambertProjection::Square square, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
-                                       bool verticalMirror = false)
+  void createProjectionConversionTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, int32_t projType, ModifiedLambertProjection::Square square,
+                                       std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false, bool verticalMirror = false)
   {
     for(size_t z = 0; z < zDim; z++)
     {

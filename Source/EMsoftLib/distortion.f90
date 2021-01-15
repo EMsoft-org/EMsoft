@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -74,9 +74,9 @@ use math
 IMPLICIT NONE
 
 complex(kind=dbl),INTENT(IN)                        :: D
+integer(kind=irg),INTENT(IN)                        :: nnx, nny
 real(kind=sgl),INTENT(INOUT)                        :: img(nnx,nny)
 !f2py intent(in,out) ::  img
-integer(kind=irg),INTENT(IN)                        :: nnx, nny
 
 real(kind=sgl),allocatable                          :: dimg(:,:)
 real(kind=dbl)                                      :: co(4), Dp, thetad

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -137,12 +137,12 @@ write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') ebsdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -344,12 +344,12 @@ write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())//'EMsoft'
 write(dataunit2,'(A)') 'JobMode Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, tkdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, tkdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, tkdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, tkdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') tkdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -580,8 +580,8 @@ write(dataunit2,'(A)') '# NumberFamilies        0'
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', ebsdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', ebsdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', ebsdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', ebsdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(8)
@@ -601,9 +601,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 0 (since there is only one phase in each indexing run)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format 
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -630,7 +630,7 @@ do ii = 1,ipar(3)
 ! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
     write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]
     write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
-    write(str8,'(A,I1)') '  ',1 
+    write(str8,'(A,I1)') '  ',0 
 !
     write(dataunit2,"(A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A)") trim(adjustl(str1)),trim(adjustl(str2)),&
                                             trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
@@ -762,8 +762,8 @@ write(dataunit2,'(A)') '# NumberFamilies        0'
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', tkdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', tkdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', tkdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', tkdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(8)
@@ -783,9 +783,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 0 (since there is only one phase in each indexing run)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -812,7 +812,7 @@ do ii = 1,ipar(3)
 ! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
     write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]
     write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
-    write(str8,'(A,I1)') '  ',1 
+    write(str8,'(A,I1)') '  ',0 
 !
     write(dataunit2,"(A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A)") trim(adjustl(str1)),trim(adjustl(str2)),&
                                             trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
@@ -898,12 +898,12 @@ write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(3)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(4)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') ebsdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -1139,8 +1139,8 @@ end do
 ! write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 ! write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', ebsdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', ebsdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', ebsdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', ebsdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(3)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(3)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(4)
@@ -1160,9 +1160,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 1 (starts at 1 for multi-phase file)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(1)

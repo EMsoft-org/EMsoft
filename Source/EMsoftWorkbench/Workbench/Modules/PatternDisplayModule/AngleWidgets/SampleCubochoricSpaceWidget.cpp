@@ -540,15 +540,15 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
     double misorientationAngle = misorientationAngLE->text().toDouble();
 
     // step size for sampling of grid; the edge length of the cube is (pi ( w - sin(w) ))^1/3 with w the misorientation angle
-    omega = misorientationAngle * EbsdLib::Constants::k_Pi / 180.0f;
-    semi = pow(EbsdLib::Constants::k_Pi * (omega - sin(omega)), 1.0 / 3.0) * 0.5;
+    omega = misorientationAngle * EbsdLib::Constants::k_PiF / 180.0F;
+    semi = pow(EbsdLib::Constants::k_PiF * (omega - sin(omega)), 1.0F / 3.0F) * 0.5F;
     delta = semi / static_cast<double>(numOfSamplingPts);
 
     // convert the reference orientation to a 3-component Rodrigues vector sigma
     OrientationD sigma(4), referenceOrientation(3);
-    referenceOrientation[0] = static_cast<double>(refOrientationX *EbsdLib::Constants::k_Pi / 180.0f);
-    referenceOrientation[1] = static_cast<double>(refOrientationY *EbsdLib::Constants::k_Pi / 180.0f);
-    referenceOrientation[2] = static_cast<double>(refOrientationZ *EbsdLib::Constants::k_Pi / 180.0f);
+    referenceOrientation[0] = static_cast<double>(refOrientationX * EbsdLib::Constants::k_PiF / 180.0F);
+    referenceOrientation[1] = static_cast<double>(refOrientationY * EbsdLib::Constants::k_PiF / 180.0F);
+    referenceOrientation[2] = static_cast<double>(refOrientationZ * EbsdLib::Constants::k_PiF / 180.0F);
     OrientationD sigm = OrientationTransformation::eu2ro<OrientationD, OrientationD>(referenceOrientation);
 
     sigma[0] = sigm[0] * sigm[3];

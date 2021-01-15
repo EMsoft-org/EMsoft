@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -1415,6 +1415,12 @@ type FZpointd
         type(FZpointd),pointer  :: next          ! link to next point
 end type FZpointd
 
+! type definition for linked list of vectors on the 2-sphere (used in so2.module)
+type SO2pointd
+        real(kind=dbl)          :: sql(2)        ! point in square lambert grid 
+        real(kind=dbl)          :: nvec(3)       ! corresponding point on unit 2-sphere
+        type(SO2pointd),pointer :: next          ! link to next point
+end type SO2pointd
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -142,7 +142,7 @@ character(fnlen),INTENT(IN)                      :: nmldeffile
 real(kind=dbl)          :: frac
 integer(kind=irg)       :: gzero, istat, tickstart
 
-integer(kind=irg)       :: numEbins, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
+integer(kind=irg)       :: numangle, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
 integer(kind=irg), allocatable :: acc_z(:,:,:,:),accum_z(:,:,:,:) ! reading from MC file
 
@@ -203,8 +203,6 @@ character(100)                     :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
-nullify(HDF_head%next)
-
 call timestamp(datestring=dstr, timestring=tstrb)
 call Time_tick(tickstart)
 
@@ -216,7 +214,6 @@ frac = 0.05
 ! first, we need to load the data from the MC program.
 !=============================================================
 
-call Message('opening '//trim(ecpnl%energyfile), frm = "(A)" )
 xtaldataread = .FALSE.
 
 ! Initialize FORTRAN interface.
@@ -229,14 +226,16 @@ inquire(file=trim(energyfile), exist=f_exists)
 if (.not.f_exists) then
     call FatalError('ComputeMasterPattern','Monte Carlo input file does not exist')
 end if
+call Message('opening '//trim(energyfile), frm = "(A)" )
 
 ! open the MC file using the default properties.
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can open the file and read all the information
-datagroupname = '/EMData/MCOpenCL'
+datagroupname = '/EMheader/MCOpenCL'
 call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ECmasterpattern','This HDF file does not contain any Monte Carlo data')
@@ -312,7 +311,7 @@ hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! read data items
 dataset = SC_numangle
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
+call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numangle)
 
 dataset = SC_numzbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
@@ -321,9 +320,9 @@ dataset = SC_totnumel
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
 
 dataset = SC_accumz
-! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
+! dims4 =  (/ numangle, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
-allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
+allocate(accum_z(numangle,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
 accum_z = acc_z
 deallocate(acc_z)
 
@@ -333,8 +332,7 @@ call HDF_pop(HDF_head,.TRUE.)
 ! close the fortran interface
 call h5close_EMsoft(hdferr)
 
-ind = float(numEbins)/2.0+1.0
-etotal = sum(accum_z(floor(ind),:,:,:))
+etotal = sum(accum_z(numangle,:,:,:))
 
 call Message(' -> completed reading '//trim(ecpnl%energyfile), frm = "(A//)")
 
@@ -440,7 +438,7 @@ call CalcUcg(cell,rlp,(/0,0,0/))
 nabsl = rlp%xgp
 
 do iz=1,izz
-    lambdaZ(iz) = float(sum(accum_z(floor(ind),iz,:,:)))/float(etotal)
+    lambdaZ(iz) = float(sum(accum_z(numangle,iz,:,:)))/float(etotal)
     lambdaZ(iz) = lambdaZ(iz) * exp(2.0*sngl(cPi)*(iz-1)*depthstep/nabsl)
 end do
 
@@ -832,7 +830,7 @@ hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
 !dataset = SC_Duration
 !tstop = tstop - tstart
-!if (iE.eq.numEbins) then 
+!if (iE.eq.numangle) then 
 !  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 !  if (g_exists) then     
 !    hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)

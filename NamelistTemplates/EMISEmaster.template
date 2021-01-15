@@ -1,0 +1,14 @@
+ &ISEmastervars
+! crystal structure file
+ xtalname = 'undefined',
+! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
+ npx = 500,
+! intensity scaling parameters 
+ iscale = 3.0 4.0 5.0,
+! number of OpenMP threads (0 to use the maximum available)
+ nthreads = 1,
+! this file will also contain the output data of the master program
+ outname = 'undefined',
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
+ /

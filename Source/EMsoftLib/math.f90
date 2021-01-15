@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -3471,8 +3471,8 @@ use error
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)             :: A(m,n)
 integer(kind=irg),INTENT(IN)          :: m, n
+real(kind=dbl),INTENT(IN)             :: A(m,n)
 
 real(kind=dbl),allocatable            :: Ap(:,:)
 integer(kind=irg),allocatable         :: IPIV(:)

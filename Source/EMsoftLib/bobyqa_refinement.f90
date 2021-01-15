@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -164,8 +164,8 @@ contains
                                                        !! the contribution to a model from changes to the I-th variable is
                                                        !! damaged severely by rounding errors if XU(I)-XL(I) is too small.
         real(dbl),intent(in)                 :: rhobeg  !! RHOBEG must be set to the initial value of a trust region radius.  
-                                                       !! It must be positive, and typically should be about one tenth of the greatest
-                                                       !! expected change to a variable.  An error return occurs if any of 
+                                                       !! It must be positive, and typically should be about one tenth of the 
+                                                       !! greatest expected change to a variable.  An error return occurs if any of 
                                                        !! the differences XU(I)-XL(I), I=1,...,N, is less than 2*RHOBEG.
         real(dbl),intent(in)                 :: rhoend  !! RHOEND must be set to the final value of a trust
                                                        !! region radius. It must be positive with RHOEND no greater than

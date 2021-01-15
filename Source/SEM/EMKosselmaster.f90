@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -152,7 +152,7 @@ character(fnlen),INTENT(IN)               :: nmldeffile
 real(kind=dbl)                  :: ctmp(192,3), arg
 integer(HSIZE_T)                :: dims3(3), cnt3(3), offset3(3)
 integer(HSIZE_T)                :: dims2(2), cnt2(2), offset2(2)
-integer(kind=irg)               :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
+integer(kind=irg)               :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & 
                                   SamplingType,numk,numthick,  & ! number of independent incident beam directions
                                   ir,kk(3), npyhex, skip, ijmax, one, NUMTHREADS, TID, hdferr, tickstart, &
                                   n,ix,iy, io_int(6), nns, nnw, nref, nix, niy, nixp, niyp, ierr, &

@@ -17,6 +17,11 @@ set(PROJECT_RESOURCES_DIR "${EMsoftWorkbench_SOURCE_DIR}/Resources")
 set(EXE_DEBUG_EXTENSION "_debug")
 
 
+# Request C++17 standard, using new CMake variables.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+set(CMAKE_CXX_EXTENSIONS FALSE)
+
 #Enable use of Solution Folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(PROJECT_INSTALL_HEADERS "0")
@@ -65,6 +70,18 @@ if(EIGEN3_FOUND)
 else()
   message(WARNING "The Eigen Library is required for some algorithms to execute. These algorithms will be disabled.")
 endif()
+
+# --------------------------------------------------------------------
+# ghcFilesystem support
+#
+if(APPLE)
+  find_package(ghcFilesystem REQUIRED)
+endif()
+
+# --------------------------------------------------------------------
+# TBB support
+include(${CMP_SOURCE_DIR}/ExtLib/TBBSupport.cmake)
+
 
 # --------------------------------------------------------------------
 # EbsdLib support
@@ -202,7 +219,12 @@ set(EXE_LINK_LIBRARIES
   SIMPLib
   EbsdLib::EbsdLib
   )
-
+if(APPLE)
+  set(EXE_LINK_LIBRARIES 
+    ${EMSOFT_hdf5LinkLibs} 
+    ghcFilesystem::ghc_filesystem
+  )
+endif()
 
 BuildQtAppBundle(
     TARGET ${PROJECT_NAME}
