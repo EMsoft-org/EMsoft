@@ -45,12 +45,12 @@ common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
 ; does the preferences file exist ?
-rs = file_test(Efitdata.prefname)
+rs = file_test(Efitdata.appdir+Efitdata.prefname)
 
 if (rs eq 1) then begin
   s = ''
   i = 0
-  openr,1,Efitdata.prefname
+  openr,1,Efitdata.appdir+Efitdata.prefname
   readf,1,i
   Efitdata.nprefs = i
 
@@ -125,7 +125,7 @@ end else begin
   cd,current=s
   Efitdata.Efitroot=s
 ; prefs file does not exist yet, so let's create it with default values
-  if not keyword_set(noprint) then Core_Print,'Creating preferences file '+Efitdata.prefname
+  if not keyword_set(noprint) then Core_Print,'Creating preferences file '+Efitdata.appdir+Efitdata.prefname
   if keyword_set(noprint) then Efitwritepreferences,/noprint else Efitwritepreferences
 endelse
 

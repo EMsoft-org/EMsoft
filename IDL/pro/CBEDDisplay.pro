@@ -87,6 +87,9 @@ common PointGroups, PGTHD, PGTWD, DG
 common trafos, done, c030, c060, c120, c150, c240, c300, s030, s060, s120, s150, s240, s300
 common CommonCore, status, logmode, logunit
 
+; before we do anything, we make sure that the location of the app_user_dir is set 
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
+
 done = 0
 !EXCEPT=0
 
@@ -219,7 +222,9 @@ data = {datastruct, $
 	pathname: '', $				    ; pathname (obviously)
 	xtalname: '', $				    ; crystal structure filename (without pathname)
 	suffix: '', $				    ; filename suffix 
-	prefname: '~/.CBEDgui.prefs', $	; filename of preferences file (including path)
+    appdir: appdir, $               ; location of the user application folder
+	prefname: 'CBEDgui.prefs', $	; filename of preferences file (will be located inside data.appdir)
+    foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
 	filesize: long64(0), $			; input file size in bytes
 	homefolder: '', $			    ; startup folder of the program
 	CBEDroot: 'undefined', $		; current pathname (is stored in preferences file)
@@ -337,7 +342,9 @@ DG = ['  ',' 1',' 1R',' 2',' 2R',' 21R','  mR', $
       ' 6',' 31R',' 61R',' 6mRmR',' 6mm',' 3m1R', $
       ' 6mm1R']
 
-
+; set the foldersep string
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then data.foldersep = '\'
+data.appdir = data.appdir+data.foldersep
 
 ; a few font strings
 fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'

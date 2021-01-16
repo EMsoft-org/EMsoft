@@ -88,6 +88,8 @@ common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 common getenv_common, librarylocation
 
+; before we do anything, we make sure that the location of the app_user_dir is set 
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
 
 !EXCEPT = 0
 logmode = 0
@@ -261,12 +263,18 @@ Efitdata = {Efitdatastruct, $
                 hipasscutoff:float(0), $
                 homefolder:'', $
                 nprefs:long(0), $
-                prefname:'~/.config/EMsoft/Efitgui.prefs', $
+                appdir: appdir, $               ; location of the user application folder
+                prefname: 'Efitgui.prefs', $    ; filename of preferences file (will be located inside data.appdir)
+                foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
                 test:long(0) }
 
 Efitdata.EMsoftpathname = Core_getenv(/bin)
 Efitdata.EMdatapathname = Core_getenv(/data)
 librarylocation = Core_getenv(/lib)
+
+; set the foldersep string
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then Efitdata.foldersep = '\'
+Efitdata.appdir = Efitdata.appdir+Efitdata.foldersep
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )

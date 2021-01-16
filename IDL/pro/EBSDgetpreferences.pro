@@ -46,12 +46,12 @@ common SEM_widget_common, SEMwidget_s
 common SEM_data_common, SEMdata
 
 ; does the preferences file exist ?
-rs = file_test(SEMdata.prefname)
+rs = file_test(SEMdata.appdir+SEMdata.prefname)
 
 if (rs eq 1) then begin
   s = ''
   i = 0
-  openr,1,SEMdata.prefname
+  openr,1,SEMdata.appdir+SEMdata.prefname
   readf,1,i
   SEMdata.nprefs = i
 
@@ -117,7 +117,7 @@ end else begin
   cd,current=s
   SEMdata.EBSDroot=s
 ; prefs file does not exist yet, so let's create it with default values
-  if not keyword_set(noprint) then Core_Print,'Creating preferences file '+SEMdata.prefname
+  if not keyword_set(noprint) then Core_Print,'Creating preferences file '+SEMdata.appdir+SEMdata.prefname
   if keyword_set(noprint) then EBSDwritepreferences,/noprint else EBSDwritepreferences
 endelse
 
