@@ -454,13 +454,17 @@ SEMdata = {SEMdatastruct, $
         } ; end of data structure definition
 
 ; set the foldersep string
-if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then SEMdata.foldersep = '\'
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then begin 
+    SEMdata.foldersep = '\'
+    fontstr='DejaVuSans'
+    fontstrlarge='DejaVuSans Bold'
+    fontstrsmall='DejaVuSans Italic'
+else
+    fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+    fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+    fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+endif
 SEMdata.appdir = SEMdata.appdir+SEMdata.foldersep
-
-; a few font strings (this will need to be redone for Windows systems !!!)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
 
 ; here are the possible master pattern file types
 SEMdata.mpfiletypestring = ['  ','EBSD','ECP','Kossel','TKD']

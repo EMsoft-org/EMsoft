@@ -343,13 +343,20 @@ DG = ['  ',' 1',' 1R',' 2',' 2R',' 21R','  mR', $
       ' 6mm1R']
 
 ; set the foldersep string
-if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then data.foldersep = '\'
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then begin 
+    data.foldersep = '\'
+    fontstr='DejaVuSans'
+    fontstrlarge='DejaVuSans Bold'
+    fontstrsmall='DejaVuSans Italic'
+else
+    fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+    fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+    fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+endif
+
 data.appdir = data.appdir+data.foldersep
 
 ; a few font strings
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
