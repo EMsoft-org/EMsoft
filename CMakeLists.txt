@@ -323,6 +323,31 @@ set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
 # -----------------------------------------------------------------------
 add_subdirectory(${SHTfile_SOURCE_DIR} ${EMsoft_BINARY_DIR}/SHTfile)
 
+get_filename_component(EMsoft_PARENT ${EMsoft_SOURCE_DIR} DIRECTORY CACHE)
+
+option(EMsoft_ENABLE_PRIVATE "" ON)
+
+#------------------------------------------------------------------------------
+# If the developer has set another EMsoft directory then use that, otherwise look
+# for the EMsoft directory at the same level as the EMsoftPrivate directory
+if(EMsoft_ENABLE_PRIVATE)
+  set(EMsoftPrivate_SOURCE_DIR "${EMsoft_PARENT}/EMsoftPrivate")
+  message(STATUS "Locating EMsoftPrivate Source directory at ${EMsoftPrivate_SOURCE_DIR}")
+
+  if(EXISTS "${EMsoftPrivate_SOURCE_DIR}")
+    message(STATUS "EMsoftPrivate_SOURCE_DIR: ${EMsoftPrivate_SOURCE_DIR}")
+  else()
+    message(FATAL_ERROR "EMsoftPrivate_SOURCE_DIR was not found. It should be at the same level as the EMsoft Directory")
+  endif()
+  # -----------------------------------------------------------------------
+  # If we are including the Private repository in this build, then we need
+  # the additional files that are needed for EMsoftLib and EMsoftHDFLib
+  # -----------------------------------------------------------------------
+  include("${EMsoftPrivate_SOURCE_DIR}/Source/EMsoftLib/SourceList.cmake")
+  include("${EMsoftPrivate_SOURCE_DIR}/Source/EMsoftHDFLib/SourceList.cmake")
+endif()
+
+
 # -----------------------------------------------------------------------
 # Set a Global Prefix where everthing is going to get intalled. For OS X we are
 # going to try to install everything into the .app package
@@ -357,6 +382,14 @@ include(${PROJECT_SOURCE_DIR}/resources/SourceList.cmake)
 # Package the needed template files
 include(${PROJECT_SOURCE_DIR}/NamelistTemplates/SourceList.cmake)
 
+# -----------------------------------------------------------------------
+# If we are including the Private repository in this build, then we need
+# the additional executable files to be compiled
+# -----------------------------------------------------------------------
+if(EMsoft_ENABLE_PRIVATE)
+  include(${EMsoftPrivate_SOURCE_DIR}/NamelistTemplates/SourceList.cmake)
+  include(${EMsoftPrivate_SOURCE_DIR}/Source/Source.cmake)
+endif()
 
 # --------------------------------------------------------------------
 # Generate our ReadMe and License Files
@@ -392,12 +425,35 @@ message(STATUS "* BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 message(STATUS "* System: ${CMAKE_SYSTEM_NAME}")
 message(STATUS "* Version: ${CMAKE_SYSTEM_VERSION}")
 message(STATUS "* Processor: ${CMAKE_SYSTEM_PROCESSOR}")
-message(STATUS "* EMsoft_SHORT_GIT_HASH: ${EMsoft_SHORT_GIT_HASH}")
-message(STATUS "* EMsoft Git committed on ${GVS_GIT_COMMIT_DATE}")
 message(STATUS "* EMsoft_VER_MAJOR: ${EMsoft_VER_MAJOR}")
 message(STATUS "* EMsoft_VER_MINOR: ${EMsoft_VER_MINOR}")
 message(STATUS "* EMsoft_VER_PATCH: ${EMsoft_VER_PATCH}")
 message(STATUS "* EMsoft_VERSION_TWEAK: ${EMsoft_VERSION_TWEAK}")
 message(STATUS "* EMsoft_VERSION: ${EMsoft_VERSION}")
 message(STATUS "* CMAKE_Fortran_COMPILER: ${CMAKE_Fortran_COMPILER}")
+message(STATUS "* EMsoft_SHORT_GIT_HASH: ${EMsoft_SHORT_GIT_HASH}")
+message(STATUS "* EMsoft Git committed: ${GVS_GIT_COMMIT_DATE}")
+if(EMsoft_ENABLE_PRIVATE)
+
+  # --------------------------------------------------------------------
+  # Print out the current Git Infomation. This is useful to help debug the dashboards
+  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
+                  OUTPUT_VARIABLE EMsoftPrivate_GIT_HASH
+                  RESULT_VARIABLE did_run
+                  ERROR_VARIABLE git_error
+                  WORKING_DIRECTORY ${EMsoftPrivate_SOURCE_DIR}
+                  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  string(REPLACE "\n" "" EMsoftPrivate_GIT_HASH "${EMsoftPrivate_GIT_HASH}")
+
+  execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty='%cd' --date=format:%Y-%m-%d-%H:%M:%S
+                  OUTPUT_VARIABLE GVS_GIT_COMMIT_DATE
+                  RESULT_VARIABLE did_run
+                  ERROR_VARIABLE git_error
+                  WORKING_DIRECTORY ${EMsoftPrivate_SOURCE_DIR} 
+  )
+  string(REPLACE "\n" "" GVS_GIT_COMMIT_DATE "${GVS_GIT_COMMIT_DATE}")
+  message(STATUS "* EMsoftPrivate Git Hash: ${EMsoftPrivate_GIT_HASH}")
+  message(STATUS "* EMsoftPrivate Git committed: ${GVS_GIT_COMMIT_DATE}")
+endif()
 message(STATUS "*******************************************************************************")
