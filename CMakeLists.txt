@@ -1,20 +1,7 @@
 
-
-if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.1.0")
-  cmake_policy(SET CMP0002 NEW)
-  cmake_policy(SET CMP0054 NEW)
-  cmake_policy(SET CMP0048 NEW)
-endif()
-
-if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.12.0")
-  cmake_policy(SET CMP0074 NEW)
-endif()
-
-if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
-  cmake_policy(SET CMP0079 NEW)
-endif()
-
 cmake_minimum_required(VERSION 3.14.5)
+
+include ("cmake/CMakePolicies.cmake")
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -325,7 +312,7 @@ add_subdirectory(${SHTfile_SOURCE_DIR} ${EMsoft_BINARY_DIR}/SHTfile)
 
 get_filename_component(EMsoft_PARENT ${EMsoft_SOURCE_DIR} DIRECTORY CACHE)
 
-option(EMsoft_ENABLE_PRIVATE "" ON)
+option(EMsoft_ENABLE_PRIVATE "" OFF)
 
 #------------------------------------------------------------------------------
 # If the developer has set another EMsoft directory then use that, otherwise look
