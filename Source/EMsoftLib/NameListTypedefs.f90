@@ -1500,6 +1500,7 @@ type dpmergeNameListType
         character(fnlen)        :: dotproductfile(5)
         character(fnlen)        :: ctfname
         character(fnlen)        :: angname
+        character(fnlen)        :: phasemapnameweighted
         character(fnlen)        :: phasemapname
         integer(kind=irg)       :: phasecolors(5)
         character(8)            :: usedp

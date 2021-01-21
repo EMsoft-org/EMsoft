@@ -37,6 +37,7 @@
 !> @brief merge the data from two or more dp files into a single .ctf and/or .ang file
 !
 !> @date 08/17/19 MDG 1.0 new program
+!> @date 01/20/21 MDG 1.1 add un-weighted output
 !--------------------------------------------------------------------------
 
 program EMdpmerge
@@ -68,7 +69,8 @@ integer(kind=irg)                           :: istat, res
 type(EBSDIndexingNameListType)              :: dinl
 type(EBSDDIdataType)                        :: EBSDDIdata
 type(EBSDMPdataType)                        :: EBSDMPdata
-real(kind=sgl),allocatable                  :: dplist(:,:), OSMlist(:,:), exptIQ(:), eangles(:,:,:), pfrac(:), pID(:), dpmap(:,:)
+real(kind=sgl),allocatable                  :: dplist(:,:), OSMlist(:,:), exptIQ(:), eangles(:,:,:), pfrac(:), pID(:), &
+                                               dpmap(:,:)
 integer(kind=irg),allocatable               :: phaseID(:), pnum(:)
 integer(kind=irg)                           :: ipf_wd, ipf_ht, irow, numpat, ml(1), ipar(4)
 integer(kind=irg)                           :: dims(1), hdferr, io_int(2), i, j, ii, numdp
@@ -82,6 +84,7 @@ character(len=128)                          :: iomsg
 logical                                     :: isInteger
 type(image_t)                               :: im
 integer(int8), allocatable                  :: TIFF_image(:,:)
+integer(int8), parameter                    :: intmax = 127
 integer                                     :: dim2(2)
 integer(c_int32_t)                          :: result
 
@@ -241,9 +244,9 @@ else ! indexing mode must be SI
 
 end if 
 
-if (trim(dpmnl%phasemapname).ne.'undefined') then 
+if (trim(dpmnl%phasemapnameweighted).ne.'undefined') then 
   ! output the phase map as a tiff/bmp/ file 
-  fname = trim(EMsoft_getEMdatapathname())//trim(dpmnl%phasemapname)
+  fname = trim(EMsoft_getEMdatapathname())//trim(dpmnl%phasemapnameweighted)
   fname = EMsoft_toNativePath(fname)
   TIFF_filename = trim(fname)
 
@@ -260,9 +263,10 @@ if (trim(dpmnl%phasemapname).ne.'undefined') then
    end do 
   end do 
 
+! first the weighted phasemap 
   ma = maxval(dpmap)
   mi = minval(dpmap)
-  dpmap = 255*(dpmap-mi)/(ma-mi)
+  dpmap = 255*(dpmap-mi)/(ma-mi) 
 
 ! the pre-defined colors are red, green, blue, yellow, cyan, fushia, and white 
 ! each color is weighted by the maximum dot product value to make the image a bit more realistic
@@ -312,7 +316,70 @@ if (trim(dpmnl%phasemapname).ne.'undefined') then
   else  
     call Message(' Color phase map written to '//trim(TIFF_filename))
   end if 
-deallocate(TIFF_image)
+  deallocate(TIFF_image)
+end if
+
+! then the regular phase map with saturated colors 
+if (trim(dpmnl%phasemapname).ne.'undefined') then 
+  fname = trim(EMsoft_getEMdatapathname())//trim(dpmnl%phasemapname)
+  fname = EMsoft_toNativePath(fname)
+  TIFF_filename = trim(fname)
+
+  ! allocate memory for a color image; each pixel has 3 bytes [RGB]
+  allocate(TIFF_image(3*ipf_wd,ipf_ht))
+  TIFF_image = 0_int8
+
+! the pre-defined colors are red, green, blue, yellow, cyan, fushia, and white 
+! each color is weighted by the maximum dot product value to make the image a bit more realistic
+  TIFF_image = 0
+  do j=1,ipf_ht
+   do i=1,ipf_wd
+    ii = (j-1) * ipf_wd + i 
+    select case(dpmnl%phasecolors(phaseID(ii)))
+      case(1) 
+        TIFF_image(1+3*(i-1),j) = intmax
+
+      case(2) 
+        TIFF_image(2+3*(i-1),j) = intmax
+
+      case(3) 
+        TIFF_image(3+3*(i-1),j) = intmax
+
+      case(4) 
+        TIFF_image(1+3*(i-1),j) = intmax
+        TIFF_image(2+3*(i-1),j) = intmax
+
+      case(5) 
+        TIFF_image(2+3*(i-1),j) = intmax
+        TIFF_image(3+3*(i-1),j) = intmax
+
+      case(6) 
+        TIFF_image(1+3*(i-1),j) = intmax
+        TIFF_image(3+3*(i-1),j) = intmax
+
+      case(7) 
+        TIFF_image(1+3*(i-1),j) = intmax
+        TIFF_image(2+3*(i-1),j) = intmax
+        TIFF_image(3+3*(i-1),j) = intmax
+     end select 
+   end do
+  end do
+
+  ! set up the image_t structure
+  im = image_t(TIFF_image)
+  im%dims = (/ ipf_wd, ipf_ht /)
+  im%samplesPerPixel = 3
+  if(im%empty()) call Message("EMdpmerge: failed to convert array to rgb image")
+
+  ! create the file
+  call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
+  if(0.ne.iostat) then
+    call Message(" Failed to write image to file : "//iomsg)
+  else  
+    call Message(' Color phase map written to '//trim(TIFF_filename))
+  end if 
+
+  deallocate(TIFF_image)
 end if 
 
   ! close HDF5 interface
