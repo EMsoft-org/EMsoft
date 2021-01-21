@@ -106,6 +106,7 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value=string(mi,format="(F9.2)"), Efitwidget_s.min
           WIDGET_CONTROL, set_value=string(ma,format="(F9.2)"), Efitwidget_s.max
           tvscl,expEBSDpattern * mask * gmask
+          Efit_drawPC
         endcase
 
         1 : begin       ; simulated pattern only
@@ -113,6 +114,7 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value=string(mi,format="(F9.2)"), Efitwidget_s.min
           WIDGET_CONTROL, set_value=string(ma,format="(F9.2)"), Efitwidget_s.max
           tvscl,Epat * mask * gmask
+          Efit_drawPC
         endcase
 
         2 : begin       ; difference pattern
@@ -121,6 +123,7 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value=string(mi,format="(F9.2)"), Efitwidget_s.min
           WIDGET_CONTROL, set_value=string(ma,format="(F9.2)"), Efitwidget_s.max
           tvscl,z * mask * gmask
+          Efit_drawPC
         endcase
 
         3 : begin       ; overlap pattern 
@@ -129,6 +132,7 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value=string(mi,format="(F9.2)"), Efitwidget_s.min
           WIDGET_CONTROL, set_value=string(ma,format="(F9.2)"), Efitwidget_s.max
           tvscl,z * mask * gmask
+          Efit_drawPC
         endcase
 
         4 : begin       ; overlap pattern RGB 
@@ -139,6 +143,7 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value='---', Efitwidget_s.min
           WIDGET_CONTROL, set_value='---', Efitwidget_s.max
           tvscl,c,true=1
+          Efit_drawPC
         endcase
 
         5 : begin       ; flicker patterns
@@ -148,8 +153,10 @@ case (Efitdata.displayoption) of
           WIDGET_CONTROL, set_value='---', Efitwidget_s.max
           for i=0,4 do begin
             tv,z1
+            Efit_drawPC
             wait,0.25
             tv,z2
+            Efit_drawPC
             wait,0.25
           endfor
         endcase

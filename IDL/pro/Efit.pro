@@ -16,13 +16,16 @@
 @Efitinit
 @Efit_display
 @Efit_display_event
+@Efit_drawPC
 @Efitevent
 @Efit_control
 @Efit_control_event
 @Efit_event
 @Efit_amoeba
 @Efit_fit
+@Efit_constrainedfit
 @Efit_update
+@Efit_constrainedupdate
 @Efitgetpreferences
 @Efitwritepreferences
 @Efitgetfilename
@@ -153,6 +156,7 @@ Efitwidget_s = {widgetstruct, $
                 mkjson:long(0), $
                 convcrit:long(0), $
                 fitmode:long(0), $
+                goconstrainedfit:long(0), $
                 preproc:long(0), $
                 ramponoff:long(0), $
                 hipassonoff:long(0), $
@@ -714,6 +718,14 @@ Efitwidget_s.gofit = WIDGET_BUTTON(line2, $
                                 SENSITIVE=0)
 
 Efitwidget_s.progress = Core_WText(line2,'convergence parameter', fontstr, 200, 25, 60, 1, string(0.0,FORMAT="(F12.6)"))
+
+line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
+Efitwidget_s.goconstrainedfit = WIDGET_BUTTON(line2, $
+                                UVALUE='GOCONSTRAINEDFIT', $
+                                VALUE='Start Constrained Fit', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
 
 
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)

@@ -26,53 +26,27 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_display_event.pro
+; EMsoft:Efit_drawPC.pro
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: Efit_display_event.pro
+; PROGRAM: Efit_drawPC.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief main event handler for Efit_display.pro routine
+;> @brief Draw the pattern center as a cross on top of the displayed pattern
 ;
-;> @date 10/13/15 MDG 1.0 first attempt at a user-friendly interface
+;> @date 1/21/21 MDG 1.0 first attempt 
 ;--------------------------------------------------------------------------
-pro Efit_display_event,event
+pro Efit_drawPC,dummy
 
 common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
+px = Efitdata.detnumsx/2 + Efitdata.detxpc
+py = Efitdata.detnumsy/2 + Efitdata.detypc
 
-if (event.id eq Efitwidget_s.displaybase) then begin
-  Efitdata.xlocationdisplay = event.x
-  Efitdata.ylocationdisplay = event.y-25
-end else begin
-
-  WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
-  
-  CASE eventval OF
-        'CLOSEDISPLAY': begin
-                WIDGET_CONTROL, Efitwidget_s.displaybase, /DESTROY
-        endcase
-        'SAVEPATTERN': begin
-                delist = ['jpeg','tiff','bmp']
-                de = delist[Efitdata.imageformat]
-                filename = DIALOG_PICKFILE(/write,default_extension=de,path=Efitdata.pathname,title='enter filename without extension')
-                im = tvrd()
-                case de of
-                    'jpeg': write_jpeg,filename,im,quality=100
-                    'tiff': write_tiff,filename,reverse(im,2)
-                    'bmp': write_bmp,filename,im
-                 else: MESSAGE,'unknown file format option'
-                endcase
-        endcase
-
-  else: MESSAGE, "Efit_display_event: Event "+eventval+" Unknown"
-
-  endcase
-
-endelse
+plots, px + [-10,10], [py, py], /dev, color = 250
+plots, [px, px], py + [-10,10], /dev, color = 250
+empty
 
 end
-
-

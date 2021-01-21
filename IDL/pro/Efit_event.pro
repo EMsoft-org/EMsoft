@@ -90,6 +90,7 @@ end else begin
                   Efitinit
                   WIDGET_CONTROL, Efitwidget_s.compute, sensitive=1
                   WIDGET_CONTROL, Efitwidget_s.gofit, sensitive=1
+                  WIDGET_CONTROL, Efitwidget_s.goconstrainedfit, sensitive=1
                 endif
         endcase
 
@@ -104,6 +105,14 @@ end else begin
                   WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
                 endif
                 Efit_fit
+        endcase
+
+        'GOCONSTRAINEDFIT': begin
+                if (Efitdata.displayoption eq 5) then begin
+                  Efitdata.displayoption = 4
+                  WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
+                endif
+                Efit_constrainedfit,'NelderMead'
         endcase
 
  	'QUIT': begin
