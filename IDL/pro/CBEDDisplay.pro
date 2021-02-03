@@ -348,11 +348,11 @@ if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then begin
     fontstr='DejaVuSans'
     fontstrlarge='DejaVuSans Bold'
     fontstrsmall='DejaVuSans Italic'
-else
+end else begin
     fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
     fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
     fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
-endif
+endelse
 
 data.appdir = data.appdir+data.foldersep
 
