@@ -59,9 +59,6 @@ logunit = 10
 
   CBEDprint,'Reading data file '+data.dataname
 
-; not sure if this line is really needed...
-  EMdatapathname = Core_getenv(/data)
-
   if ( keyword_set(LACBED) ) then begin
     data.pathname = data.CBEDroot
   end else begin

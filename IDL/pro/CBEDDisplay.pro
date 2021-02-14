@@ -610,7 +610,7 @@ widget_s.progressdrawID = drawID
 WIDGET_CONTROL, widget_s.logodraw, GET_VALUE=drawID
 widget_s.logodrawID = drawID
 
-read_jpeg,'Resources/EMsoftlogo.jpg',logo,true=1
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo,true=1
 wset,widget_s.logodrawID
 tvscl,logo,true=1
 
