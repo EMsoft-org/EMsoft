@@ -393,7 +393,7 @@ Efitwidget_s.logodraw = WIDGET_DRAW(block1, $
 			/FRAME, $
 			/ALIGN_CENTER, $
 			XSIZE=600, $
-			YSIZE=100)
+			YSIZE=200)
 			;YSIZE=200)
 
 ;------------------------------------------------------------
@@ -770,7 +770,7 @@ WIDGET_CONTROL,Efitwidget_s.base,/REALIZE
 WIDGET_CONTROL, Efitwidget_s.logodraw, GET_VALUE=drawID
 Efitwidget_s.logodrawID = drawID
 ;
-read_jpeg,'Resources/EMsoftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo
 wset,Efitwidget_s.logodrawID
 tvscl,logo,true=1
 

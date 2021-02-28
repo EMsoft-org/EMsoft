@@ -648,7 +648,7 @@ WIDGET_CONTROL,SEMwidget_s.base,/REALIZE
 WIDGET_CONTROL, SEMwidget_s.logodraw, GET_VALUE=drawID
 SEMwidget_s.logodrawID = drawID
 ;
-read_jpeg,'Resources/EMsoftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo
 wset,SEMwidget_s.logodrawID
 tvscl,logo,true=1
 
