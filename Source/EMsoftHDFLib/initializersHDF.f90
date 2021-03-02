@@ -79,6 +79,7 @@ use error
 use gvectors
 use diffraction
 use HDFsupport
+use omp_lib
 
 IMPLICIT NONE
 
@@ -238,7 +239,7 @@ if (compute) then
     call Message(' Using parallel code for computation ... ',frm = "(A)", advance="no")
 !$OMP PARALLEL DEFAULT(shared) PRIVATE(iz, ix, iy, gg, myrlp)
     myrlp = rlp
-!$OMP DO SCHEDULE(DYNAMIC,5) 
+!$OMP DO SCHEDULE(DYNAMIC) 
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  

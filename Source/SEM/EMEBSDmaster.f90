@@ -363,7 +363,7 @@ end if
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
- call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
+ call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose=verbose, nthreads=emnl%nthreads)
 
 ! determine the point group number
  j=0
