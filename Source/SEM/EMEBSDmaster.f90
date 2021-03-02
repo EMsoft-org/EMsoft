@@ -149,6 +149,7 @@ end program EMEBSDmaster
 !> @date 05/26/19  MDG 7.3 added warning about trigonal structures requiring hexagonal setting 
 !> @date 07/01/19  MDG 7.4 corrected initial beam energy in restart mode 
 !> @date 09/25/19  MDG 8.0 adds code to generate smaller SHTmaster file for Legendre grid
+!< @date 03/02/21  MDG 8.1 started using parallel code for Fourier coefficient computation in Initialize_Cell
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -335,9 +336,11 @@ end if
  !allocate(cell)        
  verbose = .TRUE.
  if (emnl%restart.eqv..TRUE.) then 
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), & 
+                        nthreads=emnl%nthreads, verbose=verbose)
  else
-   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), & 
+                        nthreads=emnl%nthreads, verbose=verbose)
  end if
 
 ! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
@@ -730,7 +733,8 @@ energyloop: do iE=Estart,1,-1
    cell%voltage = dble(EkeVs(iE))
    if(iE .ne. Estart) then
    	verbose = .TRUE.
-   	call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, EkeVs(iE), verbose, initLUT=.TRUE.)
+   	call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, EkeVs(iE), &
+                         nthreads=emnl%nthreads, verbose=verbose, initLUT=.TRUE.)
    end if
    !call CalcWaveLength(cell, rlp, skip)
 

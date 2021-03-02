@@ -63,9 +63,10 @@ contains
 !> @date 09/29/16 MDG 5.2 added option to read CrystalData from currently open HDF file
 !> @date 07/02/18 SS  5.3 added initLUT optional variable
 !> @date 08/09/18 MDG 5.4 added FSCATT interpolation option
+!< @date 03/02/21 MDG 5.5 added OpenMP parallel option for LUT computation (tested on Ni for nthreads=8)
 !--------------------------------------------------------------------------
 recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, &
-                                     verbose, existingHDFhead, initLUT, noLUT, interpolate)
+                                     verbose, existingHDFhead, nthreads, initLUT, noLUT, interpolate)
 !DEC$ ATTRIBUTES DLLEXPORT :: Initialize_Cell
 
 use local
@@ -92,15 +93,19 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
+integer,INTENT(IN),OPTIONAL                :: nthreads
 logical,INTENT(IN),OPTIONAL                :: initLUT
 logical,INTENT(IN),OPTIONAL                :: noLUT
 logical,INTENT(IN),OPTIONAL                :: interpolate
 
+type(gnode)                                :: myrlp
 integer(kind=irg)                          :: istat, io_int(3), skip
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
 real(kind=sgl)                             :: dhkl, io_real(3), ddt
 logical                                    :: loadingfile, justinit, interp, compute
 real(kind=sgl),parameter                   :: gstepsize = 0.001  ! [nm^-1] interpolation stepsize
+
+! !$OMP THREADPRIVATE(myrlp) 
 
 interp = .FALSE.
 if (present(interpolate)) then
@@ -228,40 +233,40 @@ if (compute) then
   end if
  end if
  
-!  if (present(nthreads)) then 
-!     call OMP_SET_NUM_THREADS(nthreads)
-! !$OMP PARALLEL DEFAULT(shared) PRIVATE(iz, ix, iy, gg, rlp)
-! ! note that the lookup table must be twice as large as the list of participating reflections,
-! ! since the Sgh matrix uses g-h as its index !!!  
-! !$OMP DO SCHEDULE(DYNAMIC,5) 
-! ! now do the same for the other allowed reflections
-! ! note that the lookup table must be twice as large as the list of participating reflections,
-! ! since the dynamical matrix uses g-h as its index !!!  
-!   ixlomp: do ix=-2*imh,2*imh
-!   iylomp:  do iy=-2*imk,2*imk
-!   izlomp:   do iz=-2*iml,2*iml
-!           gg = (/ ix, iy, iz /)
-!           if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
-!   ! add the reflection to the look up table
-!              if (interp.eqv..TRUE.) then          
-!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
-!              else
-!                call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
-!              end if
-! !$OMP CRITICAL
-!              cell%LUT(ix, iy, iz) = rlp%Ucg
-!              cell%LUTqg(ix, iy, iz) = rlp%qg
-!   ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-!              if (cabs(rlp%Ucg).le.ddt) then 
-!                cell%dbdiff(ix,iy,iz) = .TRUE.
-!              end if
-! !$OMP END CRITICAL
-!           end if ! IsGAllowed
-!          end do izlomp
-!         end do iylomp
-!       end do ixlomp
-! !$OMP END PARALLEL 
-!  else
+ if (present(nthreads)) then 
+    call OMP_SET_NUM_THREADS(nthreads)
+    call Message(' Using parallel code for computation ... ',frm = "(A)", advance="no")
+!$OMP PARALLEL DEFAULT(shared) PRIVATE(iz, ix, iy, gg, myrlp)
+    myrlp = rlp
+!$OMP DO SCHEDULE(DYNAMIC,5) 
+! now do the same for the other allowed reflections
+! note that the lookup table must be twice as large as the list of participating reflections,
+! since the dynamical matrix uses g-h as its index !!!  
+  ixlomp: do ix=-2*imh,2*imh
+  iylomp:  do iy=-2*imk,2*imk
+  izlomp:   do iz=-2*iml,2*iml
+          gg = (/ ix, iy, iz /)
+          if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+  ! add the reflection to the look up table
+             if (interp.eqv..TRUE.) then          
+               call CalcUcg(cell,myrlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
+             else
+               call CalcUcg(cell,myrlp,gg,applyqgshift=.TRUE.)
+             end if
+!$OMP CRITICAL
+             cell%LUT(ix, iy, iz) = myrlp%Ucg
+             cell%LUTqg(ix, iy, iz) = myrlp%qg
+  ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+             if (cabs(myrlp%Ucg).le.ddt) then 
+               cell%dbdiff(ix,iy,iz) = .TRUE.
+             end if
+!$OMP END CRITICAL
+          end if ! IsGAllowed
+         end do izlomp
+        end do iylomp
+      end do ixlomp
+!$OMP END PARALLEL 
+ else
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  
@@ -286,11 +291,11 @@ if (compute) then
          end do izl
         end do iyl
       end do ixl
- ! end if
+ end if
 
   if (present(verbose)) then
    if (verbose) then
-    call Message('Done', frm = "(A/)")
+    call Message(' Done', frm = "(A/)")
    end if
   end if
  end if  
