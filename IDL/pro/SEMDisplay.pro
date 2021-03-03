@@ -40,7 +40,7 @@
 @Kosselevent                    ; Kossel choice event handler
 @KosselshowPattern              ; show Kossel pattern
 ;
-; Copyright (c) 2014-2016, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -119,6 +119,9 @@ common EBSDmasks, circularmask
 common CommonCore, status, logmode, logunit
 
 common projections, mcxcircle, mcycircle, mpxcircle, mpycircle, mcSPxcircle, mcSPycircle, mpSPxcircle, mpSPycircle 
+
+; before we do anything, we make sure that the location of the app_user_dir is set 
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
 
 ;------------------------------------------------------------
 ; make sure that this program isn't already running
@@ -414,7 +417,9 @@ SEMdata = {SEMdatastruct, $
 	homefolder: '', $				; startup folder of the program
 	EBSDroot: 'undefined', $		; current pathname (is stored in preferences file)
 	EBSDMCroot: 'undefined', $		; current pathname (is stored in preferences file)
-	prefname: '~/.config/EMsoft/EBSDgui.prefs', $		; filename of preferences file (including path)
+	appdir: appdir, $               ; location of the user application folder
+	prefname: 'EBSDgui.prefs', $	; filename of preferences file (will be located inside data.appdir)
+    foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
 	nprefs: fix(0), $				; number of preferences in file
 	MCLSmode: fix(0), $				; Monte Carlo Lambert Selector tag
 	MCLSum: fix(0), $				; Monte Carlo Lambert sum or individual tag
@@ -448,10 +453,18 @@ SEMdata = {SEMdatastruct, $
     scrdimy:0L $                    ; display area y size in pixels 
         } ; end of data structure definition
 
-; a few font strings (this will need to be redone for Windows systems !!!)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+; set the foldersep string
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then begin 
+    SEMdata.foldersep = '\'
+    fontstr='DejaVuSans'
+    fontstrlarge='DejaVuSans Bold'
+    fontstrsmall='DejaVuSans Italic'
+end else begin
+    fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+    fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+    fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+endelse
+SEMdata.appdir = SEMdata.appdir+SEMdata.foldersep
 
 ; here are the possible master pattern file types
 SEMdata.mpfiletypestring = ['  ','EBSD','ECP','Kossel','TKD']
@@ -635,7 +648,7 @@ WIDGET_CONTROL,SEMwidget_s.base,/REALIZE
 WIDGET_CONTROL, SEMwidget_s.logodraw, GET_VALUE=drawID
 SEMwidget_s.logodrawID = drawID
 ;
-read_jpeg,'Resources/EMsoftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo
 wset,SEMwidget_s.logodrawID
 tvscl,logo,true=1
 

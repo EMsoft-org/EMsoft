@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -46,7 +46,7 @@ common SEM_widget_common, SEMwidget_s
 common SEM_data_common, SEMdata
 
 ; prefs file
-  openw,1,SEMdata.prefname
+  openw,1,SEMdata.appdir+SEMdata.prefname
   nprefs = 35
   SEMdata.nprefs = nprefs
   printf,1,nprefs
@@ -93,7 +93,7 @@ common SEM_data_common, SEMdata
 ; and close the file
   close,1
 
-  if not keyword_set(noprint) then Core_Print,'The preferences file '+SEMdata.prefname+' was successfully saved '
+  if not keyword_set(noprint) then Core_Print,'The preferences file '+SEMdata.appdir+SEMdata.prefname+' was successfully saved '
 
 end
 

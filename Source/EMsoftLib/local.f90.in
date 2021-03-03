@@ -1657,11 +1657,11 @@ if (present(config)) then
     write (dataunit,"(A,A,'UserName',A,': ',A,A,A,',')") tab, edp, edp, edp, trim(username), edp
 
     write(*,"(A)", ADVANCE='No') '  Enter your email address : '
-    read(*,"(A)", ADVANCE='No') useremail
+    read(*,"(A)") useremail
     write (dataunit,"(A,A,'UserEmail',A,': ',A,A,A,',')") tab, edp, edp, edp, trim(useremail), edp
 
     write(*,"(A)", ADVANCE='No') '  Enter your affiliation : '
-    read(*,"(A)", ADVANCE='No') userlocn
+    read(*,"(A)") userlocn
     write (dataunit,"(A,A,'UserLocation',A,': ',A,A,A)") tab, edp, edp, edp, trim(userlocn), edp
 
     write (dataunit,"('}')")

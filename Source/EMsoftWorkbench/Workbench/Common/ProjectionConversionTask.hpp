@@ -44,9 +44,8 @@ template <typename P, typename I>
 class ProjectionConversionTask : public ImageGenerationTask<I>
 {
   public:
-    ProjectionConversionTask(const std::vector<P>& data, size_t xDim, size_t yDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType, size_t zValue,
-                             ModifiedLambertProjection::Square square, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, size_t vectorIdx, bool horizontalMirror = false,
-                             bool verticalMirror = false)
+    ProjectionConversionTask(const std::vector<P>& data, size_t xDim, size_t yDim, size_t projDim, int32_t projType, size_t zValue, ModifiedLambertProjection::Square square,
+                             std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, size_t vectorIdx, bool horizontalMirror = false, bool verticalMirror = false)
     : ImageGenerationTask<I>(xDim, yDim, zValue, imageGenerators, sem, vectorIdx, horizontalMirror, verticalMirror)
     , m_Data(data)
     , m_ProjDim(projDim)
@@ -68,7 +67,7 @@ class ProjectionConversionTask : public ImageGenerationTask<I>
   private:
     std::vector<P> m_Data;
     size_t m_ProjDim;
-    ModifiedLambertProjection::ProjectionType m_ProjType;
+    int32_t m_ProjType;
     ModifiedLambertProjection::Square m_Square = ModifiedLambertProjection::Square::NorthSquare;
 
   public:

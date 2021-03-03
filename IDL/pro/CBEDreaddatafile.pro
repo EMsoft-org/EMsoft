@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -58,9 +58,6 @@ logmode = 0
 logunit = 10
 
   CBEDprint,'Reading data file '+data.dataname
-
-; not sure if this line is really needed...
-  EMdatapathname = Core_getenv(/data)
 
   if ( keyword_set(LACBED) ) then begin
     data.pathname = data.CBEDroot

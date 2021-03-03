@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -66,15 +66,6 @@ widget_s.CBEDDrawbase = WIDGET_BASE(TITLE='CBED Pattern', $
 block1 = WIDGET_BASE(widget_s.CBEDDrawbase, /FRAME, /ALIGN_CENTER, /COLUMN)
 
 ;------------------------------------------------------------
-widget_s.CBdraw = WIDGET_DRAW(block1, $
-			COLOR_MODEL=2, $
-			RETAIN=2, $
-			/ALIGN_CENTER, $
-			XSIZE=1025, $
-			YSIZE=1025)
-
-
-;------------------------------------------------------------
 block2a = WIDGET_BASE(block1, $
 			/FRAME, $
 			/ROW)
@@ -119,6 +110,14 @@ widget_s.imageformatbgroup = CW_BGROUP(block2a, $
                         EVENT_FUNC ='CBEDevent', $
                         UVALUE='IMAGEFORMAT', $
                         SET_VALUE=data.imageformat)
+
+;------------------------------------------------------------
+widget_s.CBdraw = WIDGET_DRAW(block1, $
+                        COLOR_MODEL=2, $
+                        RETAIN=2, $
+                        /ALIGN_CENTER, $
+                        XSIZE=1025, $
+                        YSIZE=1025)
 
 ;------------------------------------------------------------
 ; realize the widget structure

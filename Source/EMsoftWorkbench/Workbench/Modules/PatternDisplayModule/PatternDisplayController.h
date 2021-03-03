@@ -250,9 +250,8 @@ private:
 
   // -----------------------------------------------------------------------------
   template <typename T, typename U>
-  void createProjectionConversionTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
-                                       ModifiedLambertProjection::Square square, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
-                                       bool verticalMirror = false)
+  void createProjectionConversionTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, int32_t projType, ModifiedLambertProjection::Square square,
+                                       std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false, bool verticalMirror = false)
   {
     for(size_t z = 0; z < zDim; z++)
     {

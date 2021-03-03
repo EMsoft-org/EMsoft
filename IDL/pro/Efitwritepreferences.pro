@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -45,7 +45,7 @@ common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
 ; prefs file
-  openw,1,Efitdata.prefname
+  openw,1,Efitdata.appdir+Efitdata.prefname
   nprefs = 45
   Efitdata.nprefs = nprefs
   printf,1,nprefs
@@ -106,7 +106,7 @@ common Efit_data_common, Efitdata
 ; and close the file
   close,1
 
-  if not keyword_set(noprint) then Core_Print,'The preferences file '+Efitdata.prefname+' was successfully saved '
+  if not keyword_set(noprint) then Core_Print,'The preferences file '+Efitdata.appdir+Efitdata.prefname+' was successfully saved '
 
 end
 

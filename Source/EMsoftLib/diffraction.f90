@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -1548,7 +1548,7 @@ integer(kind=irg),INTENT(IN)    :: hhcc
 integer(kind=irg),INTENT(IN)    :: rfamily(hhcc,48,3),rnumfam(*)
 
 ! nref is the anticipated maximum number of reflections per pattern
-integer(kind=irg),parameter     :: nref = 2000
+integer(kind=irg),parameter     :: nref = 20000
 integer(kind=irg)               :: dp,i,j,jcnt,ui,vi,wi,pp,locg(nref,3),ier, io_int(1)
 integer(kind=irg),allocatable   :: idx(:)
 real(kind=sgl)                  :: sc,gmax,leng(nref),PX,PY,qx,qy,locv(nref),locvsave(nref),t(3),c(3),gg(3),gx(3),gy(3)
@@ -1603,7 +1603,7 @@ logical                         :: dbd(nref)
    dp=u*rfamily(i,j,1)+v*rfamily(i,j,2)+w*rfamily(i,j,3)
    if (dp.eq.0) then
     jcnt=jcnt+1
-    if (jcnt.gt.nref) call FatalError('DumpZAP ',' too many reflections (<2000)' )
+    if (jcnt.gt.nref) call FatalError('DumpZAP ',' too many reflections (<20000)' )
     locg(jcnt,1:3)=rfamily(i,j,1:3)
     leng(jcnt)=rg(i)
     locv(jcnt)=Vg(i)

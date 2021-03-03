@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -45,12 +45,12 @@ common CBED_widget_common, widget_s
 common CBED_data_common, data
 
 ; does the preferences file exist ?
-rs = file_test(data.prefname)
+rs = file_test(data.appdir+data.prefname)
 
 if (rs eq 1) then begin
   s = ''
   i = 0
-  openr,1,data.prefname
+  openr,1,data.appdir+data.prefname
   readf,1,i
   data.nprefs = i
 
@@ -118,7 +118,7 @@ end else begin
   cd,current=s
   data.CBEDroot=s
 ; prefs file does not exist yet, so let's create it with default values
-  if (widget_s.status ne 0L) then CBEDprint,'Creating preferences file '+data.prefname
+  if (widget_s.status ne 0L) then CBEDprint,'Creating preferences file '+data.appdir+data.prefname
   CBEDwritepreferences
 endelse
 

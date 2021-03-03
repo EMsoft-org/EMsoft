@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -88,7 +88,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 
-integer(kind=irg)                       :: i, j, oi_int(3)
+integer(kind=irg)                       :: i, j, oi_int(3), t
 real(kind=dbl)                          :: oi_real(5)
 
 
@@ -146,8 +146,11 @@ real(kind=dbl)                          :: oi_real(5)
     oi_real(1:5) = (/cell%apos(i, j,1:3),dble(cell%ATOM_pos(i,4:5))/)
     call WriteValue('         > ', oi_real, 5,"(2x,4(F9.5,','),F9.5)")
   end do
-end do
-call Message('', frm = "(A/)")
+ end do
+ call Message('', frm = "(A/)")
+ oi_int(1) = sum(cell%numat(1:cell%ATOM_ntype))
+ call WriteValue(' Total number of atoms in the unit cell : ', oi_int, 1)
+ call Message('', frm = "(A/)")
 
 end subroutine DumpXtalInfo
 

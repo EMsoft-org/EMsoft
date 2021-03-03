@@ -488,7 +488,7 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
   std::copy(dpArray, dpArray + roiArraySize, dpVec.begin());
   std::copy(indexArray, indexArray + roiArraySize, idxVec.begin());
 
-  LaueOps::Pointer laueOps = LaueOps::getOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
+  LaueOps::Pointer laueOps = LaueOps::GetOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
 
   std::vector<float>::iterator minIter = std::min_element(dpVec.begin(), dpVec.end());
   float minConfidence = *minIter;
@@ -552,7 +552,7 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
 void DictionaryIndexingController::processFinished()
 {
   std::array<float, 3> refDirection = {0.0f, 0.0f, 1.0f};
-  std::tuple<QImage, int32_t> ipfColorMapResults = EbsdLoader::CreateIPFColorMap(m_InputData.outputAngFilePath, refDirection);
+  std::tuple<QImage, int32_t> ipfColorMapResults = EbsdLoader::CreateIPFColorMap(m_InputData.outputAngFilePath.toStdString(), refDirection);
   QImage imageResult = std::get<0>(ipfColorMapResults);
   int32_t err = std::get<1>(ipfColorMapResults);
   if(!imageResult.isNull() && err == 0)

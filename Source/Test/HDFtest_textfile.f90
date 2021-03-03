@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2021, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are

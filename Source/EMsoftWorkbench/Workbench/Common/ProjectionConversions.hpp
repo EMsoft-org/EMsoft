@@ -46,7 +46,7 @@ public:
   ~ProjectionConversions() = default;
 
   template <typename T>
-  std::vector<float> convertLambertSquareData(const std::vector<T>& lsData, size_t dim, ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
+  std::vector<float> convertLambertSquareData(const std::vector<T>& lsData, size_t dim, int32_t projType, size_t zValue = 0,
                                               ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare) const
   {
     ModifiedLambertProjection::Pointer lambertProjection = ModifiedLambertProjection::New();
@@ -62,7 +62,20 @@ public:
       }
     }
 
-    std::vector<float> stereoProj = lambertProjection->createProjection(static_cast<int32_t>(dim), projType);
+    std::vector<float> stereoProj;
+    if(projType == 0)
+    {
+      EbsdLib::DoubleArrayType::Pointer data = lambertProjection->createStereographicProjection(static_cast<int32_t>(dim));
+      stereoProj.resize(data->getSize());
+      for(size_t i = 0; i < data->getSize(); i++)
+      {
+        stereoProj[i] = (*data)[i];
+      }
+    }
+    else
+    {
+      stereoProj = lambertProjection->createCircularProjection(static_cast<int32_t>(dim));
+    }
     return stereoProj;
   }
 

@@ -21,7 +21,8 @@ call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any 
 ! value probably needs to be changed here
-call Interpret_Program_Arguments(nmldeffile,2,(/ 213, 0 /), progname)
+call Interpret_Program_Arguments(nmldeffile,1,(/ 213 /), progname)
+
 
 write (*,*) 'read program arguments '
 
@@ -107,7 +108,7 @@ integer(c_int32_t)                  ::  ierr
 integer(kind=irg)                   :: ii, jj, kk, ll, i, j, k, ix, jy
 
 ! detector + integration variables
-integer(kind=irg)                   :: mode, reflection(3), ga(3), gb(3), nref, nsam, xpix, ypix, absHKLa(3), absHKLb(3)
+integer(kind=irg)                   :: mode, reflection(3), ga(3), gb(3), nref, nsam, xpix, ypix, absHKLa(3), absHKLb(3), numbeams
 real(kind=sgl)                      :: innerrad, outerrad, innerrad2, outerrad2, wavelength, om(3,3), discrad, theta
 real(kind=sgl)                      :: convangle
 integer(kind=irg)                   :: pixsize, camlen, npx
@@ -313,8 +314,9 @@ select case(mode)
 
 
         ! fill the image with whatever data you have (between 0 and 255)
-        write (fstring,"(I2,I2,I2)") int(reflection(1)), int(reflection(2)), int(reflection(3))
-        TIFF_filename = trim(fstring)//".tiff"
+        ! write (fstring,"(I2,I2,I2)") int(reflection(1)), int(reflection(2)), int(reflection(3))
+        ! TIFF_filename = trim(fstring)//".tiff"
+        TIFF_filename = "output.tiff"
         ! get the min and max value for the current image and rescale the intensities between 0 and 255
         mi = minval(ImageArray(:,:))
         ma = maxval(ImageArray(:,:))
@@ -465,7 +467,11 @@ select case(mode)
             end if 
         end do 
 
+        numbeams = sum(refmask)
+
         call Message('Mask generated, building image.')
+        print *, 'Number of beams:', numbeams
+
 
         ! now we have a mask in reflection space, need to iterate over every reflection/beam
         do ii = 1, nsam

@@ -60,8 +60,8 @@ print,'moving IDL files and apps into the correct location for OSX'
 ; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
 spawn, '/bin/mv '+VMappdirOSX+'/'+appname+' '+VMappdirOSX+'/tmp'
 ; then check whether or not the IDL libraries have already been copied 
-res = file_info(VMappdirOSX+'/idl86')
-if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/idl86 '+VMappdirOSX
+res = file_info(VMappdirOSX+'/idl88')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/idl88 '+VMappdirOSX
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/Resources '+VMappdirOSX
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/Utils_applescripts.scpt '+VMappdirOSX
 ; and then move the app files
@@ -75,8 +75,8 @@ print,'moving IDL files and apps into the correct location for Win'
 ; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
 spawn, '/bin/mv '+VMappdirWin+'/'+appname+' '+VMappdirWin+'/tmp'
 ; then check whether or not the IDL libraries have already been copied 
-res = file_info(VMappdirWin+'/idl86')
-if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/idl86 '+VMappdirWin
+res = file_info(VMappdirWin+'/idl88')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/idl88 '+VMappdirWin
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/Resources '+VMappdirWin
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/splash.bmp '+VMappdirWin
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/idl.ico '+VMappdirWin
@@ -86,18 +86,25 @@ spawn, '/bin/mv '+VMappdirWin+'/tmp/'+appname+'.ini '+VMappdirWin
 spawn, '/bin/mv '+VMappdirWin+'/tmp/'+appname+'.sav '+VMappdirWin
 ; finally, delete the tmp folder
 spawn, '/bin/rm -r '+VMappdirWin+'/tmp'
+; next, remove the idl88 folder and replace it with one specifically downloaded for IDL on Windows 10
+spawn, '/bin/rm -rf '+VMappdirWin+'/idl88/*'
+spawn, 'cp -r /Volumes/Drive2/IDL-VMbuilds/IDL88-Win/* '+VMappdirWin+'/idl88'
+
 
 print,'moving IDL files and apps into the correct location for Linux'
 ; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
 spawn, '/bin/mv '+VMappdirLinux+'/'+appname+' '+VMappdirLinux+'/tmp'
 ; then check whether or not the IDL libraries have already been copied 
-res = file_info(VMappdirLinux+'/idl86')
-if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/idl86 '+VMappdirLinux
+res = file_info(VMappdirLinux+'/idl88')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/idl88 '+VMappdirLinux
 if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/Resources '+VMappdirLinux
 ; and then move the app files
 spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+' '+VMappdirLinux
 spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+'.sav '+VMappdirLinux
 ; finally, delete the tmp folder
 spawn, '/bin/rm -r '+VMappdirLinux+'/tmp'
+; next, remove the idl88 folder and replace it with one specifically downloaded for IDL on Windows 10
+spawn, '/bin/rm -rf '+VMappdirLinux+'/idl88/*'
+spawn, 'cp -r /Volumes/Drive2/IDL-VMbuilds/IDL88-Linux/* '+VMappdirLinux+'/idl88'
 
 exit

@@ -222,7 +222,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
         c_new = c0;
         escape_depth = 0.0f;
         alpha = (3.4E-3f)*powr(z,0.66667f)/E_new;
-        sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E+1022.0f,2.0f);
+        sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E_new+1024.0f,2.0f);
 
         mfp = A * 1.0e7f/(rho*sig_eNA);
         step = -mfp * log(rand);
@@ -240,7 +240,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
 // Taken from book Monte Carlo simulation for Electron Microscopy and Microanalysis, David C. Joy
 
             alpha = (3.4e-3f)*powr(z,0.66667f)/E_new;
-            sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E+1022.0f,2.0f);
+            sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E_new+1024.0f,2.0f);
    	        mfp = A * 1.0e7f/(rho*sig_eNA);
 
             z11 = seeds[4*id];

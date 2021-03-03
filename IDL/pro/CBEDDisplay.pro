@@ -38,7 +38,7 @@
 @write_hdf5_CBED        ; create an HDF5 file with a CBED pattern 
 
 ;
-; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -86,6 +86,9 @@ common fontstrings, fontstr, fontstrlarge, fontstrsmall
 common PointGroups, PGTHD, PGTWD, DG
 common trafos, done, c030, c060, c120, c150, c240, c300, s030, s060, s120, s150, s240, s300
 common CommonCore, status, logmode, logunit
+
+; before we do anything, we make sure that the location of the app_user_dir is set 
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
 
 done = 0
 !EXCEPT=0
@@ -219,7 +222,9 @@ data = {datastruct, $
 	pathname: '', $				    ; pathname (obviously)
 	xtalname: '', $				    ; crystal structure filename (without pathname)
 	suffix: '', $				    ; filename suffix 
-	prefname: '~/.CBEDgui.prefs', $	; filename of preferences file (including path)
+    appdir: appdir, $               ; location of the user application folder
+	prefname: 'CBEDgui.prefs', $	; filename of preferences file (will be located inside data.appdir)
+    foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
 	filesize: long64(0), $			; input file size in bytes
 	homefolder: '', $			    ; startup folder of the program
 	CBEDroot: 'undefined', $		; current pathname (is stored in preferences file)
@@ -337,12 +342,21 @@ DG = ['  ',' 1',' 1R',' 2',' 2R',' 21R','  mR', $
       ' 6',' 31R',' 61R',' 6mRmR',' 6mm',' 3m1R', $
       ' 6mm1R']
 
+; set the foldersep string
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then begin 
+    data.foldersep = '\'
+    fontstr='DejaVuSans'
+    fontstrlarge='DejaVuSans Bold'
+    fontstrsmall='DejaVuSans Italic'
+end else begin
+    fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+    fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+    fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+endelse
 
+data.appdir = data.appdir+data.foldersep
 
 ; a few font strings
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
@@ -596,7 +610,7 @@ widget_s.progressdrawID = drawID
 WIDGET_CONTROL, widget_s.logodraw, GET_VALUE=drawID
 widget_s.logodrawID = drawID
 
-read_jpeg,'Resources/EMsoftlogo.jpg',logo,true=1
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo,true=1
 wset,widget_s.logodrawID
 tvscl,logo,true=1
 
