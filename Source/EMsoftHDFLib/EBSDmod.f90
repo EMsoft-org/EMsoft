@@ -1281,9 +1281,9 @@ do ii = 1,ipar(2)
 ! to determine the direction cosines of the sampling unit vector.        
         do kk = 1, ipar(7)
 ! apply the grain rotation 
-          dc = quat_Lp( qu(1:4,kk), dc)
+          dcnew = quat_Lp( qu(1:4,kk), dc)
 ! apply the deformation
-          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dcnew)
 ! and normalize the direction cosines (to remove any rounding errors)
           dcnew = dcnew/sqrt(sum(dcnew**2))
 
@@ -1371,9 +1371,9 @@ do ii = 1,ipar(2)
 ! to determine the direction cosines of the sampling unit vector.        
         do kk = 1, ipar(7)
 ! apply the grain rotation 
-          dc = quat_Lp( qu(1:4, kk), dc)
+          dcnew = quat_Lp( qu(1:4, kk), dc)
 ! apply the deformation
-          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dcnew)
 ! and normalize the direction cosines (to remove any rounding errors)
           dcnew = dcnew/sqrt(sum(dcnew**2))
 
