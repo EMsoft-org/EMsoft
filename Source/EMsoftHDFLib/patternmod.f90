@@ -117,6 +117,7 @@ if (trim(inputtype).eq."BrukerHDF") itype = 8
 if (trim(inputtype).eq."NORDIF") itype = 9       
 if (trim(inputtype).eq."EMEBSD32i") itype = 10  ! for 32-bit integer pattern files
 if (trim(inputtype).eq."EMEBSD32f") itype = 11  ! for 32-bit float pattern files
+if (trim(inputtype).eq."EMEBSDdefect") itype = 12  ! for EMEBSDdefect generated files
 
 end function get_input_type
 
@@ -322,7 +323,7 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(4, 7, 10, 11)  ! "TSLHDF", "EMEBSD"
+    case(4, 7, 10, 11, 12)  ! "TSLHDF", "EMEBSD" , "EMEBSD32i" , "EMEBSD32f" , "EMEBSDdefect" 
         nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
@@ -417,6 +418,7 @@ end function openExpPatternFile
 !> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
 !> @date 09/26/19 MDG 1.6 add option for vertical flip of patterns
 !> @date 10/09/19 HWÅ 1.7 support for NORDIF binary pattern files
+!> @date 02/02/21 CZ  1.8 support for reading EMEBSDdefect generated file
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, &
                                       exppatarray, ROI, flipy) 
@@ -441,7 +443,7 @@ logical,OPTIONAL,INTENT(IN)             :: flipy
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
-character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:), EBSDDefectpat(:,:,:,:)
 integer(kind=irg),allocatable           :: EBSDpat32i(:,:,:)
 real(kind=sgl),allocatable              :: EBSDpat32f(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
@@ -454,6 +456,7 @@ integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpat
                                            kkstart, kkend, multfactor
 integer(kind=8)                         :: patoffsets(wd)
 logical                                 :: flip 
+integer(HSIZE_T)                        :: dims4(4), offset4(4)
 
 flip = .FALSE.
 if (present(flipy)) then 
@@ -625,6 +628,23 @@ select case (itype)
             end do 
         end do 
 
+    case(12)  ! "EMEBSDdefect" 
+    ! read a hyperslab section from the HDF5 input file
+            dims4 = (/ dims3(1), dims3(2), int(wd,8), int(1,8) /)
+
+            offset4 =(/ int(0,8) , int(0,8) , int(0,8) , int(offset3(3)/wd, 8) /)
+
+            EBSDDefectpat = HDF_readHyperslabCharArray4D(dataset, offset4, dims4, pmHDF_head) 
+
+            exppatarray = 0.0
+            do kk=1,wd
+                do jj=1,dims4(2)
+                    do ii=1,dims4(1)
+                          exppatarray((kk-1)*patsz+(jj-1)*dims4(1)+ii) = float(ichar(EBSDDefectpat(ii,jj, kk, 1)))
+                    end do 
+                end do 
+            end do 
+
     case(10)  ! "EMEBSD32i" 
 ! read a hyperslab section from the HDF5 input file
         EBSDpat32i = HDF_readHyperslabIntegerArray3D(dataset, offset3, dims3, pmHDF_head) 
@@ -734,6 +754,7 @@ end subroutine getExpPatternRow
 !> @date 02/20/18 MDG 1.0 original
 !> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
 !> @date 10/09/19 HWÅ 1.7 support for reading single pattern from NORDIF binary file
+!> @date 02/02/21 CZ  1.8 support for reading EMEBSDdefect generated file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -755,18 +776,19 @@ real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
-character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:),EBSDDefectpat(:,:,:,:)
 integer(kind=irg),allocatable           :: EBSDpat32i(:,:,:)
 real(kind=sgl),allocatable              :: EBSDpat32f(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
 character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
-integer(kind=irg)                       :: sng, pixcnt
+integer(kind=irg)                       :: sng, pixcnt, patx
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
 integer(kind=8)                         :: patoffsets(wd)
+integer(HSIZE_T)                        :: dims4(4), offset4(4)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -903,6 +925,26 @@ select case (itype)
                   exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
             end do 
         end do 
+
+    case(12)  ! "EMEBSDdefect" 
+     ! read 4D dataset generated from EMEBSDdefect file
+            dims4 = (/ dims3(1), dims3(2),int(1,8), int(1,8) /)
+            
+            if (mod((offset3(3)+1),wd).eq.0) then
+              patx=wd-1
+            else 
+              patx=mod((offset3(3)+1),wd)-1
+            end if
+
+            offset4 =(/ int(0,8) , int(0,8) , int(patx,8) ,int(iii,8)/)
+
+            EBSDDefectpat = HDF_readHyperslabCharArray4D(dataset, offset4, dims4, pmHDF_head) 
+            exppat = 0.0
+            do jj=1,dims4(2)
+                do ii=1,dims4(1)
+                      exppat((jj-1)*dims4(1)+ii) = float(ichar(EBSDDefectpat(ii,jj,1,1)))
+                end do 
+            end do 
 
     case(10)  ! "EMEBSD32i"
 ! read a hyperslab single pattern section from the HDF5 input file
@@ -1291,10 +1333,6 @@ select case (itype)
           call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%binning)
           print *, "Pattern Binning:",enl%binning  
               
-          dataset = 'applyDeformation'
-          call HDF_readDatasetStringArray(dataset,nlines, pmHDF_head, hdferr, stringarray)
-          enl%applyDeformation=trim(stringarray(1))
-          deallocate(stringarray)
           call Message('Apply Deformation Tensor: '//enl%applyDeformation)
 
           dataset = 'scalingmode'
@@ -1457,7 +1495,7 @@ select case (itype)
     case(2,3)  ! "TSLup2"
         close(unit=funit,status='keep')
 
-    case(4, 7, 10, 11)  ! "TSLHDF" "EMEBSD" "EMEBSD32i" "EMEBSD32f"
+    case(4, 7, 10, 11, 12)  ! "TSLHDF" "EMEBSD" "EMEBSD32i" "EMEBSD32f" "EMEBSDdefect"
         call HDF_pop(pmHDF_head,.TRUE.)
         nullify(pmHDF_head%next)
 
