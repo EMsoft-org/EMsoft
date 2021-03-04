@@ -83,7 +83,7 @@ use omp_lib
 
 IMPLICIT NONE
 
-type(unitcell)                             :: cell
+type(unitcell),INTENT(INOUT)               :: cell
 type(DynType),INTENT(INOUT)                :: Dyn
 !f2py intent(in,out) ::  Dyn
 type(gnode),INTENT(INOUT)                  :: rlp
