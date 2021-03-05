@@ -356,6 +356,10 @@ end if
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
+ nat = 0
+ do ip=1,cell % ATOM_ntype
+    nat(ip) = cell%numat(ip)
+ end do
  call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
 
 ! if the combinesites parameter is .TRUE., then we only need to 

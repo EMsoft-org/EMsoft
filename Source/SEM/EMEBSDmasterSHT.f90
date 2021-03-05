@@ -311,7 +311,11 @@ end if
  call CalcDensity(cell, dens, avZ, avA, Z2percent)
 
 ! allocate and compute the Sgh loop-up table
- numset = cell%ATOM_ntype  
+ numset = cell%ATOM_ntype
+ nat = 0
+ do ip=1,cell % ATOM_ntype
+    nat(ip) = cell%numat(ip)
+ end do  
  call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
 
 ! determine the point group number

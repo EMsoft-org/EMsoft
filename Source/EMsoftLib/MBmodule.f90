@@ -516,7 +516,7 @@ integer(kind=sgl),INTENT(INOUT)            :: nat(maxpasym)
 logical,INTENT(IN),optional                :: verbose
 integer(kind=irg),INTENT(IN),OPTIONAL      :: nthreads
 
-integer(kind=irg)                          :: istat, io_int(3), skip, mynat(maxpasym), TID
+integer(kind=irg)                          :: istat, io_int(3), skip, TID
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
 real(kind=sgl)                             :: dhkl, io_real(3), ddt
 complex(kind=dbl)                          :: Sghvec(numset)
@@ -564,7 +564,7 @@ complex(kind=dbl)                          :: Sghvec(numset)
  if (present(nthreads)) then 
   call Message(' Using parallel code for computation ... ', frm = "(A)", advance="no")
   call OMP_SET_NUM_THREADS(nthreads)
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(TID, iz, ix, iy, gg, mynat, Sghvec)
+!$OMP PARALLEL DEFAULT(shared) PRIVATE(TID, iz, ix, iy, gg, Sghvec)
 
   TID = OMP_GET_THREAD_NUM()
 ! note that the lookup table must be twice as large as the list of participating reflections,
@@ -576,7 +576,7 @@ complex(kind=dbl)                          :: Sghvec(numset)
             gg = (/ ix, iy, iz /)
             if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
 ! add the reflection to the look up table
-              call preCalcSgh(cell,gg,numset,mynat,Sghvec)
+              call preCalcSgh(cell,gg,numset,nat,Sghvec)
 !$OMP CRITICAL
               cell%SghLUT(1:numset, ix, iy, iz) = Sghvec(1:numset)
 !$OMP END CRITICAL
@@ -584,7 +584,6 @@ complex(kind=dbl)                          :: Sghvec(numset)
         end do ixlomp
       end do iylomp
     end do izlomp
-    if (TID.eq.0) nat = mynat
 !$OMP END PARALLEL 
  else
 ! note that the lookup table must be twice as large as the list of participating reflections,
@@ -847,6 +846,7 @@ end subroutine getSghfromLUTEEC
 !> @date 03/11/14  MDG 1.1 converted to diagonal Sgh array only
 !> @date 06/19/14  MDG 2.0 no globals, taken out of EMECCI.f90
 !> @date 09/07/15  MDG 2.1 added zeroing of Sgh array
+!> @date 03/05/21  MDG 2.2 commented nat array initialization; should be done in main program
 !--------------------------------------------------------------------------
 recursive subroutine preCalcSgh(cell,kkk,numset,nat,Sghvec)
 !DEC$ ATTRIBUTES DLLEXPORT :: preCalcSgh
@@ -881,7 +881,7 @@ type(reflisttype),pointer               :: rltmpa, rltmpb
 ! for each special position we need to compute its contribution to the Sgh array
   do ip=1,cell % ATOM_ntype
     call CalcOrbit(cell,ip,n,ctmp)
-    nat(ip) = cell%numat(ip)
+!   nat(ip) = cell%numat(ip)
 ! get Zn-squared for this special position, and include the site occupation parameter as well
     Znsq = float(cell%ATOM_type(ip))**2 * cell%ATOM_pos(ip,4)
 ! We'll assume isotropic Debye-Waller factors for now ...
@@ -990,6 +990,7 @@ end subroutine preCalcSghEEC
 !> @date 03/11/14  MDG 1.1 converted to diagonal Sgh array only
 !> @date 06/19/14  MDG 2.0 no globals, taken out of EMECCI.f90
 !> @date 09/07/15  MDG 2.1 added zeroing of Sgh array
+!> @date 03/05/21  MDG 2.2 commented nat array initialization; should be done in main program
 !--------------------------------------------------------------------------
 recursive subroutine CalcSgh(cell,reflist,nn,numset,Sgh,nat)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcSgh
@@ -1024,7 +1025,7 @@ type(reflisttype),pointer               :: rltmpa, rltmpb
 ! for each special position we need to compute its contribution to the Sgh array
   do ip=1,cell % ATOM_ntype
     call CalcOrbit(cell,ip,n,ctmp)
-    nat(ip) = cell%numat(ip)
+!    nat(ip) = cell%numat(ip)
 ! get Zn-squared for this special position, and include the site occupation parameter as well
     Znsq = float(cell%ATOM_type(ip))**2 * cell%ATOM_pos(ip,4)
 
@@ -1074,7 +1075,8 @@ end subroutine CalcSgh
 !> @param Sgh output array
 !> @param nat normalization array
 !
-!> @date 04/22/15  SS 1.0 original
+!> @date 04/22/15  SS  1.0 original
+!> @date 03/05/21  MDG 2.0 commented nat array initialization; should be done in main program
 !--------------------------------------------------------------------------
 recursive subroutine CalcSghMaster(cell,reflist,nn,numset,Sgh,nat)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcSghMaster
@@ -1109,7 +1111,7 @@ Sgh = cmplx(0.D0,0.D0)
 ! for each special position we need to compute its contribution to the Sgh array
 do ip=1,cell % ATOM_ntype
     call CalcOrbit(cell,ip,n,ctmp)
-    nat(ip) = cell%numat(ip)
+!   nat(ip) = cell%numat(ip)
 ! get Zn-squared for this special position, and include the site occupation parameter as well
     Znsq = float(cell%ATOM_type(ip))**2 * cell%ATOM_pos(ip,4)
 ! loop over all contributing reflections
