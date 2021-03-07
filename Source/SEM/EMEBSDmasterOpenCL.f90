@@ -842,8 +842,8 @@ energyloop: do iE = Estart,1,-1
 
 ! changed OMP section to default(shared) since it is easier to then identify the private variables
 !$OMP PARALLEL DEFAULT(SHARED) COPYIN(rlp) &
-!$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, nref, nns, nnw, arrsize, SghCumulative, A, arrsizesum) &
-!$OMP& PRIVATE(offset, DynMat, Sghtmp, ss, pp, qq, absmax, e, ns)
+!$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
+!$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, ns)
 
             NUMTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
@@ -875,7 +875,6 @@ energyloop: do iE = Estart,1,-1
 
             allocate(SghCumulative(1:offset(npx*npy)+arrsize(npx*npy)**2,numsites),&
             A(1:offset(npx*npy)+arrsize(npx*npy)**2),stat=istat)
-
 !$OMP END MASTER
 !$OMP BARRIER
 
