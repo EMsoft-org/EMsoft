@@ -95,6 +95,7 @@ end program EMEBSDmasterOpenCL
 !> @date 04/18/16  SS 2.0 converted to clfortran instead of fortrancl
 !> @date 12/10/16 MDG 2.1 updated for new OpenCL module
 !> @date 03/04/21 MDG 3.0 revisions to bring code up to date with EMsoft 5.3 libraries
+!> @date 03/07/21 MDG 3.1 debugging to fix error for large unit cells 
 !--------------------------------------------------------------------------
 subroutine EBSDmasterpatternOpenCL(emnl, progname, nmldeffile)
 
@@ -779,10 +780,10 @@ energyloop: do iE = Estart,1,-1
     nullify(khead)
 
     if (usehex) then
-       call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+       call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,emnl%npx,numk, &
                 SamplingType,ijmax,'RoscaLambert',usehex)
     else 
-       call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+       call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,emnl%npx,numk, &
                 SamplingType,ijmax,'RoscaLambert',usehex)
     end if
 
@@ -834,10 +835,15 @@ energyloop: do iE = Estart,1,-1
                 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
             end if
 
-!$OMP PARALLEL DEFAULT(PRIVATE) &
-!!$OMP& COPYIN(rlp) &
-!$OMP& SHARED(ii,klist,knlist,kij,lambdas,numdepth,arrsize,arrsizesum,offset,ns,npx,npy,cell,BetheParameters) &
-!$OMP& SHARED(emnl,SghCumulative,A,eps,numset)
+! $OMP PARALLEL DEFAULT(PRIVATE) &
+! !$OMP& COPYIN(rlp) &
+! $OMP& SHARED(ii,klist,knlist,kij,lambdas,numdepth,arrsize,arrsizesum,offset,ns,npx,npy,cell,BetheParameters) &
+! $OMP& SHARED(emnl,SghCumulative,A,eps,numset)
+
+! changed OMP section to default(shared) since it is easier to then identify the private variables
+!$OMP PARALLEL DEFAULT(SHARED) COPYIN(rlp) &
+!$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, nref, nns, nnw, arrsize, SghCumulative, A, arrsizesum) &
+!$OMP& PRIVATE(offset, DynMat, Sghtmp, ss, pp, qq, absmax, e, ns)
 
             NUMTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
@@ -867,7 +873,7 @@ energyloop: do iE = Estart,1,-1
                 end if
             end do
 
-            allocate(SghCumulative(1:offset(npx*npy)+arrsize(npx*npy)**2,numset),&
+            allocate(SghCumulative(1:offset(npx*npy)+arrsize(npx*npy)**2,numsites),&
             A(1:offset(npx*npy)+arrsize(npx*npy)**2),stat=istat)
 
 !$OMP END MASTER
@@ -896,9 +902,9 @@ energyloop: do iE = Estart,1,-1
                 allocate(Sghtmp(nns,nns,numset))
 
                 Sghtmp = cmplx(0.D0,0.D0)
-                call CalcSgh(cell,reflist,nns,numset,Sghtmp,nat)
+                call CalcSgh(cell,reflist,nns,numsites,Sghtmp,nat)
 
-                do ss = 1,numset
+                do ss = 1,numsites
                     do pp = 1,nns
                         do qq = 1,nns
                            SghCumulative(offset(kk)+(pp-1)*nns+qq,ss) = Sghtmp(pp,qq,ss)
