@@ -843,10 +843,12 @@ energyloop: do iE = Estart,1,-1
 ! changed OMP section to default(shared) since it is easier to then identify the private variables
 !$OMP PARALLEL DEFAULT(SHARED) COPYIN(rlp) &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
-!$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, ns)
+!$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat)
 
             NUMTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
+
+if (TID.eq.0) write (*,*) ' initializing reflection lists and Bethe potentials'
 
 !$OMP DO SCHEDULE(DYNAMIC)    
             do kk = 1,npx*npy
@@ -862,6 +864,7 @@ energyloop: do iE = Estart,1,-1
             end do
 !$OMP END DO
 
+if (TID.eq.0) write (*,*) ' initializing SghCumulative and A arrays '
 !$OMP MASTER
             if (allocated(SghCumulative)) deallocate(SghCumulative)
             if (allocated(A)) deallocate(A)
@@ -877,6 +880,8 @@ energyloop: do iE = Estart,1,-1
             A(1:offset(npx*npy)+arrsize(npx*npy)**2),stat=istat)
 !$OMP END MASTER
 !$OMP BARRIER
+
+if (TID.eq.0) write (*,*) ' initializing DynMat arrays '
 
 !$OMP DO SCHEDULE(DYNAMIC)    
 
@@ -898,7 +903,7 @@ energyloop: do iE = Estart,1,-1
                 
                 if (allocated(Sghtmp)) deallocate(Sghtmp)
 
-                allocate(Sghtmp(nns,nns,numset))
+                allocate(Sghtmp(nns,nns,numsites))
 
                 Sghtmp = cmplx(0.D0,0.D0)
                 call CalcSgh(cell,reflist,nns,numsites,Sghtmp,nat)
@@ -1063,6 +1068,7 @@ energyloop: do iE = Estart,1,-1
             call CLerror_check('EBSDmasterpatternOpenCL:clSetKernelArg:lambdas', ierr)
 
 !execute the kernel
+write (*,*) ' Executing OpenCL kernel '
             ierr = clEnqueueNDRangeKernel(command_queue, kernel, 2, C_NULL_PTR, C_LOC(globalsize), C_LOC(localsize),&
                                         0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueNDRangeKernel', ierr)
@@ -1079,6 +1085,7 @@ energyloop: do iE = Estart,1,-1
 ! divide by integration depth explicitly (OpenCL kernel giving some problems)
             LghCumulative = LghCumulative/float(izz-1)
 
+write (*,*) ' Copying intensitites into master pattern arrays '
             do pp = 1,npx*npy
                 ipx = kij(1,(ii-1)*npx*npy+pp)
                 ipy = kij(2,(ii-1)*npx*npy+pp)
@@ -1101,7 +1108,7 @@ energyloop: do iE = Estart,1,-1
                     end if
                 end if
 
-!$OMP CRITICAL
+! $OMP CRITICAL
                 if (emnl%combinesites.eqv..FALSE.) then
                    do ix=1,nequiv
                      if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
@@ -1113,7 +1120,7 @@ energyloop: do iE = Estart,1,-1
                      if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
                    end do
                 end if
-!$OMP END CRITICAL
+! $OMP END CRITICAL
 
             end do
 
