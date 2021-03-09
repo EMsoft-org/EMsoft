@@ -473,7 +473,8 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
         quPS = 0.0
         quPS(1:4,1) = (/ 1.0, 0.0, 0.0, 0.0 /)
         do ii = 2,nvar
-            read(53,"(3F12.9)") quPS(1:4,ii)
+            ! read(53,"(4F12.9)") quPS(1:4,ii)
+            read(53,*) quPS(1:4,ii)
         end do
         call Message(' -> pseudo-symmetric quaternion operator(s): ')
         do ii = 1,nvar
