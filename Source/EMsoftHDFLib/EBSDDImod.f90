@@ -411,7 +411,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     ! be in quaternion/axus-angle/euler format, so abort when the file does not have any of these ...
     open(unit=53,file=trim(dpfile),status='old',action='read')
     read (53,*) anglemode
-    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) then
+    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu').and.(anglemode.ne.'qu')) then
       call FatalError('EMFitOrientationPS','angle type must be qu, eu or ax')
     end if
     read (53,*) nvar
