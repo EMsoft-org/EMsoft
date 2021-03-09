@@ -2330,7 +2330,7 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDMasterOpenCLNameListType),INTENT(INOUT)      :: emnl
 !f2py intent(in,out) ::  emnl
 
-integer(kind=irg),parameter                           :: n_int = 10, n_real = 1
+integer(kind=irg),parameter                           :: n_int = 11, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -2359,7 +2359,7 @@ else
   combinesites = 0
 end if
 io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, restart, uniform, emnl%platid, &
-            emnl%devid, emnl%globalworkgrpsz, combinesites /)
+            emnl%devid, emnl%globalworkgrpsz, combinesites, emnl%blocksize /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
@@ -2370,6 +2370,7 @@ intlist(7) = 'platid'
 intlist(8) = 'devid'
 intlist(9) = 'globalworkgrpsz'
 intlist(10) = 'combinesites'
+intlist(11) = 'blocksize'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real

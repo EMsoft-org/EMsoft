@@ -3402,6 +3402,7 @@ integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: platid
 integer(kind=irg)       :: devid
 integer(kind=irg)       :: globalworkgrpsz
+integer(kind=irg)       :: blocksize
 real(kind=sgl)          :: dmin
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: BetheParametersFile
@@ -3413,7 +3414,7 @@ logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfile,restart,uniform,Esel,nthreads, &
-                          copyfromenergyfile, BetheParametersFile, combinesites, h5copypath
+                          copyfromenergyfile, BetheParametersFile, combinesites, h5copypath, blocksize
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -3422,6 +3423,7 @@ nthreads = 1
 platid = 1
 devid = 1
 globalworkgrpsz = 150
+blocksize = 64
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 copyfromenergyfile = 'undefined'   
@@ -3456,6 +3458,7 @@ emnl%nthreads = nthreads
 emnl%platid = platid 
 emnl%devid = devid 
 emnl%globalworkgrpsz = globalworkgrpsz 
+emnl%blocksize = blocksize
 emnl%dmin = dmin
 emnl%copyfromenergyfile = copyfromenergyfile
 emnl%energyfile = energyfile

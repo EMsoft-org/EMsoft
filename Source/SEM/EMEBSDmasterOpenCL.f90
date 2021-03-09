@@ -258,7 +258,7 @@ frac = 0.05
 eps = 1.0
 
 source_length = 50000
-globalsize = (/ 64, 64 /)
+globalsize = (/ emnl%blocksize, emnl%blocksize /)
 localsize = (/ 4, 4 /)
 
 npiximgx = emnl%npx
@@ -835,11 +835,6 @@ energyloop: do iE = Estart,1,-1
                 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
             end if
 
-! $OMP PARALLEL DEFAULT(PRIVATE) &
-! !$OMP& COPYIN(rlp) &
-! $OMP& SHARED(ii,klist,knlist,kij,lambdas,numdepth,arrsize,arrsizesum,offset,ns,npx,npy,cell,BetheParameters) &
-! $OMP& SHARED(emnl,SghCumulative,A,eps,numset)
-
 ! changed OMP section to default(shared) since it is easier to then identify the private variables
 !$OMP PARALLEL DEFAULT(SHARED) COPYIN(rlp) &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
@@ -848,7 +843,7 @@ energyloop: do iE = Estart,1,-1
             NUMTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
 
-if (TID.eq.0) write (*,*) ' initializing reflection lists and Bethe potentials'
+! if (TID.eq.0) write (*,*) ' initializing reflection lists and Bethe potentials'
 
 !$OMP DO SCHEDULE(DYNAMIC)    
             do kk = 1,npx*npy
@@ -864,7 +859,7 @@ if (TID.eq.0) write (*,*) ' initializing reflection lists and Bethe potentials'
             end do
 !$OMP END DO
 
-if (TID.eq.0) write (*,*) ' initializing SghCumulative and A arrays '
+! if (TID.eq.0) write (*,*) ' initializing SghCumulative and A arrays '
 !$OMP MASTER
             if (allocated(SghCumulative)) deallocate(SghCumulative)
             if (allocated(A)) deallocate(A)
@@ -881,7 +876,7 @@ if (TID.eq.0) write (*,*) ' initializing SghCumulative and A arrays '
 !$OMP END MASTER
 !$OMP BARRIER
 
-if (TID.eq.0) write (*,*) ' initializing DynMat arrays '
+! if (TID.eq.0) write (*,*) ' initializing DynMat arrays '
 
 !$OMP DO SCHEDULE(DYNAMIC)    
 
@@ -1068,7 +1063,7 @@ if (TID.eq.0) write (*,*) ' initializing DynMat arrays '
             call CLerror_check('EBSDmasterpatternOpenCL:clSetKernelArg:lambdas', ierr)
 
 !execute the kernel
-write (*,*) ' Executing OpenCL kernel '
+! write (*,*) ' Executing OpenCL kernel '
             ierr = clEnqueueNDRangeKernel(command_queue, kernel, 2, C_NULL_PTR, C_LOC(globalsize), C_LOC(localsize),&
                                         0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueNDRangeKernel', ierr)
@@ -1085,7 +1080,7 @@ write (*,*) ' Executing OpenCL kernel '
 ! divide by integration depth explicitly (OpenCL kernel giving some problems)
             LghCumulative = LghCumulative/float(izz-1)
 
-write (*,*) ' Copying intensitites into master pattern arrays '
+! write (*,*) ' Copying intensitites into master pattern arrays '
             do pp = 1,npx*npy
                 ipx = kij(1,(ii-1)*npx*npy+pp)
                 ipy = kij(2,(ii-1)*npx*npy+pp)
@@ -1172,9 +1167,6 @@ write (*,*) ' Copying intensitites into master pattern arrays '
 
 ! old version used default(private) and had some issues with intensities being 
 ! placed incorrectly in the master pattern arrays; new version uses default(shared)
-! $OMP PARALLEL DEFAULT(PRIVATE) &
-! $OMP& SHARED(cell,klist,npx,npy,numk,ii,BetheParameters,emnl,knlist,thick,gzero) &
-! $OMP& SHARED(depthstep,lambdaE,kij,isym,mLPNH,mLPSH,iE,izz,numsites,nat) 
 !$OMP PARALLEL COPYIN(rlp) DEFAULT(SHARED) &
 !$OMP& PRIVATE(NUMTHREADS, TID, jj, k, FN, reflist, nref, firstw, nns, nnw, DynMat, istat) &
 !$OMP& PRIVATE(Lgh, Sghtmp, kn, kk, svals, ipx, ipy, ipz, iequiv, nequiv, ix)

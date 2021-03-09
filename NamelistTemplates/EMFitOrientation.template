@@ -29,9 +29,10 @@
 ! max step size to take in homochoric space during the refinement
  step = 0.03,
 ! In FIT mode, this program can also include pseudo-symmetric variants in the list of starting orientations to refine.
-! Pseudo-symmetric variant Euler triplets or axis-angle pair(s) are stored in the PSvariantfile.
+! Pseudo-symmetric variant Euler triplets, quaternions, or axis-angle pair(s) are stored in the PSvariantfile.
 !    format:  first line 'ax', second line number of axis-angle pairs, then one pair per line (unit vector, angle last in degrees)
 ! or format:  first line 'eu', second line number of Euler triplets, then one triplet per line (in degrees)
+! or format:  first line 'qu', second line number of quaternions, then one quaternion per line (scalar part first)
  PSvariantfile = 'undefined',
 ! ===================================
 ! the standard refinement approach uses the same pattern center for all patterns; this is 

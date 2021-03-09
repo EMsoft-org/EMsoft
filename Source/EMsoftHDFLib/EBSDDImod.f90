@@ -408,10 +408,12 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     dpfile = EMsoft_toNativePath(dpfile)
 
     ! this is a simple text file, similar to an euler angle file; the input should
-    ! be in quaternion format, so abort when the file does not have quaternions...
+    ! be in quaternion/axus-angle/euler format, so abort when the file does not have any of these ...
     open(unit=53,file=trim(dpfile),status='old',action='read')
     read (53,*) anglemode
-    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) call FatalError('EMFitOrientationPS','angle type must be eu or ax')
+    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) then
+      call FatalError('EMFitOrientationPS','angle type must be qu, eu or ax')
+    end if
     read (53,*) nvar
     nvar = nvar + 1     ! identity operation is first entry
 
@@ -445,7 +447,8 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
             io_real(1:4) = quPS(1:4,ii)
             call WriteValue('',io_real,4)
         end do
-    else
+    end if 
+    if (anglemode.eq.'eu') then 
         ! allocate some arrays
         allocate(euPS(3,nvar), quPS(4,nvar))
         euPS = 0.0
@@ -459,6 +462,21 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
         call Message(' -> Final pseudo-symmetric quaternion operator(s): ')
         do ii = 1,nvar
             quPS(1:4,ii) = eu2qu(euPS(1:3,ii))
+            if (quPS(1,ii).lt.0.0) quPS(1:4,ii) = -quPS(1:4,ii)
+            io_real(1:4) = quPS(1:4,ii)
+            call WriteValue('',io_real,4)
+        end do 
+    end if
+    if (anglemode.eq.'qu') then 
+    ! allocate some arrays
+        allocate(quPS(4,nvar))
+        quPS = 0.0
+        quPS(1:4,1) = (/ 1.0, 0.0, 0.0, 0.0 /)
+        do ii = 2,nvar
+            read(53,"(3F12.9)") quPS(1:4,ii)
+        end do
+        call Message(' -> pseudo-symmetric quaternion operator(s): ')
+        do ii = 1,nvar
             if (quPS(1,ii).lt.0.0) quPS(1:4,ii) = -quPS(1:4,ii)
             io_real(1:4) = quPS(1:4,ii)
             call WriteValue('',io_real,4)

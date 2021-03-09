@@ -22,6 +22,9 @@
  devid = 1,
 ! number of work items (depends on GPU card; leave unchanged)
  globalworkgrpsz = 150,
+! block size ... k-vector space is sampled in blocks of size blocksize x blocksize 
+! must be a power of 2
+ blocksize = 64,
 ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)
