@@ -424,7 +424,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
         axPS(1:4,1) = (/ 0.0, 0.0, 1.0, 0.0 /)
 
         do ii = 2,nvar
-            read(53,"(4F12.9)") axPS(1:4,ii)
+            read(53,*) axPS(1:4,ii)
         end do
     ! the axis should be given in crystal coordinates as a direction, so 
     ! we need to transform the axis first to the crystal cartesian frame
@@ -455,7 +455,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
         euPS(1:3,1) = (/ 0.0, 0.0, 0.0 /)
 
         do ii = 2,nvar
-            read(53,"(3F12.9)") euPS(1:3,ii)
+            read(53,*) euPS(1:3,ii)
         end do
         quPS = 0.0
 
