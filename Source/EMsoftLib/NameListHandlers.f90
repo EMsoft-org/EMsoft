@@ -3402,13 +3402,19 @@ integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: platid
 integer(kind=irg)       :: devid
 integer(kind=irg)       :: globalworkgrpsz
+integer(kind=irg)       :: blocksize
 real(kind=sgl)          :: dmin
+character(fnlen)        :: copyfromenergyfile
+character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: energyfile
+character(fnlen)        :: h5copypath
+logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfile,restart,uniform,Esel,nthreads
+namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfile,restart,uniform,Esel,nthreads, &
+                          copyfromenergyfile, BetheParametersFile, combinesites, h5copypath, blocksize
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -3417,9 +3423,14 @@ nthreads = 1
 platid = 1
 devid = 1
 globalworkgrpsz = 150
+blocksize = 64
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
+copyfromenergyfile = 'undefined'   
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+BetheParametersFile = 'undefined'
+h5copypath = 'undefined'
+combinesites = .FALSE.
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
 
@@ -3447,8 +3458,13 @@ emnl%nthreads = nthreads
 emnl%platid = platid 
 emnl%devid = devid 
 emnl%globalworkgrpsz = globalworkgrpsz 
+emnl%blocksize = blocksize
 emnl%dmin = dmin
+emnl%copyfromenergyfile = copyfromenergyfile
 emnl%energyfile = energyfile
+emnl%h5copypath = h5copypath
+emnl%combinesites = combinesites
+emnl%BetheParametersFile = BetheParametersFile
 emnl%restart = restart
 emnl%uniform = uniform
 

@@ -147,7 +147,8 @@ complex(kind=dbl)       :: czero
 integer(kind=irg)       :: nt, nns, nnw, tots, totw ! thickness array and BetheParameters strong and weak beams
 real(kind=sgl)          :: FN(3), kk(3), kkk(3), fnat, kn, Radius, xy(2), tstart, tstop
 integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr
-integer(kind=irg),allocatable   :: kij(:,:), nat(:)
+integer(kind=irg),allocatable   :: kij(:,:) 
+integer(kind=irg)       :: nat(maxpasym)
 real(kind=dbl)          :: res(2), xyz(3), ind, om(3,3), eu(3)
 
 character(fnlen)        :: oldprogname, energyfile, outname
@@ -277,7 +278,6 @@ numEbins = ecpnl%Ebinsize
 izz = numzbins
 
 allocate(lambdaZ(1:izz),stat=istat)
-allocate(nat(numset),stat=istat)
 
 accum_z = acc%accum_z
 
@@ -307,6 +307,9 @@ end do
 ktmp => khead
 
 nat = 0
+do ip=1,cell % ATOM_ntype
+    nat(ip) = cell%numat(ip)
+end do
 fnat = 1.0/float(sum(cell%numat(1:numset)))
 intthick = dble(ecpnl%depthmax)
 depthstep = ecpnl%depthstep
@@ -379,7 +382,7 @@ call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4
 
 !$OMP PARALLEL default(shared) COPYIN(rlp) &
 !$OMP& PRIVATE(DynMat,Sgh,Sghtmp,Lgh,i,FN,TID,kn,ipx,ipy,ix,ip,iequiv,nequiv,reflist,firstw) &
-!$OMP& PRIVATE(kk,kkk,nns,nnw,nref,nat,io_int,io_int_sgl,nthreads,svals)
+!$OMP& PRIVATE(kk,kkk,nns,nnw,nref,io_int,io_int_sgl,nthreads,svals)
 !!!!$OMP& SHARED(mLPNH,mLPSH,tots,totw)
 
 nthreads = OMP_GET_NUM_THREADS()
@@ -429,7 +432,6 @@ beamloop: do i = 1, numk
 
     Lgh = czero
     Sghtmp = czero
-    nat = 0
     call CalcSgh(cell,reflist,nns,numset,Sghtmp,nat)
 
 

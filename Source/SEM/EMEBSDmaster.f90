@@ -357,6 +357,10 @@ if ((cell%xtal_system.eq.5).and.(cell%b.eq.cell%c)) then
     stop
 end if
 
+nat = 0
+do ip=1,cell % ATOM_ntype
+    nat(ip) = cell%numat(ip)
+end do
 
 ! then calculate density, average atomic number and average atomic weight
  call CalcDensity(cell, dens, avZ, avA, Z2percent)

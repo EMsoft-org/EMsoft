@@ -15,6 +15,16 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
           EMOpenCLLib
   )
 
+  Add_EMsoft_Executable(TARGET EMEBSDmasterOpenCL 
+                              SOURCES ${APP_DIR}/EMEBSDmasterOpenCL.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
+                              TEMPLATE ${TMPLT_DIR}/EMEBSDmasterOpenCL.template 
+                              SOLUTION_FOLDER EMsoftPublic/SEM 
+                              INSTALL_PROGRAM TRUE
+                              INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                              )
+
+
   Add_EMSoft_Executable(TARGET EMMCOpenCL 
                         SOURCES ${APP_DIR}/EMMCOpenCL.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 

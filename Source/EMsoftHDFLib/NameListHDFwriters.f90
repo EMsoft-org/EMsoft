@@ -2330,8 +2330,8 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDMasterOpenCLNameListType),INTENT(INOUT)      :: emnl
 !f2py intent(in,out) ::  emnl
 
-integer(kind=irg),parameter                           :: n_int = 9, n_real = 1
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform
+integer(kind=irg),parameter                           :: n_int = 11, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -2353,8 +2353,13 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
+if (emnl%combinesites) then 
+  combinesites = 1
+else 
+  combinesites = 0
+end if
 io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, restart, uniform, emnl%platid, &
-            emnl%devid, emnl%globalworkgrpsz /)
+            emnl%devid, emnl%globalworkgrpsz, combinesites, emnl%blocksize /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
@@ -2364,6 +2369,8 @@ intlist(6) = 'uniform'
 intlist(7) = 'platid'
 intlist(8) = 'devid'
 intlist(9) = 'globalworkgrpsz'
+intlist(10) = 'combinesites'
+intlist(11) = 'blocksize'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
@@ -2385,6 +2392,36 @@ else
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create energyfile dataset',.TRUE.)
+
+dataset = SC_copyfromenergyfile
+line2(1) = emnl%copyfromenergyfile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create copyfromenergyfile dataset',.TRUE.)
+
+dataset = 'h5copypath'
+line2(1) = emnl%h5copypath
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create h5copypath dataset',.TRUE.)
+
+dataset = 'BetheParametersFile'
+line2(1) = emnl%BetheParametersFile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create BetheParametersFile dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

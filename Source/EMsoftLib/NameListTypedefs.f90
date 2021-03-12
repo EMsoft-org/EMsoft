@@ -573,9 +573,13 @@ type EBSDMasterOpenCLNameListType
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: devid
         integer(kind=irg)       :: globalworkgrpsz
+        integer(kind=irg)       :: blocksize
         real(kind=sgl)          :: dmin
+        character(fnlen)        :: copyfromenergyfile
+        character(fnlen)        :: BetheParametersFile
         character(fnlen)        :: energyfile
-        character(fnlen)        :: outname
+        character(fnlen)        :: h5copypath
+        logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
 end type EBSDMasterOpenCLNameListType
