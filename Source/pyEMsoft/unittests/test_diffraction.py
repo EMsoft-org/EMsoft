@@ -1,7 +1,6 @@
 import sys
 import os
-sys.path.append('../')
-import pyEMsoft 
+from EMsoft import pyEMsoft
 import numpy as np
 import unittest
 

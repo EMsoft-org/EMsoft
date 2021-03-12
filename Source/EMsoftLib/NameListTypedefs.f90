@@ -613,6 +613,7 @@ type EBSDNameListType
         character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
+        character(4)            :: Fframe
         character(3)            :: scalingmode
         character(3)            :: eulerconvention
         character(3)            :: outputformat
@@ -659,11 +660,16 @@ real(kind=sgl)           :: VTR
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
-real(kind=sgl)           :: XCmin(3)
-real(kind=sgl)           :: XCmax(3)
+real(kind=sgl)           :: bound(3)
+real(kind=sgl)           :: w
+real(kind=sgl)           :: w_damp
+real(kind=sgl)           :: c1 
+real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
-character(fnlen)         :: HDFMetaDatastrings(10)
+character(1)             :: hybrid
+character(2)             :: globalopt
+character(1)             :: single_opt
 end type EBSDDENameListType
 
 ! namelist for the EMEBSDdefect program
@@ -675,12 +681,12 @@ type EBSDdefectNameListType
         integer(kind=irg)       :: nthreads
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
-        real(kind=sgl)          :: omega
         real(kind=sgl)          :: spotsize
         real(kind=sgl)          :: gammavalue
         real(kind=dbl)          :: beamcurrent
         real(kind=dbl)          :: dwelltime
         character(3)            :: scalingmode
+        character(3)            :: Fframe
         logical                 :: sampleInteractionVolume
         character(fnlen)        :: deformationfile
         character(fnlen)        :: ivolfile

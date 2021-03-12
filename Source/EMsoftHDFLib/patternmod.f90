@@ -117,6 +117,7 @@ if (trim(inputtype).eq."BrukerHDF") itype = 8
 if (trim(inputtype).eq."NORDIF") itype = 9       
 if (trim(inputtype).eq."EMEBSD32i") itype = 10  ! for 32-bit integer pattern files
 if (trim(inputtype).eq."EMEBSD32f") itype = 11  ! for 32-bit float pattern files
+if (trim(inputtype).eq."EMEBSDdefect") itype = 12  ! for EMEBSDdefect generated files
 
 end function get_input_type
 
@@ -322,7 +323,7 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(4, 7, 10, 11)  ! "TSLHDF", "EMEBSD"
+    case(4, 7, 10, 11, 12)  ! "TSLHDF", "EMEBSD" , "EMEBSD32i" , "EMEBSD32f" , "EMEBSDdefect" 
         nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
@@ -360,7 +361,11 @@ select case (itype)
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
                call invert_ordering_arrays(npat)
-               call Message('  found pattern reordering arrays')
+               if (present(verbose)) then
+	                if (verbose.eqv..TRUE.) then
+                    call Message('  found pattern reordering arrays')
+                  end if
+               end if
                ! and leave this group
                call HDF_pop(pmHDF_head)
             end if
@@ -413,6 +418,7 @@ end function openExpPatternFile
 !> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
 !> @date 09/26/19 MDG 1.6 add option for vertical flip of patterns
 !> @date 10/09/19 HWÅ 1.7 support for NORDIF binary pattern files
+!> @date 02/02/21 CZ  1.8 support for reading EMEBSDdefect generated file
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, &
                                       exppatarray, ROI, flipy) 
@@ -437,7 +443,7 @@ logical,OPTIONAL,INTENT(IN)             :: flipy
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
-character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:), EBSDDefectpat(:,:,:,:)
 integer(kind=irg),allocatable           :: EBSDpat32i(:,:,:)
 real(kind=sgl),allocatable              :: EBSDpat32f(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
@@ -450,6 +456,7 @@ integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpat
                                            kkstart, kkend, multfactor
 integer(kind=8)                         :: patoffsets(wd)
 logical                                 :: flip 
+integer(HSIZE_T)                        :: dims4(4), offset4(4)
 
 flip = .FALSE.
 if (present(flipy)) then 
@@ -621,6 +628,23 @@ select case (itype)
             end do 
         end do 
 
+    case(12)  ! "EMEBSDdefect" 
+    ! read a hyperslab section from the HDF5 input file
+            dims4 = (/ dims3(1), dims3(2), int(wd,8), int(1,8) /)
+
+            offset4 =(/ int(0,8) , int(0,8) , int(0,8) , int(offset3(3)/wd, 8) /)
+
+            EBSDDefectpat = HDF_readHyperslabCharArray4D(dataset, offset4, dims4, pmHDF_head) 
+
+            exppatarray = 0.0
+            do kk=1,wd
+                do jj=1,dims4(2)
+                    do ii=1,dims4(1)
+                          exppatarray((kk-1)*patsz+(jj-1)*dims4(1)+ii) = float(ichar(EBSDDefectpat(ii,jj, kk, 1)))
+                    end do 
+                end do 
+            end do 
+
     case(10)  ! "EMEBSD32i" 
 ! read a hyperslab section from the HDF5 input file
         EBSDpat32i = HDF_readHyperslabIntegerArray3D(dataset, offset3, dims3, pmHDF_head) 
@@ -730,6 +754,7 @@ end subroutine getExpPatternRow
 !> @date 02/20/18 MDG 1.0 original
 !> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
 !> @date 10/09/19 HWÅ 1.7 support for reading single pattern from NORDIF binary file
+!> @date 02/02/21 CZ  1.8 support for reading EMEBSDdefect generated file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -751,18 +776,19 @@ real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
-character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:),EBSDDefectpat(:,:,:,:)
 integer(kind=irg),allocatable           :: EBSDpat32i(:,:,:)
 real(kind=sgl),allocatable              :: EBSDpat32f(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
 character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
-integer(kind=irg)                       :: sng, pixcnt
+integer(kind=irg)                       :: sng, pixcnt, patx
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
 integer(kind=8)                         :: patoffsets(wd)
+integer(HSIZE_T)                        :: dims4(4), offset4(4)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -900,6 +926,26 @@ select case (itype)
             end do 
         end do 
 
+    case(12)  ! "EMEBSDdefect" 
+     ! read 4D dataset generated from EMEBSDdefect file
+            dims4 = (/ dims3(1), dims3(2),int(1,8), int(1,8) /)
+            
+            if (mod((offset3(3)+1),wd).eq.0) then
+              patx=wd-1
+            else 
+              patx=mod((offset3(3)+1),wd)-1
+            end if
+
+            offset4 =(/ int(0,8) , int(0,8) , int(patx,8) ,int(iii,8)/)
+
+            EBSDDefectpat = HDF_readHyperslabCharArray4D(dataset, offset4, dims4, pmHDF_head) 
+            exppat = 0.0
+            do jj=1,dims4(2)
+                do ii=1,dims4(1)
+                      exppat((jj-1)*dims4(1)+ii) = float(ichar(EBSDDefectpat(ii,jj,1,1)))
+                end do 
+            end do 
+
     case(10)  ! "EMEBSD32i"
 ! read a hyperslab single pattern section from the HDF5 input file
 ! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
@@ -931,13 +977,14 @@ select case (itype)
 ! and use the original pattern coordinate (ispot) as an index into the reordering arrays.
         exppat = 0.0
         dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
-        ispot = offset3(3)
+        ispot = offset3(3)+1
         newspot = semiy(ispot) * wd + semix(ispot)
         offset3new = (/ offset3(1), offset3(2),  newspot /)
-        EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+        EBSDpat32i = HDF_readHyperslabIntegerArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+        !EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
         do jj=1,dims3(2)
             do ii=1,dims3(1) 
-                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
+                exppat((jj-1)*dims3(1)+ii) = float(EBSDpat32i(ii,jj,1))
             end do 
         end do 
 
@@ -989,6 +1036,8 @@ end subroutine getSingleExpPattern
 !> @brief read a list of metadat from input EBSD data file
 !
 !> @param enl EBSDNameListType
+!> @param SEM EBSDSEMArray
+!> @param patterndata EBSDDIpreviewNameListType
 !> @param angles a list of 
 !> @param numangle number of orientation data entry
 !> @param filename 
@@ -998,7 +1047,7 @@ end subroutine getSingleExpPattern
 !
 !> @date 04/29/20 CZ 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine GetMetaData(enl, angles, numangles, filename, inputtype, funit, HDFstrings, istat, verbose)
+recursive subroutine GetMetaData(enl, SEM, patterndata, angles, numangles, filename, inputtype, funit, HDFstrings, istat, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetMetaData
 
 use local
@@ -1015,15 +1064,16 @@ use EBSDmod
 IMPLICIT NONE
 type(EBSDAngleType),INTENT(INOUT)       :: angles
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDDIpreviewNameListType),INTENT(INOUT)    :: patterndata
+type(EBSDSEMArray),INTENT(INOUT)        :: SEM
 character(fnlen),INTENT(IN)             :: filename
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: funit, numangles
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 integer(kind=irg)						:: istat
 
-real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:)
-real(kind=dbl), allocatable 			:: Ftensor(:,:)
-real(kind=sgl), allocatable             :: eu(:,:)
+real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:), eu(:,:)
+real(kind=sgl), allocatable           	:: PCX(:), PCY(:), DD(:)
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
                                            ios, up1header(4), version, patx, paty, myoffset, offset, nlines
@@ -1064,7 +1114,7 @@ end if
 if (present(verbose)) then 
   if (verbose.eqv..TRUE.) then 
     call Message('Pattern input file '//trim(ename))
-	call Message('  input file type '//trim(inputtype))
+	  call Message('  input file type '//trim(inputtype))
   end if
 end if
 
@@ -1120,57 +1170,73 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    !case(4, 7, 10, 11)  ! "TSLHDF", "EMEBSD"
-      case(4)
+      case(4) ! TSLHDF
         nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
-        ! open all the groups to the correct level of the data set
-        do i=1,hdfnumg
-            groupname = trim(HDFstrings(i))
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
-            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-        end do
-		! open groups containing orientation information
+        ! open the correct level of the data set
+        groupname = trim(HDFstrings(1))
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+
+		    ! open groups containing orientation information
         groupname = 'EBSD'
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
         groupname = 'Data'
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
-			
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+
+        ! Euler angle and PC convention (TSL)
+			  call Message('Euler angle convention: '//enl%eulerconvention)
+
         allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
-		dataset = 'Phi'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
-		dataset = 'Phi1'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
-		dataset = 'Phi2'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
-	    eu(:,1)=eu1
-	    eu(:,2)=eu2
-	    eu(:,3)=eu3
-		do i=1,numangles
-		  angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
-		end do
-		deallocate(eu1, eu2, eu3)
+        dataset = 'Phi'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
+        dataset = 'Phi1'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
+        dataset = 'Phi2'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
+        allocate(angles%quatang(4,numangles),stat=istat)
+        do i=1,numangles 
+          eu(i,1)=eu1(i)
+          eu(i,2)=eu2(i)
+          eu(i,3)=eu3(i)
+          angles%quatang(1:4,i) = eu2qu(eu(i,1:3))
+        end do
+        print *, "Converting Euler angles to quaternions"
+        print *, "Number of orientations imported:", numangles
+        deallocate(eu1, eu2, eu3, eu)
         call HDF_pop(pmHDF_head)
 		! open groups containing pattern center and other scan parameters
         groupname = 'Header'
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
         
         dataset = 'Camera Elevation Angle'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
-        ! dataset = 'Camera Azimuthal Angle'
-        ! call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
+        print *, "Tilt angle of the camera:", enl%thetac
+
         groupname = 'Pattern Center Calibration'
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+
         dataset = 'x-star'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
-         dataset = 'y-star'
-        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)		
+        call Message('Pattern center convention: '//enl%eulerconvention)
+        print *, "Pattern Center Information:"
+        print *, "PCx:", enl%xpc
+        enl%xpc=-enl%numsx*(enl%xpc-0.5)! change view from detector to sample
+        
+        dataset = 'y-star'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
+        print *, "PCy:", enl%ypc	
+        enl%ypc=enl%numsx*enl%ypc-enl%numsy*0.5
+
         dataset = 'z-star'
-	    call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
-	    call HDF_pop(pmHDF_head)
-	    nullify(pmHDF_head%next)
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+        print *, "Detector Distance:", enl%L
+        enl%L=enl%numsx*enl%delta*enl%L
+
+        call HDF_pop(pmHDF_head)
+        call HDF_pop(pmHDF_head)
+        nullify(pmHDF_head%next)
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
     case(7, 10, 11)  !  "EMEBSD"
@@ -1179,59 +1245,50 @@ select case (itype)
           ! open the file
           hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
           if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
-          ! open all the groups to the correct level of the data set
-          ! do i=1,hdfnumg
-          !     groupname = trim(HDFstrings(i))
-          !     hdferr = HDF_openGroup(groupname, pmHDF_head)
-          !     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-          ! end do
+         
 		  
-		  ! open Euler angles groups
-		  groupname = 'EMData'
-		  hdferr = HDF_openGroup(groupname, pmHDF_head)
-		  groupname = 'EBSD'
-		  hdferr = HDF_openGroup(groupname, pmHDF_head)
-		  dataset = 'EulerAngles'
-		  ! read angles
-		  allocate(angles%quatang(4,numangles),stat=istat)
-		  call HDF_readDatasetFloatArray2D(dataset,dims2, pmHDF_head, hdferr, eu)
-		  ! convert Euler angles to quaternions
-		  do i=1,numangles
-			angles%quatang(1:4,i) = eu2qu(eu(1:3,i))
-		  end do
-		  deallocate(eu)
-		  call HDF_pop(pmHDF_head)
-		  call HDF_pop(pmHDF_head)
-		  ! open EBSDnamelist group 
-		  groupname = 'NMLparameters'
-			  hdferr = HDF_openGroup(groupname, pmHDF_head)
-		  groupname = 'EBSDNameList'
-			  hdferr = HDF_openGroup(groupname, pmHDF_head)
-		  ! extract simulation parameters
-          dataset = 'xpc'
-          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
-		  print *, "Pattern Center Information:"
-		  print *, "xpc:", enl%xpc
-          dataset = 'ypc'
-          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
-		  print *, "ypc:", enl%ypc		  
-          dataset = 'L'
-          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
-		  print *, "L:", enl%L
-		  call Message(' ')
-          dataset = 'Ftensor'
-		  allocate(Ftensor(3,3))
-                  call HDF_readDatasetDoubleArray2D(dataset, dims2, pmHDF_head, hdferr, Ftensor)
-				  enl%Ftensor=Ftensor
-		  print *, "Deformation gradient tensor:"
-		  print *, enl%Ftensor
-		  call Message(' ')
-          dataset = 'thetac'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
-		  print *, "Tilt angle of the camera:", enl%thetac
+          ! open Euler angles groups
+          groupname = 'EMData'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+          groupname = 'EBSD'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+          dataset = 'EulerAngles'
+          ! read angles
+          allocate(angles%quatang(4,numangles),stat=istat)
+          call HDF_readDatasetFloatArray2D(dataset,dims2, pmHDF_head, hdferr, eu)
+          ! convert Euler angles to quaternions
+          do i=1,numangles
+          angles%quatang(1:4,i) = eu2qu(eu(1:3,i))
+          end do
+          deallocate(eu)
+          call HDF_pop(pmHDF_head)
+          call HDF_pop(pmHDF_head)
+          ! open EBSDnamelist group 
+          groupname = 'NMLparameters'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+          groupname = 'EBSDNameList'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+          ! extract simulation parameters
+              dataset = 'xpc'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
+          write(*,*)
+          call Message('Pattern center convention: '//'EMsoft')
+          print *, "Pattern Center Information:"
+          print *, "xpc:", enl%xpc
+              dataset = 'ypc'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
+          print *, "ypc:", enl%ypc		  
+              dataset = 'L'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+          print *, "L:", enl%L
+              dataset = 'thetac'
+                      call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+          write(*,*)
+          print *, "Camera Tilt:", enl%thetac
+
           dataset = 'delta'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
-	      print *, "CCD pixel size on the scintillator surface",enl%delta
+          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
+          print *, "CCD pixel size on the scintillator surface",enl%delta
           !dataset = 'omega'
           !        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%omega)
           dataset = 'alphaBD'
@@ -1240,96 +1297,155 @@ select case (itype)
                   call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymin)
           dataset = 'energymax'
                   call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymax)
-		  print *, "Energy range for simulation (kV):",enl%energymin,"-", enl%energymax
+          print *, "Energy range for simulation (kV):",enl%energymin,"-", enl%energymax
           dataset = 'includebackground'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
-		  enl%includebackground=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Include MC background: '//enl%includebackground)
-         
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+          enl%includebackground=trim(stringarray(1))
+          deallocate(stringarray)
+          call Message('Include MC background: '//enl%includebackground)
+            
           dataset = 'anglefiletype'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
-		  enl%anglefiletype=trim(stringarray(1))
-		  deallocate(stringarray)
-		
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+          enl%anglefiletype=trim(stringarray(1))
+          deallocate(stringarray)
+        
           dataset = 'eulerconvention'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
-		  enl%eulerconvention=trim(stringarray(1))
-		  deallocate(stringarray)
-				  
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+          enl%eulerconvention=trim(stringarray(1))
+          deallocate(stringarray)
+          call Message('Euler angle convention: '//enl%eulerconvention)
+        
           dataset = 'bitdepth'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
-		  enl%bitdepth=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Bit depth: '//enl%bitdepth)
-		  dataset = 'beamcurrent'
-          call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%beamcurrent)
-		  print *, "Beam current:",enl%beamcurrent
-		  
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+          enl%bitdepth=trim(stringarray(1))
+          deallocate(stringarray)		  
+          dataset = 'beamcurrent'
+          call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%beamcurrent)	  
           dataset = 'dwelltime'
           call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%dwelltime)
-		  print *, "Beam Dwell Time:",enl%dwelltime
-
           dataset = 'poisson'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
-		  enl%poisson=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Possion noise included: '//enl%poisson)
-			  
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+          enl%poisson=trim(stringarray(1))
+          deallocate(stringarray)
+          call Message('Possion noise included: '//enl%poisson)
+            
           dataset = 'binning'
-		  call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%binning)
-		  print *, "Pattern Binning:",enl%binning  
-				  
-          dataset = 'applyDeformation'
-		  call HDF_readDatasetStringArray(dataset,nlines, pmHDF_head, hdferr, stringarray)
-		  enl%applyDeformation=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Apply Deformation Tensor: '//enl%applyDeformation)
+          call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%binning)
+          print *, "Pattern Binning:",enl%binning  
+              
+          call Message('Apply Deformation Tensor: '//enl%applyDeformation)
 
           dataset = 'scalingmode'
-		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)		
-		  enl%scalingmode=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Intensity scaling mode: '//enl%scalingmode)	
-		  
+          call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)		
+          enl%scalingmode=trim(stringarray(1))
+          deallocate(stringarray)
+          call Message('Intensity scaling mode: '//enl%scalingmode)	
+          
           dataset = 'gammavalue'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%gammavalue)	
-		  print *, "gammevalue:", enl%gammavalue	  
-		
-		  call HDF_pop(pmHDF_head)
-		  call HDF_pop(pmHDF_head)
-		  nullify(pmHDF_head%next)
-    case(8)  !  "BrukerHDF"
-        ! nullify(pmHDF_head%next)
-        ! ! open the file
-        ! hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
-        ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+          if (enl%scalingmode.ne.'not') then
+          print *, "gamma value:", enl%gammavalue	  
+          end if
+          write(*,*)
+          call HDF_pop(pmHDF_head)
+          call HDF_pop(pmHDF_head)
+          nullify(pmHDF_head%next)
+    case(8)  !  "BrukerHDF" (a lot of meta data missing in the current HDF5 file)
+        nullify(pmHDF_head%next)
+        ! open the file
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+        ! open the correct level of the data set
+        groupname = trim(HDFstrings(1))
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
 
-        ! ! open all the groups to the correct level of the data set
-        ! do i=1,hdfnumg
-            ! groupname = trim(HDFstrings(i))
-            ! hdferr = HDF_openGroup(groupname, pmHDF_head)
-            ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-            ! !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
-            ! !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
-            ! !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
-            ! if (i.eq.1) then 
-               ! groupname = 'SEM'
-               ! hdferr = HDF_openGroup(groupname, pmHDF_head)
-               ! dataset = 'SEM IX'
-               ! call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
-               ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
-               ! dataset = 'SEM IY'
-               ! call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
-               ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
-               ! call invert_ordering_arrays(npat)
-               ! call Message('  found pattern reordering arrays')
-               ! ! and leave this group
-               ! call HDF_pop(pmHDF_head)
-            ! end if
-        ! end do
-        ! ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
-        ! ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
+		    ! open groups containing orientation information
+        groupname = 'EBSD'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        groupname = 'Data'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+
+        ! Euler angle convention for Bruker is HKL (+90 degree for phi1)
+			  enl%eulerconvention='hkl'
+        call Message('Euler angle convention: '//enl%eulerconvention)
+
+        allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
+        dataset = 'PHI'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
+        dataset = 'phi1'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
+        dataset = 'phi2'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
+        
+        ! convert Euler angles to quaternions
+        allocate(angles%quatang(4,numangles),stat=istat)
+        do i=1,numangles 
+          eu(i,1)=eu1(i)+90.0 ! Bruker convention
+          eu(i,2)=eu2(i)
+          eu(i,3)=eu3(i)
+          angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
+        end do
+        print *, "Converting Euler angles to quaternions"
+        print *, "Number of orientations imported:", numangles
+        deallocate(eu1, eu2, eu3, eu)
+
+        allocate(PCX(numangles),PCY(numangles),DD(numangles))
+        dataset = 'PCX'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, PCX)
+        enl%xpc=sum(PCX)/size(PCX)
+        call Message('Pattern center convention: '//'Bruker')
+        print *, "Pattern Center Information:"
+        print *, "PCx:", enl%xpc
+        enl%xpc=-enl%numsx*(enl%xpc-0.5)! change view from detector to sample
+       
+        
+        dataset = 'PCY'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, PCY)
+        enl%ypc=sum(PCY)/size(PCY)
+        print *, "PCy:", enl%ypc	
+        enl%ypc=enl%numsy*(0.5-enl%ypc)
+    
+
+        dataset = 'DD'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, DD)
+        enl%L=sum(DD)/size(DD)
+        print *, "Detector Distance:", enl%L
+        enl%L=enl%numsy*enl%delta*enl%L
+        
+
+        deallocate(PCX,PCY,DD)
+        call HDF_pop(pmHDF_head)
+		   
+        groupname = 'Header'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        
+        dataset = 'CameraTilt'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+        print *, "Camera Tilt:", enl%thetac
+        call HDF_pop(pmHDF_head)
+        call HDF_pop(pmHDF_head)
+
+
+        groupname = 'SEM'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        allocate(SEM%SEM_X(patterndata%ipf_wd*patterndata%ipf_ht),stat=istat)
+        allocate(SEM%SEM_Y(patterndata%ipf_wd*patterndata%ipf_ht),stat=istat)
+        
+        dataset = 'SEM IX'
+        call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
+        
+
+        dataset = 'SEM IY'
+        call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+        call invert_ordering_arrays(patterndata%ipf_wd)
+        SEM%SEM_Y=semiy
+        SEM%SEM_X=semix
+        call HDF_pop(pmHDF_head)
+
+        nullify(pmHDF_head%next)
+
 
     case(9)  !  "NORDIF"
         ! open(unit=funit, file=trim(ename), status='old', access='stream', &
@@ -1379,7 +1495,7 @@ select case (itype)
     case(2,3)  ! "TSLup2"
         close(unit=funit,status='keep')
 
-    case(4, 7, 10, 11)  ! "TSLHDF" "EMEBSD" "EMEBSD32i" "EMEBSD32f"
+    case(4, 7, 10, 11, 12)  ! "TSLHDF" "EMEBSD" "EMEBSD32i" "EMEBSD32f" "EMEBSDdefect"
         call HDF_pop(pmHDF_head,.TRUE.)
         nullify(pmHDF_head%next)
 

@@ -78,13 +78,15 @@ declare -a f90_source_files=("io.f90"
                              "filters.f90"
                              "detectors.f90"
                              "fftw3mod.f90"
+                             "timing.f90"
                              "NameListTypedefs.f90"
                              "NameListHandlers.f90") 
 
 declare -a f90_HDF_source_files=("commonmod.f90"
                                  "HDFsupport.f90"
                                  "utilities.f90"
-                                 "EBSDmod.f90")
+                                 "EBSDmod.f90"
+                                 "patternmod.f90")
 
 declare -a f90_OpenCL_source_files=("CLsupport.f90")
 
@@ -105,6 +107,7 @@ EMsoft_SDK=@EMsoft_SDK@
 # derived folders
 EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
 EMsoftHDFLib=${EMsoft_folder}/Source/EMsoftHDFLib
+EMsoftOpenCLLib=${EMsoft_folder}/Source/EMOpenCLLib
 EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoftLib
 EMsoftBuildHDFLib=${EMsoft_BUILDfolder}/EMsoftHDFLib
 EMsoftBuildOpenCLLib=${EMsoft_BUILDfolder}/EMOpenCLLib
@@ -190,6 +193,8 @@ myos=`uname`
 if [ "$myos" = "Darwin" ]; then
     install_name_tool -change @rpath/libEMsoftLib.dylib ${EMsoft_Binfolder}/libEMsoftLib.dylib _pyEMsoft.*.so
     install_name_tool -change @rpath/libEMsoftHDFLib.dylib ${EMsoft_Binfolder}/libEMsoftHDFLib.dylib _pyEMsoft.*.so
+elif [ "$myos" = "Linux" ]; then
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${EMsoft_Binfolder}
 fi
 
 # and return to the starting folder
@@ -199,7 +204,12 @@ echo " run_pyEMsoft.sh: pyEMsoft wrapper .so file build completed"
 echo " copying examples and unittests folders into build folder"
 cp -R ${pyEMsoft_folder}/examples .
 cp -R ${pyEMsoft_folder}/unittests .
-cp -R ${pyEMsoft_folder}/pyEMsoftTools.py .
+cp -R ${pyEMsoft_folder}/EMsoft .
+cp -R ${pyEMsoft_folder}/LICENSE .
+cp -R ${pyEMsoft_folder}/README.md .
+cp -R ${pyEMsoft_folder}/setup.py .
+
+mv *.so pyEMsoft.py .f2py_f2cmap EMsoft
 
 echo " Done."
 cd ${currentdir}
