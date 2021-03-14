@@ -321,7 +321,7 @@ ebsdnl%energymax = dinl%energymax
 call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 
 ! close the fortran HDF interface
-! call h5close_EMsoft(hdferr)
+call h5close_EMsoft(hdferr)
 
 !=====================================================
 ! get the indices of the minimum and maximum energy
@@ -1010,8 +1010,9 @@ dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
 
 ! open the fortran HDF interface
-!call h5open_EMsoft(hdferr)
-hdferr =  HDF_openFile(dpfile, HDF_head)
+call h5open_EMsoft(hdferr)
+
+hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
 
 ! open the Scan 1/EBSD/Data group
 groupname = 'Scan 1'
@@ -1072,7 +1073,7 @@ end if
 tstop = Time_tock(tickstart) 
 
 io_real(1) = tstop
-call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
+call WriteValue('Execution time [system_clock()] = ',io_real,1,"(F12.3,' [s]')")
 
 ! close the fortran HDF interface
 call h5close_EMsoft(hdferr)
