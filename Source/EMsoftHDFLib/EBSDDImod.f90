@@ -320,9 +320,6 @@ ebsdnl%energymin = dinl%energymin
 ebsdnl%energymax = dinl%energymax
 call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 
-! close the fortran HDF interface
-call h5close_EMsoft(hdferr)
-
 !=====================================================
 ! get the indices of the minimum and maximum energy
 !=====================================================
@@ -550,7 +547,9 @@ else
   ! get the tmp file name from the input name list instead of the dot product file
   ! to allow for multiple instantiations of this program to run simultaneously
   dinl%tmpfile = trim(ronl%tmpfile)
-  call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
+  if (dinl%usetmpfile.eq.'n') then 
+    call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
+  end if 
 end if
 
 ! do we need to redefine the mask arrays ?
@@ -1008,9 +1007,6 @@ nullify(HDF_head%next)
 
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
-
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 
 hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
 

@@ -8546,6 +8546,7 @@ character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: PSvariantfile
 character(fnlen)                                  :: method
 character(4)                                      :: modality
+character(1)                                      :: usetmpfile
 logical                                           :: inRAM
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
@@ -8557,7 +8558,8 @@ real(kind=sgl)                                    :: truedelta
 
 
 namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
-                                matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta
+                                matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta, &
+                                usetmpfile
 
 nthreads = 1
 matchdepth = 1
@@ -8566,6 +8568,7 @@ ctffile = 'undefined'
 tmpfile = 'undefined'
 PSvariantfile = 'undefined'
 method = 'FIT'
+usetmpfile = 'n'
 inRAM = .FALSE.
 nmis = 1
 niter = 1
@@ -8606,6 +8609,7 @@ enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%tmpfile = tmpfile
+enl%usetmpfile = usetmpfile
 enl%PSvariantfile = PSvariantfile
 enl%method = method
 enl%inRAM = inRAM

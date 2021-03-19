@@ -1980,6 +1980,7 @@ type RefineOrientationtype
         character(fnlen)        :: PSvariantfile
         character(fnlen)        :: method
         character(4)            :: modality
+        character(1)            :: usetmpfile
         logical                 :: inRAM
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis

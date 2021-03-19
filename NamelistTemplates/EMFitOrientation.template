@@ -7,7 +7,10 @@
  ctffile = 'undefined',
 ! name of temporary file for pre-processed patterns 
 ! (will override the temporary file name defined in the dot product file)
+! if usetmpfile is set to 'y', then it is assumed that the tmpfile already
+! exists and that one will be used for the refinement.  (only with inRAM=.FALSE.)
  tmpfile = 'undefined',
+ usetmpfile = 'n',
 ! modality ('EBSD' or 'ECP')
  modality = 'EBSD',
 ! keep the pre-processed patterns all in memory?
