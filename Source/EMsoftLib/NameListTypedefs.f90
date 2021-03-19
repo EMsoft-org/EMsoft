@@ -1376,6 +1376,7 @@ type EBSDIndexingNameListType
         !character(3)            :: eulerconvention
         !character(3)            :: outputformat
         character(1)            :: keeptmpfile
+        character(1)            :: usetmpfile
         character(1)            :: spatialaverage
         character(fnlen)        :: anglefile
         !character(fnlen)        :: dotproductfile

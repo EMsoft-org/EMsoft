@@ -6574,6 +6574,7 @@ real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
 character(1)                                      :: keeptmpfile
+character(1)                                      :: usetmpfile
 character(3)                                      :: scalingmode
 character(3)                                      :: similaritymetric
 character(3)                                      :: Notify
@@ -6611,7 +6612,7 @@ character(fnlen)                                  :: indexingmode
 namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, exptnumsx, exptnumsy, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
-ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
+ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, usetmpfile, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
 section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle, refinementNMLfile, similaritymetric
 
@@ -6652,6 +6653,7 @@ hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
 keeptmpfile     = 'n'
+usetmpfile      = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -6735,6 +6737,7 @@ enl%nregions      = nregions
 enl%nlines        = nlines
 enl%maskpattern   = maskpattern
 enl%keeptmpfile   = keeptmpfile
+enl%usetmpfile    = usetmpfile
 enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav

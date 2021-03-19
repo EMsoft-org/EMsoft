@@ -838,9 +838,11 @@ masklin = reshape(mask, (/dinl%exptnumsx*dinl%exptnumsy/) )
 ! This is also where the pattern binning occurs using the 
 ! rescaler method from the ImageOPs module. (as of version 5.0.3)
 !=====================================================
-call h5open_EMsoft(hdferr)
-call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
-call h5close_EMsoft(hdferr)
+if (dinl%usetmpfile.eq.'n') then ! do this unless we are using an existing pre-processed file 
+  call h5open_EMsoft(hdferr)
+  call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
+  call h5close_EMsoft(hdferr)
+end if 
 
 !=====================================================
 ! remake the mask if the binning factor is not 1 
