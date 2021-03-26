@@ -41,6 +41,7 @@
 #> @date 09/11/19 MDG 1.2 added automatic CMake substitution of all folder paths 
 #> @date 10/11/19 MDG 1.3 general cleanup and completion of CMake substitutions
 #> @date 07/21/20 CZ 1.4 fixed the clsuppport path and linked the EMOpenCLLib library
+#> @date 03/23/21 CZ 1.5 corrected the linked libraries(lib64) and added debug mode
 #--------------------------------------------------------------------------
 
 #---------------------------
@@ -100,9 +101,11 @@ EMsoft_Binfolder=@EMsoft_BUILD_DIR@/Bin
 pyEMsoft_BUILDfolder=@EMsoft_BUILD_DIR@/pyEMsoft
 EMsoft_folder=@EMsoft_SOURCE_DIR@ 
 pyEMsoft_folder=@EMsoft_SOURCE_DIR@/Source/pyEMsoft
-#CondaLib=@USERHOMEDIR@/anaconda3/lib
 EMsoft_SDK=@EMsoft_SDK@
-
+FFTW3_include=@FFTW3_INCLUDE_DIR@
+FFTW3_lib=@FFTW3_LIBRARY@
+JSONFORTRAN_lib=@JSONFORTRAN_LIBRARY_DIR@
+VERSION="@Compile_Mode@"
 #=======================
 # derived folders
 EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
@@ -145,8 +148,11 @@ done
 echo " run_pyEMsoft.sh: executing f90wrap"
 f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} ${f90_OpenCL_source_files[*]} \
 --skip hipassfilterc hipassfilter carstringify 1>build.log 2>build_error.log
+
 #=======================
 # call f2py-f90wrap to build the wrapper library
+# build the Release version of pyEMsoft
+if [ "$VERSION" == "Release" ];then
 echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (several hours) ..."
 f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -I${EMsoftBuildHDFLib} \
@@ -154,17 +160,44 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -I@HDF5_INSTALL@/include/static \
 -I@CLFortran_INSTALL@/include \
 -I@JSONFORTRAN_INSTALL@/include \
--I@FFTW3_INSTALL@/include \
+-I${FFTW3_include} \
 -L${EMsoft_Binfolder} \
 -L@CLFortran_INSTALL@/lib \
--L@JSONFORTRAN_INSTALL@/lib \
--L@FFTW3_INSTALL@/lib \
+-L${JSONFORTRAN_lib} \
+-L${FFTW3_lib} \
 -L@HDF5_INSTALL@/lib \
 --link-lapack_opt \
 -lgomp -lgfortran \
--lEMsoftLib -lEMsoftHDFLib -lEMOpenCLLib -ljsonfortran -lhdf5 -lhdf5_fortran \
--lclfortran -lfftw3 -lhdf5_cpp -lhdf5_f90cstub -lhdf5_hl_cpp \
+-lEMsoftLib -lEMsoftHDFLib -lEMOpenCLLib \
+-ljsonfortran -lhdf5 -lhdf5_fortran \
+-lclfortran -lhdf5_cpp -lhdf5_f90cstub -lhdf5_hl_cpp \
 -lhdf5_tools -lhdf5_hl -lhdf5_hl_fortran -lhdf5_hl_f90cstub  1>>build.log 2>>build_error.log
+
+# build the Debug version of pyEMsoft
+elif [ "$VERSION" == "Debug" ]; then
+echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (several hours) ..."
+f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
+-I${EMsoftBuildHDFLib} \
+-I${EMsoftBuildOpenCLLib} \
+-I@HDF5_INSTALL@/include/static \
+-I@CLFortran_INSTALL@/include \
+-I@JSONFORTRAN_INSTALL@/include \
+-I${FFTW3_include} \
+-L${EMsoft_Binfolder} \
+-L@CLFortran_INSTALL@/lib \
+-L${JSONFORTRAN_lib} \
+-L${FFTW3_lib} \
+-L@HDF5_INSTALL@/lib \
+--link-lapack_opt \
+-lgomp -lgfortran \
+-lEMsoftLib -lEMsoftHDFLib -lEMOpenCLLib \
+-ljsonfortran_debug -lhdf5_debug -lhdf5_fortran_debug \
+-lclfortran_debug -lhdf5_cpp_debug -lhdf5_f90cstub_debug -lhdf5_hl_cpp_debug \
+-lhdf5_tools_debug -lhdf5_hl_debug -lhdf5_hl_fortran_debug -lhdf5_hl_f90cstub_debug  1>>build.log 2>>build_error.log
+
+else 
+echo "Undefined version of compilation"
+fi
 
 #=======================
 # clean up all the .f90 files that we no longer need

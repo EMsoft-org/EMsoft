@@ -5,6 +5,12 @@ if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
   set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/pyEMsoft")
   set(USERHOMEDIR "$ENV{HOME}")
   get_filename_component(EMsoft_BUILD_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} DIRECTORY)
+  get_filename_component(Compile_Mode ${EMsoft_BUILD_DIR} NAME)
+
+  # get the path for JSONFORTRAN library
+  get_filename_component(JSONFORTRAN_LIBRARY_DIR ${JSONFORTRAN_DIR} DIRECTORY)
+  get_filename_component(JSONFORTRAN_LIBRARY_DIR ${JSONFORTRAN_LIBRARY_DIR} DIRECTORY)
+
   #-------------------------------------------------------------------------------
   # add run_pyEMsoft.sh to Build folder with properly substituted folder locations
   Message(STATUS "Configuring run_pyEMsoft.sh script in ${EMsoft_BUILD_DIR} folder")
@@ -16,7 +22,7 @@ endif()
 
 if (Fortran_COMPILER_NAME MATCHES "ifort.*")
   if(WIN32)
-    Message(STATUS "Python wrapper script is currently not available on Windows")
+    Message(STATUS "Python wrapper is only available on Windows Subsystem for Linux")
   endif()
 endif()
 
