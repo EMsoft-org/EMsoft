@@ -82,10 +82,10 @@
 121EMEECmaster
 200EMdefectdata
 210MDElectronProp
-211EMmdSTEM
+211EMAtomCoordSTEM
 212EMCTEMQC
 213EMIntegrateSTEM
-214EMdddSTEM
+214EMDispFieldSTEM
 230EMRefineMartensite
 250EMLauemaster
 251EMLaue

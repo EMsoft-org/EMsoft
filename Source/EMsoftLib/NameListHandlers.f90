@@ -10399,7 +10399,7 @@ real(kind=sgl)          :: lauec(2)
 
 
 
-namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
+namelist /STEMDCIlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
   voltage, convergence, platid, devid, inputfilename, scalefactor, usenumd, selnumd, &
   discsize, stride, maxnumincell, hypslab, dwflag, thk, presorted, subslice, ZAindex, &
   lauec
@@ -10435,7 +10435,7 @@ end if
 if (.not.skipread) then
 ! read the namelist file
     open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
-    read(UNIT=dataunit,NML=MDSTEMlist)
+    read(UNIT=dataunit,NML=STEMDCIlist)
     close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries

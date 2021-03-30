@@ -25,7 +25,7 @@
 ! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
 ! USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ! ###################################################################
-program EMdddSTEM
+program EMDispFieldSTEM
 
 use local
 use typedefs
@@ -39,8 +39,8 @@ IMPLICIT NONE
 character(fnlen)                             :: nmldeffile, progname, progdesc
 type(EMmdSTEMNameListType)                   :: msnml
 
-nmldeffile = 'EMmdSTEM.nml'
-progname = 'EMdddSTEM.f90'
+nmldeffile = 'EMDispFieldSTEM.nml'
+progname = 'EMDispFieldSTEM.f90'
 progdesc = 'Calculation of STEM images for discrete dislocation dynamics data'
 
 ! print some information
@@ -60,7 +60,7 @@ write (*,*) 'calling dddSTEMcalc routine '
 ! perform the zone axis computations
 call DDDSTEMcalc(msnml, progname, nmldeffile)
 
-end program EMdddSTEM
+end program EMDispFieldSTEM
 
 
 

@@ -1,4 +1,4 @@
- &MDSTEMlist
+ &STEMDCIlist
 ! DO NOT CHANGE THIS LINE
 !------------------------
 ! IO Filenames
@@ -36,17 +36,18 @@ subslice = 20,
 !------------------------
 ! OpenCL Parameters
 !------------------------
-! Device ID for GPU
- devid = 1,
-! Platform ID for GPU
+! Platform ID for GPU(s)
  platid = 1,
+! Number of GPU devices to use
+ usenumd = 1,
+! Array of GPU device IDs (maximum 4 GPUs supported)
+ ! selnumd = 1,2,3,4,
+ selnumd = 1,
 !------------------------
-! Parameters for DDD simulations
+! Parameters for MD simulations
 !------------------------
-! Is the data presorted into a 4D array in an h5 file?
- presorted = .True.,
-! Scaling factor for input data that is not presorted, (x,y,z,dx,dy,dz)
-! If you used a python script similar to the one in the 'resources' folder, to
-! format your data as an h5 file, this is not used
- scalefactor = 1,1,1,1,1,1,
+! Used for precalculating the fourier coefficients of the scattering matrix
+ stride = 0.0001,
+! Maximum number of atoms allowed in a cell; should be the number of atoms in a normal unit cell
+ maxnumincell = 4,
 / 
