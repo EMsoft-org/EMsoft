@@ -1,0 +1,16 @@
+
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.1.0")
+  cmake_policy(SET CMP0002 NEW)
+  cmake_policy(SET CMP0054 NEW)
+  cmake_policy(SET CMP0048 NEW)
+endif()
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.12.0")
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
+  cmake_policy(SET CMP0079 NEW)
+endif()
+

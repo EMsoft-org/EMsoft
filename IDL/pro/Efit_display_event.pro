@@ -55,7 +55,16 @@ end else begin
                 WIDGET_CONTROL, Efitwidget_s.displaybase, /DESTROY
         endcase
         'SAVEPATTERN': begin
-                Core_Print,'to be implemented'
+                delist = ['jpeg','tiff','bmp']
+                de = delist[Efitdata.imageformat]
+                filename = DIALOG_PICKFILE(/write,default_extension=de,path=Efitdata.pathname,title='enter filename without extension')
+                im = tvrd()
+                case de of
+                    'jpeg': write_jpeg,filename,im,quality=100
+                    'tiff': write_tiff,filename,reverse(im,2)
+                    'bmp': write_bmp,filename,im
+                 else: MESSAGE,'unknown file format option'
+                endcase
         endcase
 
   else: MESSAGE, "Efit_display_event: Event "+eventval+" Unknown"

@@ -45,7 +45,7 @@ common CBED_widget_common, widget_s
 common CBED_data_common, data
 
 ; prefs file
-  openw,1,data.prefname
+  openw,1,data.appdir+data.prefname
   nprefs = 27
   data.nprefs = nprefs
   printf,1,nprefs

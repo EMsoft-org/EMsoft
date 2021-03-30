@@ -1,7 +1,6 @@
 # unittest file for sampling of rotation space SO(3)
 import sys
-sys.path.append('../')
-import pyEMsoft 
+from EMsoft import pyEMsoft
 import numpy as np
 import unittest
 from random import randint 

@@ -33,6 +33,11 @@ function(AddIFortCopyInstallRules)
 
     set(fullPath "${Z_LIBPATH}/${Z_LIBPREFIX}${Z_LIBNAME}${DEBUG_SUFFIX}.dll")
 
+    # make sure that the file exists and fail during config instead of build
+    if(NOT EXISTS ${fullPath})
+      message(FATAL_ERROR "library doesn't exist to copy: ${fullPath}")
+    endif()
+
     # Get the Actual Library Path and create Install and copy rules
     #message(STATUS "  fullPath: ${fullPath}")
     if(NOT "${fullPath}" STREQUAL "LibPath-NOTFOUND")
@@ -88,6 +93,13 @@ get_filename_component(IFORT_COMPILER_ROOT_DIR ${IFORT_COMPILER_ROOT_DIR} DIRECT
 
 set(IFORT_COMPILER_RDIST_DIR "${IFORT_COMPILER_ROOT_DIR}/redist")
 set(IFORT_COMPILER_ROOT_DIR "${IFORT_COMPILER_ROOT_DIR}/compiler")
+
+# intel oneAPI uses e.g. windows\redist\intel64_win instead of windows\redist\intel64
+if(NOT EXISTS ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR})
+  if(EXISTS ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}_win)
+    set(IFORT_COMPILER_ARCH_DIR "${IFORT_COMPILER_ARCH_DIR}_win")
+  endif()
+endif()
 
 if(CMAKE_FIND_DEBUG_MODE)
   message(STATUS "CMAKE_Fortran_COMPILER:  ${CMAKE_Fortran_COMPILER}")

@@ -3402,13 +3402,19 @@ integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: platid
 integer(kind=irg)       :: devid
 integer(kind=irg)       :: globalworkgrpsz
+integer(kind=irg)       :: blocksize
 real(kind=sgl)          :: dmin
+character(fnlen)        :: copyfromenergyfile
+character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: energyfile
+character(fnlen)        :: h5copypath
+logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfile,restart,uniform,Esel,nthreads
+namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfile,restart,uniform,Esel,nthreads, &
+                          copyfromenergyfile, BetheParametersFile, combinesites, h5copypath, blocksize
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -3417,9 +3423,14 @@ nthreads = 1
 platid = 1
 devid = 1
 globalworkgrpsz = 150
+blocksize = 64
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
+copyfromenergyfile = 'undefined'   
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+BetheParametersFile = 'undefined'
+h5copypath = 'undefined'
+combinesites = .FALSE.
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
 
@@ -3447,8 +3458,13 @@ emnl%nthreads = nthreads
 emnl%platid = platid 
 emnl%devid = devid 
 emnl%globalworkgrpsz = globalworkgrpsz 
+emnl%blocksize = blocksize
 emnl%dmin = dmin
+emnl%copyfromenergyfile = copyfromenergyfile
 emnl%energyfile = energyfile
+emnl%h5copypath = h5copypath
+emnl%combinesites = combinesites
+emnl%BetheParametersFile = BetheParametersFile
 emnl%restart = restart
 emnl%uniform = uniform
 
@@ -4008,6 +4024,7 @@ character(1)            :: spatialaverage
 character(3)            :: scalingmode
 character(3)            :: eulerconvention
 character(3)            :: outputformat
+character(4)            :: Fframe
 character(5)            :: bitdepth
 character(fnlen)        :: anglefile
 character(fnlen)        :: anglefiletype
@@ -4020,7 +4037,7 @@ namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefi
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, spatialaverage, &
                         applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
-                        maskradius, poisson
+                        maskradius, poisson, Fframe
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -4049,6 +4066,7 @@ makedictionary  = 'y'
 poisson         = 'n'           ! apply poisson noise ? 
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
+Fframe = 'crys'                 ! frame of reference for the Ftensor ('crys':crystal frame; 'samp':sample frame)
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
@@ -4130,6 +4148,7 @@ enl%includebackground = includebackground
 enl%makedictionary = makedictionary
 enl%poisson = poisson
 enl%applyDeformation = applyDeformation
+enl%Fframe=Fframe
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
 enl%eulerconvention = eulerconvention
@@ -4310,12 +4329,12 @@ integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
 real(kind=sgl)          :: spotsize
-real(kind=sgl)          :: omega
 real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 logical                 :: sampleInteractionVolume
 character(3)            :: scalingmode
+character(4)            :: Fframe
 character(fnlen)        :: deformationfile
 character(fnlen)        :: ivolfile
 character(fnlen)        :: masterfile
@@ -4325,7 +4344,7 @@ character(fnlen)        :: tmpfspath
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, spotsize, &
                              masterfile, datafile, beamcurrent, dwelltime, gammavalue, tmpfspath, &
-                             scalingmode, nthreads, omega, ivolfile, sampleInteractionVolume
+                             scalingmode, Fframe, nthreads, ivolfile, sampleInteractionVolume
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -4335,11 +4354,11 @@ nthreads        = 1             ! number of OpenMP threads
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 spotsize        = 2.0           ! [nanometer]
-omega           = 0.0
 gammavalue      = 1.0           ! gamma factor
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 sampleInteractionVolume = .FALSE.  ! should we sample an MC-generated interaction volume?
+Fframe          = 'crys'        ! reference frame for the deformation tensor 
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 ivolfile        = 'undefined'   ! filename
 deformationfile = 'undefined'   ! filename
@@ -4391,12 +4410,12 @@ enl%gammavalue = gammavalue
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%scalingmode = scalingmode
+enl%Fframe = Fframe
 enl%sampleInteractionVolume = sampleInteractionVolume
 enl%deformationfile = deformationfile
 enl%masterfile = masterfile
 enl%ivolfile = ivolfile
 enl%datafile = datafile
-enl%omega = omega
 enl%tmpfspath = tmpfspath
 
 end subroutine GetEBSDdefectNameList
@@ -4441,10 +4460,16 @@ real(kind=sgl)           :: VTR
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
-real(kind=sgl)           :: XCmin(3)
-real(kind=sgl)           :: XCmax(3)
+real(kind=sgl)           :: bound(3)
+real(kind=sgl)           :: w
+real(kind=sgl)           :: w_damp
+real(kind=sgl)           :: c1 
+real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
+character(1)            :: hybrid
+character(2)            :: globalopt
+character(1)             :: single_opt
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
@@ -4473,6 +4498,7 @@ character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
+character(4)            :: Fframe
 character(3)            :: scalingmode
 character(3)            :: eulerconvention
 character(3)            :: outputformat
@@ -4490,31 +4516,37 @@ integer(kind=irg)       :: ipf_wd
 integer(kind=irg)       :: ipf_ht
 character(fnlen)        :: inputtype
 character(fnlen)        :: HDFstrings(10)
-character(fnlen)        :: HDFMetaDatastrings(10)
+
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, &
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, bound, hybrid, globalopt, &
                          objective, outputfile, stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, &
                          eulerconvention, masterfile, targetfile, bitdepth, energyfile, beamcurrent, dwelltime, energymin, &
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, HDFMetaDatastrings, datafile
+                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
-NP=120
-itermax=200
-strategy=6
-refresh=500
+NP=60
+itermax=100
+strategy=2
+refresh=10
 iwrite=7
-method=(/0,1,0/)
-VTR= -1e-4
-CR_XC=0.5
-F_XC=0.8
-F_CR=0.8
-XCmin=(/-0.002,-0.08,-0.01/)
-XCmax=(/0.002,0.08,0.01/)
+method=(/0,1,1/)
+VTR= -1
+CR_XC=0.9
+F_XC=0.5
+F_CR=0.5
+bound=(/0.001,1.0,1.0/)
+w=1.0
+w_damp=0.99
+c1=2
+c2=2
+hybrid='n'
+globalopt='DE'
+single_opt='n'
 objective=1
 outputfile='undefined'
 stdout          = 6
@@ -4529,20 +4561,21 @@ thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
 ypc             = 0.0           ! [pixels]
-energymin       = 15.0          ! minimum energy to consider
-energymax       = 30.0          ! maximum energy to consider
+energymin       = 10.0          ! minimum energy to consider
+energymax       = 20.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 alphaBD         = 0.0           ! transfer lens barrel distortion parameter
 maskradius      = 240           ! mask radius
 hipassw         = 0.05          ! hi-pass filter radius
 axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
-beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
+beamcurrent     = 150.0D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
-makedictionary  = 'y'
+makedictionary  = 'n'
 poisson         = 'n'           ! apply poisson noise ? 
-includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
+includebackground = 'n'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
+Fframe = 'crys'                 ! frame of reference for the Ftensor ('crys':crystal frame; 'samp':sample frame)
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
@@ -4564,7 +4597,6 @@ ipf_wd = 100
 ipf_ht = 100
 inputtype = 'Binary'
 HDFstrings = ''
-HDFMetaDatastrings=''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4577,20 +4609,6 @@ if (.not.skipread) then
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
-
-! we no longer require the energyfile parameter, but for backwards compatibility
-! we still allow the user to include it (it doesn't do anything though)
-! if (trim(energyfile).eq.'undefined') then
-!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
-! end if
-
- ! if (trim(anglefile).eq.'undefined') then
-  ! call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
- ! end if
- 
- if (trim(datafile).eq.'undefined') then
-  call FatalError('GetEBSDDENameList:',' datafile name is undefined in '//nmlfile)
- end if
  
  if (trim(masterfile).eq.'undefined') then
   call FatalError('GetEBSDDENameList:',' master pattern file name is undefined in '//nmlfile)
@@ -4621,10 +4639,15 @@ de%VTR=VTR
 de%CR_XC=CR_XC
 de%F_XC=F_XC
 de%F_CR=F_CR
-de%XCmin=XCmin
-de%XCmax=XCmax
+de%bound=bound
+de%w=w
+de%w_damp=w_damp
+de%c1=c1
+de%c2=c2
+de%hybrid=hybrid
+de%globalopt=globalopt
 de%objective=objective
-de%HDFMetaDatastrings=HDFMetaDatastrings
+de%single_opt=single_opt
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
@@ -4651,6 +4674,7 @@ enl%includebackground = includebackground
 enl%makedictionary = makedictionary
 enl%poisson = poisson
 enl%applyDeformation = applyDeformation
+enl%Fframe = Fframe
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
 enl%eulerconvention = eulerconvention
@@ -6550,6 +6574,7 @@ real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
 character(1)                                      :: keeptmpfile
+character(1)                                      :: usetmpfile
 character(3)                                      :: scalingmode
 character(3)                                      :: similaritymetric
 character(3)                                      :: Notify
@@ -6587,7 +6612,7 @@ character(fnlen)                                  :: indexingmode
 namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, exptnumsx, exptnumsy, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
-ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
+ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, usetmpfile, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
 section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle, refinementNMLfile, similaritymetric
 
@@ -6628,6 +6653,7 @@ hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
 keeptmpfile     = 'n'
+usetmpfile      = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -6711,6 +6737,7 @@ enl%nregions      = nregions
 enl%nlines        = nlines
 enl%maskpattern   = maskpattern
 enl%keeptmpfile   = keeptmpfile
+enl%usetmpfile    = usetmpfile
 enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav
@@ -7183,19 +7210,21 @@ logical                                           :: skipread = .FALSE.
 character(fnlen)        :: dotproductfile(5)
 character(fnlen)        :: ctfname
 character(fnlen)        :: angname
+character(fnlen)        :: phasemapnameweighted
 character(fnlen)        :: phasemapname
 integer(kind=irg)       :: phasecolors(5)
 character(8)            :: usedp
 character(2)            :: indexingmode
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode, phasemapname, phasecolors
+namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode, phasemapname, phasecolors, phasemapnameweighted
 
 ! set the input parameters to default values
 dotproductfile = (/ 'undefined','undefined','undefined','undefined','undefined' /)
 ctfname = 'undefined'
 angname = 'undefined'
 phasemapname = 'undefined'
+phasemapnameweighted = 'undefined'
 phasecolors = (/ 1, 2, 0, 0, 0 /)
 usedp = 'original'
 indexingmode = 'DI'
@@ -7225,6 +7254,7 @@ dpmnl%dotproductfile = dotproductfile
 dpmnl%ctfname = ctfname 
 dpmnl%angname = angname 
 dpmnl%phasemapname = phasemapname 
+dpmnl%phasemapnameweighted = phasemapnameweighted
 dpmnl%phasecolors = phasecolors
 dpmnl%indexingmode = indexingmode
 dpmnl%usedp = usedp
@@ -8516,6 +8546,7 @@ character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: PSvariantfile
 character(fnlen)                                  :: method
 character(4)                                      :: modality
+character(1)                                      :: usetmpfile
 logical                                           :: inRAM
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
@@ -8527,7 +8558,8 @@ real(kind=sgl)                                    :: truedelta
 
 
 namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
-                                matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta
+                                matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta, &
+                                usetmpfile
 
 nthreads = 1
 matchdepth = 1
@@ -8536,6 +8568,7 @@ ctffile = 'undefined'
 tmpfile = 'undefined'
 PSvariantfile = 'undefined'
 method = 'FIT'
+usetmpfile = 'n'
 inRAM = .FALSE.
 nmis = 1
 niter = 1
@@ -8576,6 +8609,7 @@ enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%tmpfile = tmpfile
+enl%usetmpfile = usetmpfile
 enl%PSvariantfile = PSvariantfile
 enl%method = method
 enl%inRAM = inRAM

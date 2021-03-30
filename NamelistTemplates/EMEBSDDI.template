@@ -118,14 +118,14 @@
 !
 ! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
  tmpfile = 'EMEBSDDict_tmp.data',
+! keep this tmp file after the indexing run is complete ?
  keeptmpfile = 'n',
+! use an existing tmp file with the name above ?
+ usetmpfile = 'n',
 ! output file ; path relative to EMdatapathname
  datafile = 'undefined',
 ! ctf output file ; path relative to EMdatapathname
  ctffile = 'undefined',
-! the following option has been disabled starting version 4.3
-! average ctf output file ; path relative to EMdatapathname
-! avctffile = 'undefined',
 ! ang output file ; path relative to EMdatapathname
  angfile = 'undefined',
 ! euler angle input file

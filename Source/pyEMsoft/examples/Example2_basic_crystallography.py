@@ -1,8 +1,7 @@
 
 import sys
-sys.path.append('../')
-import pyEMsoft
-from pyEMsoftTools import Tools
+from EMsoft import pyEMsoft
+from EMsoft.pyEMsoftTools import Tools
 import numpy as np
 import math
 

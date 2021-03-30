@@ -292,7 +292,10 @@ integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Em
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
 real(kind=sgl)                          :: ixy(2)
+integer(kind=irg)                       :: ss(3)
 
+
+ss=shape(EBSDMCdata%accum_e)
 !====================================
 ! ------ generate the detector arrays
 !====================================
@@ -396,6 +399,8 @@ if (present(bg)) then
 ! four-point interpolation (bi-quadratic)
         nix = int(nx+ixy(1))-nx
         niy = int(ny+ixy(2))-ny
+		if ((nix+1).gt.((ss(2)-1)/2)) nix=nix-1
+		if ((niy+1).gt.((ss(3)-1)/2)) niy=niy-1
         dx = ixy(1)-nix
         dy = ixy(2)-niy
         dxm = 1.0-dx

@@ -884,6 +884,7 @@ end function HDF_createFile
 !> @param readonly (optional) file open mode
 !
 !> @date 03/17/15  MDG 1.0 original
+!> @date 03/14/21  MDG 1.1 changed readonly logic
 !--------------------------------------------------------------------------
 recursive function HDF_openFile(HDFname, HDF_head, readonly) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_openFile
@@ -901,9 +902,16 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: file_id ! file identifier
 integer                                                 :: hdferr  ! hdferr flag
+logical                                                 :: rdonly
 
 success = 0
+rdonly = .FALSE.
+
 if (present(readonly)) then 
+  if (readonly.eqv..TRUE.) rdonly = .TRUE. 
+end if 
+
+if (rdonly.eqv..TRUE.) then
   call H5Fopen_f(cstringify(HDFname), H5F_ACC_RDONLY_F, file_id, hdferr)
   call HDFerror_check('HDF_openFile:H5Fopen_f:'//trim(HDFname)//':readonly', hdferr)
 else

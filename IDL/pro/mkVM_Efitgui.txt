@@ -4,4 +4,4 @@ saveappname = appname+'.sav'
 
 ; compile the program and get all dependencies resolved
 .r Efit
-resolve_all                    
+resolve_all,skip_routines=['IDLFFDICOMEXISLICENSED']                    

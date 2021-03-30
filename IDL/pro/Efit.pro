@@ -16,13 +16,16 @@
 @Efitinit
 @Efit_display
 @Efit_display_event
+@Efit_drawPC
 @Efitevent
 @Efit_control
 @Efit_control_event
 @Efit_event
 @Efit_amoeba
 @Efit_fit
+@Efit_constrainedfit
 @Efit_update
+@Efit_constrainedupdate
 @Efitgetpreferences
 @Efitwritepreferences
 @Efitgetfilename
@@ -88,6 +91,8 @@ common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 common getenv_common, librarylocation
 
+; before we do anything, we make sure that the location of the app_user_dir is set 
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
 
 !EXCEPT = 0
 logmode = 0
@@ -151,6 +156,7 @@ Efitwidget_s = {widgetstruct, $
                 mkjson:long(0), $
                 convcrit:long(0), $
                 fitmode:long(0), $
+                goconstrainedfit:long(0), $
                 preproc:long(0), $
                 ramponoff:long(0), $
                 hipassonoff:long(0), $
@@ -261,12 +267,18 @@ Efitdata = {Efitdatastruct, $
                 hipasscutoff:float(0), $
                 homefolder:'', $
                 nprefs:long(0), $
-                prefname:'~/.config/EMsoft/Efitgui.prefs', $
+                appdir: appdir, $               ; location of the user application folder
+                prefname: 'Efitgui.prefs', $    ; filename of preferences file (will be located inside data.appdir)
+                foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
                 test:long(0) }
 
 Efitdata.EMsoftpathname = Core_getenv(/bin)
 Efitdata.EMdatapathname = Core_getenv(/data)
 librarylocation = Core_getenv(/lib)
+
+; set the foldersep string
+if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then Efitdata.foldersep = '\'
+Efitdata.appdir = Efitdata.appdir+Efitdata.foldersep
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
@@ -381,7 +393,7 @@ Efitwidget_s.logodraw = WIDGET_DRAW(block1, $
 			/FRAME, $
 			/ALIGN_CENTER, $
 			XSIZE=600, $
-			YSIZE=100)
+			YSIZE=200)
 			;YSIZE=200)
 
 ;------------------------------------------------------------
@@ -707,6 +719,14 @@ Efitwidget_s.gofit = WIDGET_BUTTON(line2, $
 
 Efitwidget_s.progress = Core_WText(line2,'convergence parameter', fontstr, 200, 25, 60, 1, string(0.0,FORMAT="(F12.6)"))
 
+line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
+Efitwidget_s.goconstrainedfit = WIDGET_BUTTON(line2, $
+                                UVALUE='GOCONSTRAINEDFIT', $
+                                VALUE='Start Constrained Fit', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
+
 
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 Efitwidget_s.mkjson= WIDGET_BUTTON(line2, $
@@ -750,7 +770,7 @@ WIDGET_CONTROL,Efitwidget_s.base,/REALIZE
 WIDGET_CONTROL, Efitwidget_s.logodraw, GET_VALUE=drawID
 Efitwidget_s.logodrawID = drawID
 ;
-read_jpeg,'Resources/EMsoftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftVBFFlogo.jpeg',logo
 wset,Efitwidget_s.logodrawID
 tvscl,logo,true=1
 

@@ -86,6 +86,7 @@ contains
 !> @date 02/22/20 MDG 4.1 split of call back routines
 !> @date 06/01/20 MDG 5.0 change in handling of pattern binning (as of EMsoft version 5.0.3)
 !> @date 10/06/20 MDG 5.1 added normalized cross correlation as optional similarity metric
+!> @date 03/11/21 MDG 5.2 added min dp value to program output
 !--------------------------------------------------------------------------
 subroutine EBSDDIdriver(Cnmldeffile, Cprogname, cproc, ctimeproc, cerrorproc, objAddress, cancel) &
            bind(c, name='EBSDDIdriver') 
@@ -262,12 +263,12 @@ integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq,
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
-real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(2), tstart, tmp, &
+real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(3), tstart, tmp, &
                                                        totnum_el, vlen, tstop, ttime
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax, iiistart, iiiend, jjend
-real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres, nel, emult, mean, sdev
+real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight,dp,mvres,minvres,nel,emult,mean,sdev
 real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx, Nval, Nval2
 integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
@@ -837,9 +838,11 @@ masklin = reshape(mask, (/dinl%exptnumsx*dinl%exptnumsy/) )
 ! This is also where the pattern binning occurs using the 
 ! rescaler method from the ImageOPs module. (as of version 5.0.3)
 !=====================================================
-call h5open_EMsoft(hdferr)
-call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
-call h5close_EMsoft(hdferr)
+if (dinl%usetmpfile.eq.'n') then ! do this unless we are using an existing pre-processed file 
+  call h5open_EMsoft(hdferr)
+  call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
+  call h5close_EMsoft(hdferr)
+end if 
 
 !=====================================================
 ! remake the mask if the binning factor is not 1 
@@ -1029,6 +1032,7 @@ dictionaryloop: do ii = 1,cratio+1
       call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_dict', ierr)
 
       mvres = 0.0
+      minvres = 2.0
 
       experimentalloop: do jj = 1,cratioE
 
@@ -1049,7 +1053,13 @@ dictionaryloop: do ii = 1,cratio+1
 
         dp =  maxval(results)
         if (dp.gt.mvres) mvres = dp
-!       write (*,*) jj,pp,'; max/min ncc = ',dp, minval(results) 
+
+        if (jj.ne.cratioE) then
+          dp =  minval(results)
+        else 
+          dp =  minval(results(1:ppendE(jj)))
+        end if 
+        if (dp.lt.minvres) minvres = dp
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
@@ -1084,9 +1094,10 @@ dictionaryloop: do ii = 1,cratio+1
 
       deallocate(dicttranspose)
       
-      io_real(1) = mvres
-      io_real(2) = float(iii)/float(cratio)*100.0
-      call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
+      io_real(1) = minvres
+      io_real(2) = mvres
+      io_real(3) = float(iii)/float(cratio)*100.0
+      call WriteValue('',io_real,3,"(' min./max. dot product = ',F9.6,' /',F9.6,';',F6.1,'% complete')")
 
       if (.not.Clinked) then
         if (mod(iii,10) .eq. 0) then

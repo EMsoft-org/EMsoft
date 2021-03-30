@@ -320,9 +320,6 @@ ebsdnl%energymin = dinl%energymin
 ebsdnl%energymax = dinl%energymax
 call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 
-! close the fortran HDF interface
-! call h5close_EMsoft(hdferr)
-
 !=====================================================
 ! get the indices of the minimum and maximum energy
 !=====================================================
@@ -408,10 +405,12 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     dpfile = EMsoft_toNativePath(dpfile)
 
     ! this is a simple text file, similar to an euler angle file; the input should
-    ! be in quaternion format, so abort when the file does not have quaternions...
+    ! be in quaternion/axus-angle/euler format, so abort when the file does not have any of these ...
     open(unit=53,file=trim(dpfile),status='old',action='read')
     read (53,*) anglemode
-    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) call FatalError('EMFitOrientationPS','angle type must be eu or ax')
+    if ((anglemode.ne.'ax').and.(anglemode.ne.'eu').and.(anglemode.ne.'qu')) then
+      call FatalError('EMFitOrientationPS','angle type must be qu, eu or ax')
+    end if
     read (53,*) nvar
     nvar = nvar + 1     ! identity operation is first entry
 
@@ -422,7 +421,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
         axPS(1:4,1) = (/ 0.0, 0.0, 1.0, 0.0 /)
 
         do ii = 2,nvar
-            read(53,"(4F12.9)") axPS(1:4,ii)
+            read(53,*) axPS(1:4,ii)
         end do
     ! the axis should be given in crystal coordinates as a direction, so 
     ! we need to transform the axis first to the crystal cartesian frame
@@ -445,20 +444,37 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
             io_real(1:4) = quPS(1:4,ii)
             call WriteValue('',io_real,4)
         end do
-    else
+    end if 
+    if (anglemode.eq.'eu') then 
         ! allocate some arrays
         allocate(euPS(3,nvar), quPS(4,nvar))
         euPS = 0.0
         euPS(1:3,1) = (/ 0.0, 0.0, 0.0 /)
 
         do ii = 2,nvar
-            read(53,"(3F12.9)") euPS(1:3,ii)
+            read(53,*) euPS(1:3,ii)
         end do
         quPS = 0.0
 
         call Message(' -> Final pseudo-symmetric quaternion operator(s): ')
         do ii = 1,nvar
             quPS(1:4,ii) = eu2qu(euPS(1:3,ii))
+            if (quPS(1,ii).lt.0.0) quPS(1:4,ii) = -quPS(1:4,ii)
+            io_real(1:4) = quPS(1:4,ii)
+            call WriteValue('',io_real,4)
+        end do 
+    end if
+    if (anglemode.eq.'qu') then 
+    ! allocate some arrays
+        allocate(quPS(4,nvar))
+        quPS = 0.0
+        quPS(1:4,1) = (/ 1.0, 0.0, 0.0, 0.0 /)
+        do ii = 2,nvar
+            ! read(53,"(4F12.9)") quPS(1:4,ii)
+            read(53,*) quPS(1:4,ii)
+        end do
+        call Message(' -> pseudo-symmetric quaternion operator(s): ')
+        do ii = 1,nvar
             if (quPS(1,ii).lt.0.0) quPS(1:4,ii) = -quPS(1:4,ii)
             io_real(1:4) = quPS(1:4,ii)
             call WriteValue('',io_real,4)
@@ -531,7 +547,9 @@ else
   ! get the tmp file name from the input name list instead of the dot product file
   ! to allow for multiple instantiations of this program to run simultaneously
   dinl%tmpfile = trim(ronl%tmpfile)
-  call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
+  if (dinl%usetmpfile.eq.'n') then 
+    call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
+  end if 
 end if
 
 ! do we need to redefine the mask arrays ?
@@ -990,9 +1008,7 @@ nullify(HDF_head%next)
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
 
-! open the fortran HDF interface
-!call h5open_EMsoft(hdferr)
-hdferr =  HDF_openFile(dpfile, HDF_head)
+hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
 
 ! open the Scan 1/EBSD/Data group
 groupname = 'Scan 1'
@@ -1053,7 +1069,7 @@ end if
 tstop = Time_tock(tickstart) 
 
 io_real(1) = tstop
-call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
+call WriteValue('Execution time [system_clock()] = ',io_real,1,"(F12.3,' [s]')")
 
 ! close the fortran HDF interface
 call h5close_EMsoft(hdferr)

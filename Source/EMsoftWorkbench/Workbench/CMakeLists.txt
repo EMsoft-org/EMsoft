@@ -221,7 +221,7 @@ set(EXE_LINK_LIBRARIES
   )
 if(APPLE)
   set(EXE_LINK_LIBRARIES 
-    ${EMSOFT_hdf5LinkLibs} 
+    ${EXE_LINK_LIBRARIES} 
     ghcFilesystem::ghc_filesystem
   )
 endif()
