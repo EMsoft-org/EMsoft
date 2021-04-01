@@ -1369,8 +1369,8 @@ IMPLICIT NONE
 type(unitcell),INTENT(INOUT)            :: cell
 !f2py intent(in,out) ::  cell
 
-logical                                 :: more                 !< logical to determine if more atoms need to be entered
-character(1)                            :: ans, list(256)       !< used for IO
+logical                                 :: more          !< logical to determine if more atoms need to be entered
+character(1)                            :: ans           !< used for IO
 real(kind=sgl)                          :: pt(5), out_real(5)   !< used to read and write asymmetric position data
 integer(kind=irg)                       :: i, j, io_int(1), std, sl   !< auxiliary variables
 character(fnlen)                        :: instring
@@ -1388,22 +1388,27 @@ character(fnlen)                        :: instring
   cell%ATOM_type(cell%ATOM_ntype) = io_int(1)
 
 ! general atom coordinate
-  list = (/ (' ',j=1,256) /)
   call Message(' ->  Fractional coordinates, site occupation, and Debye-Waller Factor [nm^2] : ', frm = "(A,' ')",advance="no")
   read (5,"(A)") instring
-! read (5,"(256A)") list
-  sl = len(trim(instring))
-  j = 0
-  do i=1,sl
-    if (instring(i:i).ne.' ') then
-      j = j+1
-      list(j) = instring(i:i)
-    end if
+
+! we can simply read the numbers from the string unless there is a / character which requires
+! more detailed parsing using extractposition() ... so we look for potential / characters first 
+  if (index(instring,'/').ne.0) then 
+    call extractposition(instring,pt)   
+  else  
+    read (instring,*) pt
+  end if
+
+! check for negative values and convert them to positive by adding 10.0 and using mod; 
+! i.e., reduction to interval [0..1[
+  do i=1,3
+    if (pt(i).lt.0.0) pt(i) = mod(dble(pt(i))+10.D0,1.D0)
   end do
 
-! interpret this string and extract coordinates and such ...
-  call extractposition(list,pt) 
-  
+! default values 
+  if (pt(4).eq.0.0) pt(4) = 1.0   ! this may not be a good assumption...but why define an atom with zero occupation factor ???
+  if (pt(5).eq.0.0) pt(5) = 0.004 ! we always need a non-zero Debye-Waller factor ! 
+
 ! store in the appropriate component of the cell variable  
   cell%ATOM_pos(cell%ATOM_ntype,1:5) = pt(1:5)
 
@@ -1471,6 +1476,49 @@ IMPLICIT NONE
 end subroutine DisplayElements
 
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: findinline
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return all positions of a certain character in an array of characters, and 
+!> optionally change them to a new character 
+!
+!> @param list string typed in by the user
+!> @param sl string length
+!> @param pos array with positions of all requested characters 
+!> @param ch search character
+!
+!> @date    4/01/21 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine findinline(list,sl,ch,pos,j,rep)
+!DEC$ ATTRIBUTES DLLEXPORT :: findinline
+
+IMPLICIT NONE
+
+integer(kind=irg), INTENT(IN)           :: sl
+character(1),INTENT(INOUT)              :: list(sl)  
+character(1), INTENT(IN)                :: ch 
+integer(kind=irg), INTENT(INOUT)        :: pos(sl)
+integer(kind=irg),INTENT(INOUT)         :: j
+character(1), INTENT(IN), OPTIONAL      :: rep
+
+integer(kind=irg)                       :: i
+
+pos = -1
+j=0
+do i=1,sl
+  if (list(i)(1:1).eq.ch) then 
+    j = j+1 
+    pos(j) = i 
+    if (present(rep)) list(i)(1:1) = rep
+  end if 
+end do 
+
+end subroutine findinline
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE: extractposition
@@ -1483,7 +1531,8 @@ end subroutine DisplayElements
 !> input string; note that coordinates can be entered in decimal or in fractional
 !> notation, hence the somewhat convoluted way of interpreting this string...
 !
-!> @param list  string typed in by the user
+!> @param list  string typed in by the user but in individual characters
+!> @param sl number of characters
 !> @param pt set of 5 reals returned to the calling routine
 !
 !> @date   10/13/98 MDG 1.0 original
@@ -1491,126 +1540,64 @@ end subroutine DisplayElements
 !> @date   11/27/01 MDG 2.1 added kind support
 !> @date   03/19/13 MDG 3.0 interface support
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell type
+!> @date   04/01/21 MDG 5.0 complete rewrite; routine now only called when there are fractions in the string
 !--------------------------------------------------------------------------
-recursive subroutine extractposition(list,pt)
+recursive subroutine extractposition(instring,pt)
 !DEC$ ATTRIBUTES DLLEXPORT :: extractposition
 
 IMPLICIT NONE
 
-character(1),INTENT(IN)                 :: list(256)                              !< input string
+character(fnlen),INTENT(IN)             :: instring                             !< input string
 real(kind=sgl),INTENT(OUT)              :: pt(5)                                !< output real array
-integer(kind=irg)                       :: comma(6),slash(5),period(5), &
-                                           ccnt,scnt,pcnt,pp,i,j,hcnt, &
-                                           ip,ipt,icnt,nd,n,k,ns                !< auxiliary variables
+integer(kind=irg),allocatable           :: slash(:), comma(:), space(:)
+integer(kind=irg)                       :: scnt, ccnt, spcnt, i, j, sl, ps, vs             !< auxiliary variables
+character(1),allocatable                :: list(:)       
 integer(kind=irg),parameter             :: nmb(48:57)=(/0,1,2,3,4,5,6,7,8,9/)   !< list of numbers
 real(kind=dbl)                          :: nominator,denominator,x              !< used for fraction interpretation
-logical                                 :: hasperiod                            !< used for decimal interpretation
+character(fnlen)                        :: tmpstr, newstr 
+real(kind=dbl),allocatable              :: vals(:)
+character(1)                            :: cors   ! comma separated or space separated ? 
 
-! first, make sure all the spaces are removed from the list array
-
-! initalize a few variables
- comma(1:6) = 0
- slash(1:5) = 0
- period(1:5) = 0
- ccnt = 0
- scnt = 0
- pcnt = 0
+! make a copy of the input string and convert it to an array of characters
+ tmpstr = trim(instring)
+ sl = len(tmpstr)
  j = 0
- hcnt = 0
- 
-! count characters and search for , . and /
- ccnt = ccnt+1
- comma(ccnt) = 0
- do i=1,256
-  if (list(i)(1:1).ne.' ') j=j+1
-  if (list(i)(1:1).eq.',') then 
-   ccnt = ccnt+1
-   comma(ccnt)=i
-  end if
-  if (list(i)(1:1).eq.'/') then 
-   scnt = scnt+1
-   slash(scnt)=i
-  end if
-  if (list(i)(1:1).eq.'.') then 
-   pcnt = pcnt+1
-   period(pcnt)=i
-  end if
- end do 
- ccnt = ccnt+1
- comma(ccnt) = j+1
- do while (ccnt.lt.6) 
-  ccnt = ccnt+1
-  comma(ccnt) = comma(ccnt-1)+1
+ allocate(list(sl))
+ do i=1,sl
+   list(i) = tmpstr(i:i)
+ end do
+ allocate(slash(sl))
+
+! search for all / locations; findinline changes those to spaces
+ call findinline(list, sl, '/', slash, scnt, rep=' ')
+! 4 commas/spaces plus 1 plus number of slashes is the number of reals that need to extracted
+ vs = 5 + scnt
+ allocate(vals(vs))
+
+! next we generate a new string of more than 5 numbers 
+ do i=1,sl 
+   newstr(i:i) = list(i)
  end do
 
-! interpret the string
- j = 1
- ip = 1
- icnt = 0
- ipt = 1
- pp = 1
- do i=1,ccnt-1
-! is it a real number or a fraction ?
-  if (((slash(j).lt.comma(i+1)).and.(scnt.gt.0)).and.(j.le.scnt)) then
-! it is a fraction;  get the nominator
-   nd = slash(j)-ip
-   n = 0
-   do k=0,nd-1
-    n = 10*n+nmb(ichar(list(ip+k)(1:1)))
-   end do
-   nominator = dble(n)
-   ip = slash(j)+1
-! and then the denominator
-   nd = comma(i+1)-ip
-   n = 0
-   do k=0,nd-1
-    n = 10*n+nmb(ichar(list(ip+k)(1:1)))
-   end do
-   denominator = dble(n)
-! and fill in the entire range
-   pt(ipt) = sngl(nominator/denominator)
-   ipt = ipt+1
-   ip = comma(i+1)+1
-   j=j+1
-  else
-! no, it is a real number, possibly without a period
-! is there a period in this number ?
-   if ((period(pp).gt.comma(i)).and.(period(pp).lt.comma(i+1))) then
-     hasperiod = .TRUE.
-   else
-     hasperiod = .FALSE.
-   endif
-   nd = comma(i+1)-ip
-   if (hasperiod) then 
-    if (period(pp).eq.comma(i)+1) then
-     x = 0.D0
-     ns = 2
-    else
-     x = dble(nmb(ichar(list(ip)(1:1))))
-     ns = 3
-    end if 
-    do k=ns,nd
-     x = x + 10.D0**(ns-k-1)*dble(nmb(ichar(list(ip+k-1)(1:1))))
-    end do
-    pt(ipt)= sngl(x)
-    ipt=ipt+1
-    ip = comma(i+1)+1
-    pp = pp+1
-   else
-    nd = comma(i+1)-ip
-    n = 0
-    do k=0,nd-1
-     n = 10*n+nmb(ichar(list(ip+k)(1:1)))
-    end do
-    pt(ipt) = float(n)
-    ipt=ipt+1
-    ip = comma(i+1)+1
-   end if
-  end if
- end do 
+! read all numbers from this newstr into an array of floats
+ read(newstr,*) vals
 
-! set default values
- if (pt(4).eq.0.0) pt(4) = 1.0
+! for those numbers that are part of fractions, they must be larger than or equal to 1.0, so we look for them 
+ j=1  ! index into vals array
+ i=1  ! index into pt array
+ do while (i.lt.6) 
+   if ((abs(vals(j)).ge.1.0).and.(j.lt.vs-2)) then 
+     pt(i) = vals(j) / vals(j+1)
+     j = j+2
+   else 
+     pt(i) = vals(j)
+     j = j+1
+   end if 
+   i = i+1 
+ end do
+
+! and clean up
+ deallocate(slash, vals)
 
 end subroutine extractposition
 
