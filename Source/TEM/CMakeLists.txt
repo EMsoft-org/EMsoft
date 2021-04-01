@@ -23,10 +23,18 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
                       )
 
-  Add_EMsoft_Executable(TARGET EMdddSTEM
-                      SOURCES ${APP_DIR}/EMdddSTEM.f90
+  Add_EMsoft_Executable(TARGET EMDispFieldSTEM
+                      SOURCES ${APP_DIR}/EMDispFieldSTEM.f90
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      TEMPLATE ${TMPLT_DIR}/EMmdSTEM.template 
+                      TEMPLATE ${TMPLT_DIR}/EMDispFieldSTEM.template 
+                      SOLUTION_FOLDER EMsoftPublic/TEM
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                      )
+
+  Add_EMsoft_Executable(TARGET EMAtomCoordSTEM
+                      SOURCES ${APP_DIR}/EMAtomCoordSTEM.f90
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMAtomCoordSTEM.template 
                       SOLUTION_FOLDER EMsoftPublic/TEM
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
                       )
