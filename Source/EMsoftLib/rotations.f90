@@ -2211,7 +2211,7 @@ real(kind=dbl),parameter                :: thr = 1.0E-6
 if (close_enough(e(2),sngl(cPi))) then 
   t = sngl( dtan(cPi*0.5D0) )
 else
-  t = tan(e(2)*0.5D0)     
+  t = tan(e(2)*0.50)     
 end if
 sig = 0.5*(e(1)+e(3))
 del = 0.5*(e(1)-e(3))
@@ -2222,8 +2222,6 @@ if (close_enough(sig,sngl(cPi)*0.5)) then  ! Infinity
 else
   alpha = 2.0 * atan(tau/cos(sig))
 end if 
-
-write (*,*) t, sig, del, tau, alpha 
 
 if (abs(alpha).lt.thr) then
 ! return a default identity axis-angle pair
@@ -2274,8 +2272,6 @@ if (close_enough(sig,cPi*0.5D0)) then  ! Infinity
 else
   alpha = 2.D0 * datan(tau/dcos(sig))
 end if 
-
-write (*,*) t, sig, del, tau, alpha 
 
 if (abs(alpha).lt.thr) then
 ! return a default identity axis-angle pair

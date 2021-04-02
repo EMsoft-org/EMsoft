@@ -1549,7 +1549,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: instring                             !< input string
 real(kind=sgl),INTENT(OUT)              :: pt(5)                                !< output real array
-integer(kind=irg),allocatable           :: slash(:), comma(:), space(:)
+integer(kind=irg),allocatable           :: slash(:)
 integer(kind=irg)                       :: scnt, ccnt, spcnt, i, j, sl, ps, vs             !< auxiliary variables
 character(1),allocatable                :: list(:)       
 integer(kind=irg),parameter             :: nmb(48:57)=(/0,1,2,3,4,5,6,7,8,9/)   !< list of numbers
