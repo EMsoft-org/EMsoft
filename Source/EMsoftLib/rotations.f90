@@ -2195,6 +2195,7 @@ end function eu2om_d
 !> @date 7/23/14   MDG 2.0 explicit implementation
 !> @date 7/23/14   MDG 2.1 exception for zero rotation angle
 !> @date 9/23/15   MDG 2.2 moved alphe.lt.0 test inside else statement
+!> @date 4/02/21   MDG 2.3 fixed precision issue for the computation of t ... (GitHub Issue #96)
 !--------------------------------------------------------------------------
 recursive function eu2ax(e) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: eu2ax
@@ -2206,7 +2207,12 @@ real(kind=sgl), INTENT(IN)              :: e(3)
 real(kind=sgl)                          :: res(4), t, del, tau, alpha, sig
 real(kind=dbl),parameter                :: thr = 1.0E-6
 
-t = tan(e(2)*0.5)
+! use double precision to make sure result is same as in eu2axd 
+if (close_enough(e(2),sngl(cPi))) then 
+  t = sngl( dtan(cPi*0.5D0) )
+else
+  t = tan(e(2)*0.5D0)     
+end if
 sig = 0.5*(e(1)+e(3))
 del = 0.5*(e(1)-e(3))
 tau = sqrt(t*t+sin(sig)**2)
@@ -2216,6 +2222,8 @@ if (close_enough(sig,sngl(cPi)*0.5)) then  ! Infinity
 else
   alpha = 2.0 * atan(tau/cos(sig))
 end if 
+
+write (*,*) t, sig, del, tau, alpha 
 
 if (abs(alpha).lt.thr) then
 ! return a default identity axis-angle pair
@@ -2266,6 +2274,8 @@ if (close_enough(sig,cPi*0.5D0)) then  ! Infinity
 else
   alpha = 2.D0 * datan(tau/dcos(sig))
 end if 
+
+write (*,*) t, sig, del, tau, alpha 
 
 if (abs(alpha).lt.thr) then
 ! return a default identity axis-angle pair
