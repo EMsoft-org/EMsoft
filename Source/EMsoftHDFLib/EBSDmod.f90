@@ -195,6 +195,99 @@ call Message('completed reading Euler angles')
 
 end subroutine EBSDreadangles
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDBatchreadangles
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read angles from an angle file
+!
+!> @param enl EBSD name list structure
+!> @param quatang array of unit quaternions (output)
+!
+!> @date 06/24/14  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EBSDBatchreadangles(enl,numangles,angles,verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDBatchreadangles
+
+use local
+use typedefs
+use NameListTypedefs
+use io
+use files
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+
+type(EBSDBatchNameListType),INTENT(INOUT) :: enl
+!f2py intent(in,out) ::  enl
+integer(kind=irg),INTENT(OUT)           :: numangles
+type(EBSDAngleType),INTENT(INOUT)       :: angles
+!f2py intent(in,out) ::  angles
+logical,INTENT(IN),OPTIONAL             :: verbose
+
+integer(kind=irg)                       :: io_int(1), i
+character(2)                            :: atype
+real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
+real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
+
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+integer(kind=irg)                       :: istat
+character(fnlen)                        :: anglefile
+
+!====================================
+! get the angular information, either in Euler angles or in quaternions, from a text file
+!====================================
+! open the angle file 
+anglefile = trim(EMsoft_getEMdatapathname())//trim(enl%anglefile)
+anglefile = EMsoft_toNativePath(anglefile)
+open(unit=dataunit,file=trim(anglefile),status='old',action='read')
+
+! get the type of angle first [ 'eu' or 'qu' ]
+read(dataunit,*) atype
+
+! then the number of angles in the file
+read(dataunit,*) numangles
+
+if (present(verbose)) then 
+  io_int(1) = numangles
+  call WriteValue('Number of angle entries = ',io_int,1)
+end if
+
+if (atype.eq.'eu') then
+! allocate the euler angle array
+  allocate(eulang(3,numangles),stat=istat)
+! if istat.ne.0 then do some error handling ... 
+  do i=1,numangles
+    read(dataunit,*) eulang(1:3,i)
+  end do
+  close(unit=dataunit,status='keep')
+
+! convert the euler angle triplets to quaternions
+  allocate(angles%quatang(4,numangles),stat=istat)
+
+  if (present(verbose)) call Message('  -> converting Euler angles to quaternions', frm = "(A/)")
+  
+  do i=1,numangles
+    angles%quatang(1:4,i) = eu2qu(eulang(1:3,i)*dtor)
+  end do
+
+else
+! the input file has quaternions, not Euler triplets
+  allocate(angles%quatang(4,numangles),stat=istat)
+  do i=1,numangles
+    read(dataunit,*) angles%quatang(1:4,i)
+  end do
+end if
+
+close(unit=dataunit,status='keep')
+
+if (present(verbose)) call Message('completed reading Euler angles')
+
+end subroutine EBSDBatchreadangles
 
 !--------------------------------------------------------------------------
 !

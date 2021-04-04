@@ -622,10 +622,38 @@ type EBSDNameListType
         character(fnlen)        :: anglefile
         character(fnlen)        :: anglefiletype
         character(fnlen)        :: masterfile
-		character(fnlen)        :: targetfile
+        character(fnlen)        :: targetfile
         character(fnlen)        :: energyfile
         character(fnlen)        :: datafile
 end type EBSDNameListType
+
+! namelist for the EMEBSDBatch program
+type EBSDBatchNameListType
+        integer(kind=irg)       :: ncols
+        integer(kind=irg)       :: nrows
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: maskradius
+        integer(kind=irg)       :: nregions
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        real(kind=sgl)          :: energymin
+        real(kind=sgl)          :: energymax
+        real(kind=sgl)          :: gammavalue
+        real(kind=sgl)          :: hipassw
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        character(1)            :: maskpattern
+        character(3)            :: scalingmode
+        character(5)            :: bitdepth
+        character(fnlen)        :: anglefile
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: datafile
+end type EBSDBatchNameListType
 
 ! namelist for EMBSE program 
 type BSENameListType 

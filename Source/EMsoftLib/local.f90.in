@@ -1339,7 +1339,7 @@ end function EMsoft_getRandomseedfilename
 !> @date  10/28/17 MDG 5.0 added config structure parameter + initialization of its fields
 !--------------------------------------------------------------------------
 
-subroutine EMsoft(progname,progdesc,EMconfig,stdout,makeconfig)
+subroutine EMsoft(progname,progdesc,EMconfig,stdout,makeconfig,silent)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft
 
 IMPLICIT NONE
@@ -1349,6 +1349,7 @@ character(fnlen),INTENT(IN)           :: progdesc
 type(ConfigStructureType),INTENT(OUT),OPTIONAL :: EMconfig
 integer(kind=irg),INTENT(IN),OPTIONAL :: stdout
 logical,INTENT(IN),OPTIONAL           :: makeconfig
+logical,INTENT(IN),OPTIONAL           :: silent
 
 integer(kind=irg)                     :: std
 
@@ -1395,6 +1396,7 @@ if (present(EMconfig)) then
    EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 end if 
 
+if (.not.present(silent)) then 
  write (std,"(//1x,'Copyright (C) 2001-2019 Marc De Graef Research Group/CMU')") 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")
@@ -1417,6 +1419,7 @@ end if
       call EMsoft_path_init(makeconfig)
     end if
  end if
+end if 
 
 end subroutine EMsoft
 
@@ -1716,7 +1719,7 @@ end subroutine EMsoft_path_init
 !> @date 06/05/14 MDG added stdout as optional argument
 !> @date 03/19/15 MDG added timestring and datestring optional arguments
 !--------------------------------------------------------------------------
-subroutine timestamp (stdout, timestring, datestring)
+subroutine timestamp (stdout, timestring, datestring, silent)
 !DEC$ ATTRIBUTES DLLEXPORT :: timestamp
 
   IMPLICIT NONE
@@ -1724,6 +1727,7 @@ subroutine timestamp (stdout, timestring, datestring)
   integer(kind=irg),INTENT(IN),OPTIONAL    :: stdout
   character(len = 11),INTENT(OUT),OPTIONAL :: datestring
   character(len = 15),INTENT(OUT),OPTIONAL :: timestring
+  logical,INTENT(IN),OPTIONAL              :: silent
 
   integer(kind=irg)      :: std, d, h, mo, mm, n, s, values(8), y
   character ( len = 8 )  :: ampm, date
@@ -1770,15 +1774,17 @@ subroutine timestamp (stdout, timestring, datestring)
   end if
 ! end of original code
 
-  if ((.not.PRESENT(datestring)).and.(.not.PRESENT(timestring))) then
-    write ( std, '(a1,a3,1x,i2,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) &
-      ' ',month(mo), d, y, h, ':', n, ':', s, '.', mm, trim ( ampm )
-  else
-    if (PRESENT(datestring)) write (datestring, '(a,1x,i2,1x,i4)' ) month(mo), d, y
-    if (PRESENT(timestring)) then
-      write (timestring, '(i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) h,':',n,':',s,'.',mm,trim(ampm)
+  if (.not.PRESENT(silent)) then 
+    if ((.not.PRESENT(datestring)).and.(.not.PRESENT(timestring))) then
+      write ( std, '(a1,a3,1x,i2,1x,i4,2x,i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) &
+        ' ',month(mo), d, y, h, ':', n, ':', s, '.', mm, trim ( ampm )
+    else
+      if (PRESENT(datestring)) write (datestring, '(a,1x,i2,1x,i4)' ) month(mo), d, y
+      if (PRESENT(timestring)) then
+        write (timestring, '(i2,a1,i2.2,a1,i2.2,a1,i3.3,1x,a)' ) h,':',n,':',s,'.',mm,trim(ampm)
+      end if
     end if
-  end if
+  end if 
 
 end subroutine timestamp
 

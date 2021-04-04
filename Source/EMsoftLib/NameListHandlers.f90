@@ -4166,6 +4166,159 @@ end subroutine GetEBSDNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetEBSDBatchNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDBatch.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl EBSDBatch name list structure
+!
+!> @date 04/04/21  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDBatchNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDBatchNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)               :: nmlfile
+type(EBSDBatchNameListType),INTENT(INOUT) :: enl
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)               :: initonly
+
+logical                                   :: skipread = .FALSE.
+
+integer(kind=irg)                         :: ncols
+integer(kind=irg)                         :: nrows
+integer(kind=irg)                         :: numsx
+integer(kind=irg)                         :: numsy
+integer(kind=irg)                         :: nthreads
+integer(kind=irg)                         :: maskradius
+integer(kind=irg)                         :: nregions
+real(kind=sgl)                            :: L
+real(kind=sgl)                            :: thetac
+real(kind=sgl)                            :: delta
+real(kind=sgl)                            :: xpc
+real(kind=sgl)                            :: ypc
+real(kind=sgl)                            :: energymin
+real(kind=sgl)                            :: energymax
+real(kind=sgl)                            :: gammavalue
+real(kind=sgl)                            :: hipassw
+real(kind=dbl)                            :: beamcurrent
+real(kind=dbl)                            :: dwelltime
+character(1)                              :: maskpattern
+character(3)                              :: scalingmode
+character(5)                              :: bitdepth
+character(fnlen)                          :: anglefile
+character(fnlen)                          :: masterfile
+character(fnlen)                          :: datafile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / EBSDBatchdata /  L, thetac, delta, nrows, ncols, numsx, numsy, xpc, ypc, anglefile, masterfile, bitdepth, &
+                        datafile, beamcurrent, dwelltime, energymin, energymax, gammavalue, scalingmode, nthreads, maskpattern, &
+                        hipassw, nregions, maskradius
+
+! set the input parameters to default values (except for xtalname, which must be present)
+nrows           = 25 
+ncols           = 40
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
+L               = 20000.0       ! [microns]
+nthreads        = 1             ! number of OpenMP threads
+nregions        = 10            ! number of regions in adaptive histogram equalization
+thetac          = 0.0           ! [degrees]
+delta           = 25.0          ! [microns]
+xpc             = 0.0           ! [pixels]
+ypc             = 0.0           ! [pixels]
+energymin       = 15.0          ! minimum energy to consider
+energymax       = 30.0          ! maximum energy to consider
+gammavalue      = 1.0           ! gamma factor
+maskradius      = 240           ! mask radius
+hipassw         = 0.05          ! hi-pass filter radius
+beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
+dwelltime       = 100.0D0       ! in microseconds
+maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
+scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
+bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##int' for integers, 'float' for floats
+! the '##int' notation stands for the actual bitdepth; all values are stored as 32bit integers, but they are scaled
+! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
+! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
+anglefile       = 'undefined'   ! filename
+masterfile      = 'undefined'   ! filename
+datafile        = 'undefined'   ! output file name
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDBatchdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+! we no longer require the energyfile parameter, but for backwards compatibility
+! we still allow the user to include it (it doesn't do anything though)
+! if (trim(energyfile).eq.'undefined') then
+!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
+! end if
+
+ if (trim(anglefile).eq.'undefined') then
+  call FatalError('GetEBSDNameList:',' angle file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfile).eq.'undefined') then
+  call FatalError('GetEBSDNameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEBSDNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDNameList:',' pattern size numsy is zero '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+enl%nrows           = nrows
+enl%ncols           = ncols
+enl%numsx           = numsx
+enl%numsy           = numsy
+enl%L               = L
+enl%nthreads        = nthreads
+enl%nregions        = nregions
+enl%thetac          = thetac
+enl%delta           = delta
+enl%xpc             = xpc
+enl%ypc             = ypc
+enl%energymin       = energymin
+enl%energymax       = energymax
+enl%gammavalue      = gammavalue
+enl%maskradius      = maskradius
+enl%hipassw         = hipassw
+enl%beamcurrent     = beamcurrent
+enl%dwelltime       = dwelltime
+enl%maskpattern     = maskpattern
+enl%scalingmode     = scalingmode
+enl%bitdepth        = bitdepth
+enl%anglefile       = anglefile
+enl%masterfile      = masterfile
+enl%datafile        = datafile
+
+end subroutine GetEBSDBatchNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetBSENameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

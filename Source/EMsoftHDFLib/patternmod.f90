@@ -2356,7 +2356,7 @@ end subroutine PreProcessTKDPatterns
 !
 !> @date 08/20/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function getEMsoftPCcoordinates(pctr, vendor, delta, Nx, Ny) result(EMsoftpc)
+recursive function getEMsoftPCcoordinates(pctr, vendor, delta, Nx, Ny, silent) result(EMsoftpc)
 !DEC$ ATTRIBUTES DLLEXPORT :: getEMsoftPCcoordinates
 
 use io
@@ -2368,6 +2368,7 @@ character(fnlen),INTENT(IN)         :: vendor
 real(kind=sgl),INTENT(IN)           :: delta
 integer(kind=irg),INTENT(IN)        :: Nx
 integer(kind=irg),INTENT(IN)        :: Ny
+logical,INTENT(IN),OPTIONAL         :: silent
 real(kind=sgl)                      :: EMsoftpc(3)
 
 real(kind=sgl)                      :: io_real(3)
@@ -2388,7 +2389,7 @@ if (trim(vendor).eq.'Bruker') then
   EMsoftpc = (/ Nx * (pctr(1) - 0.5), Ny * (0.5 - pctr(2)), Nx * delta * pctr(3) /)
 end if 
 
-if (trim(vendor).ne.'EMsoft') then 
+if ( (trim(vendor).ne.'EMsoft').and..not.present(silent) ) then 
   io_real = pctr 
   call WriteValue('Input pattern center coordinates in '//trim(vendor)//' convention : ',io_real,3)
   io_real = EMsoftpc

@@ -436,7 +436,7 @@ end subroutine CopyTemplateFiles
 !> @date   03/29/18 MDG 3.1 removed stdout argument
 !> @date   09/08/19 MDG 4.0 add support for automatic pandoc wiki->pdf conversion
 !--------------------------------------------------------------------------
-recursive subroutine Interpret_Program_Arguments_with_nml(nmldefault,numt,templatelist,progname)
+recursive subroutine Interpret_Program_Arguments_with_nml(nmldefault,numt,templatelist,progname,silent)
 !DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments_with_nml
 
 use io
@@ -448,22 +448,25 @@ character(fnlen),INTENT(INOUT)          :: nmldefault
 integer(kind=irg),INTENT(IN)            :: numt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 character(fnlen),INTENT(IN)             :: progname
+logical,INTENT(IN),OPTIONAL             :: silent 
 
 integer(kind=irg)                       :: numarg       !< number of command line arguments
 integer(kind=irg)                       :: iargc        !< external function for command line
 character(fnlen)                        :: arg          !< to be read from the command line
 character(fnlen)                        :: nmlfile      !< nml file name
 integer(kind=irg)                       :: i, io_int(1)
-logical                                 :: haltprogram, json
+logical                                 :: haltprogram, json, v
 
 json = .FALSE.
+v = .TRUE.
+if (present(silent)) v = .FALSE.
 
 !numarg = iargc()
 numarg = command_argument_count()
 nmlfile = ''
 nmlfile = trim(nmldefault)
 
-if (numarg.gt.0) then
+if ( (numarg.gt.0).and.(v.eqv..TRUE.) ) then
   io_int(1) = numarg
   call WriteValue('Number of command line arguments detected: ',io_int,1)
 end if
@@ -478,7 +481,7 @@ if (numarg.gt.0) then ! there is at least one argument
 !    mess = 'Found the following argument: '//trim(arg); call Message("(/A/)")
 ! does the argument start with a '-' character?    
     if (arg(1:1).eq.'-') then
-        if (trim(arg).eq.'-h') then
+        if ( (trim(arg).eq.'-h').and.(v.eqv..TRUE.) ) then
          call Message(' Program should be called as follows: ', frm = "(/A)")
          call Message('        '//trim(progname)//' -h -t -j [nmlfile]', frm = "(A)")
          call Message(' where nmlfile is an optional file name for the namelist file;', frm = "(A/)")
@@ -491,7 +494,7 @@ if (numarg.gt.0) then ! there is at least one argument
         if (trim(arg).eq.'-t') then
 ! with this option the program creates template namelist files in the current folder so that the 
 ! user can edit them (file extension will be .template; should be changed by user to .nml)
-                call Message('Creating program name list template files:', frm = "(/A)")
+                if (v.eqv..TRUE.) call Message('Creating program name list template files:', frm = "(/A)")
                 call CopyTemplateFiles(numt,templatelist)
         end if
         if (trim(arg).eq.'-pdf') then 
@@ -505,7 +508,7 @@ if (numarg.gt.0) then ! there is at least one argument
 ! We use the same template codes but now they are linked to the corresponding wiki file
 ! which should be located in a folder at the same level as the resources folder.
 !
-          call Message(' User requested wiki-to-pdf conversion', frm = "(/A)")
+          if (v.eqv..TRUE.) call Message(' User requested wiki-to-pdf conversion', frm = "(/A)")
           call ConvertWiki2PDF(numt, templatelist)
         end if 
         if (trim(arg).eq.'-j') then
@@ -516,7 +519,7 @@ if (numarg.gt.0) then ! there is at least one argument
 ! It should be noted that the template files contain comment lines starting with the "!" character;
 ! this is not standard JSON (which does not allow for comment lines).  The EMsoft JSON files will 
 ! first be filtered to remove all the comment lines before being passed to the json parser routine.
-                call Message('Creating program JSON template files:', frm = "(/A)")
+                if (v.eqv..TRUE.) call Message('Creating program JSON template files:', frm = "(/A)")
                 call CopyTemplateFiles(numt,templatelist,json=json)
         end if
     else
@@ -530,7 +533,7 @@ if (numarg.gt.0) then ! there is at least one argument
 end if
 
 if (haltprogram) then
-  call Message('To execute program, remove all flags except for nml/json input file name', frm = "(/A/)")
+  if (v.eqv..TRUE.) call Message('To execute program, remove all flags except for nml/json input file name', frm = "(/A/)")
   stop
 end if
 

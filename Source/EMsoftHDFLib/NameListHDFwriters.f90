@@ -2926,6 +2926,114 @@ end subroutine HDFwriteEBSDNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteEBSDBatchNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param enl EBSDBatch name list structure
+!
+!> @date 04/04/21 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDBatchNameList(HDF_head, enl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDBatchNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(EBSDBatchNameListType),INTENT(INOUT)             :: enl
+!f2py intent(in,out) ::  enl
+
+integer(kind=irg),parameter                           :: n_int = 7, n_real = 9
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: t(1)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_EBSDBatchNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ enl%ncols, enl%nrows, enl%numsx, enl%numsy, enl%nthreads, enl%nregions, enl%maskradius /)
+intlist(1) = 'ncols'
+intlist(2) = 'nrows'
+intlist(3) = 'numsx'
+intlist(4) = 'numsy'
+intlist(5) = 'nthreads'
+intlist(6) = 'nregions'
+intlist(7) = 'maskradius'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals 
+io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
+             enl%hipassw /)
+reallist(1) = 'L'
+reallist(2) = 'thetac'
+reallist(3) = 'delta'
+reallist(4) = 'xpc'
+reallist(5) = 'ypc'
+reallist(6) = 'energymin'
+reallist(7) = 'energymax'
+reallist(8) = 'gammavalue'
+reallist(9)= 'hipassw'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! a few doubles
+dataset = SC_beamcurrent
+hdferr = HDF_writeDatasetDouble(dataset, enl%beamcurrent, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create beamcurrent dataset',.TRUE.)
+
+dataset = SC_dwelltime
+hdferr = HDF_writeDatasetDouble(dataset, enl%dwelltime, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create dwelltime dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_maskpattern
+line2(1) = trim(enl%maskpattern)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create maskpattern dataset',.TRUE.)
+
+dataset = SC_scalingmode
+line2(1) = trim(enl%scalingmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create scalingmode dataset',.TRUE.)
+
+dataset = SC_bitdepth
+line2(1) = trim(enl%bitdepth)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create bitdepth dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = trim(enl%masterfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_anglefile
+line2(1) = trim(enl%anglefile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create anglefile dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(enl%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDBatchNameList: unable to create datafile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDBatchNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteEBSDdefectNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
