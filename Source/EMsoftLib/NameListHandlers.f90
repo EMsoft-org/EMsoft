@@ -4181,6 +4181,7 @@ recursive subroutine GetEBSDBatchNameList(nmlfile, enl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDBatchNameList
 
 use error
+use ISO_C_BINDING
 
 IMPLICIT NONE
 
@@ -4197,7 +4198,7 @@ integer(kind=irg)                         :: numsx
 integer(kind=irg)                         :: numsy
 integer(kind=irg)                         :: nthreads
 integer(kind=irg)                         :: maskradius
-integer(kind=irg)                         :: nregions
+integer(kind=c_int32_t)                   :: sleepcycle
 real(kind=sgl)                            :: L
 real(kind=sgl)                            :: thetac
 real(kind=sgl)                            :: delta
@@ -4206,7 +4207,6 @@ real(kind=sgl)                            :: ypc
 real(kind=sgl)                            :: energymin
 real(kind=sgl)                            :: energymax
 real(kind=sgl)                            :: gammavalue
-real(kind=sgl)                            :: hipassw
 real(kind=dbl)                            :: beamcurrent
 real(kind=dbl)                            :: dwelltime
 character(1)                              :: maskpattern
@@ -4219,7 +4219,7 @@ character(fnlen)                          :: datafile
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDBatchdata /  L, thetac, delta, nrows, ncols, numsx, numsy, xpc, ypc, anglefile, masterfile, bitdepth, &
                         datafile, beamcurrent, dwelltime, energymin, energymax, gammavalue, scalingmode, nthreads, maskpattern, &
-                        hipassw, nregions, maskradius
+                        sleepcycle, maskradius
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 nrows           = 25 
@@ -4228,7 +4228,7 @@ numsx           = 0             ! [dimensionless]
 numsy           = 0             ! [dimensionless]
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
-nregions        = 10            ! number of regions in adaptive histogram equalization
+sleepcycle      = 500000_c_int32_t   ! length of sleep cycle in micro-seconds
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
@@ -4237,7 +4237,6 @@ energymin       = 15.0          ! minimum energy to consider
 energymax       = 30.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 maskradius      = 240           ! mask radius
-hipassw         = 0.05          ! hi-pass filter radius
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
@@ -4296,7 +4295,7 @@ enl%numsx           = numsx
 enl%numsy           = numsy
 enl%L               = L
 enl%nthreads        = nthreads
-enl%nregions        = nregions
+enl%sleepcycle      = sleepcycle
 enl%thetac          = thetac
 enl%delta           = delta
 enl%xpc             = xpc
@@ -4305,7 +4304,6 @@ enl%energymin       = energymin
 enl%energymax       = energymax
 enl%gammavalue      = gammavalue
 enl%maskradius      = maskradius
-enl%hipassw         = hipassw
 enl%beamcurrent     = beamcurrent
 enl%dwelltime       = dwelltime
 enl%maskpattern     = maskpattern

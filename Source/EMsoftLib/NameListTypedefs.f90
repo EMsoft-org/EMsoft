@@ -43,6 +43,7 @@
 module NameListTypedefs
 
 use local
+use ISO_C_BINDING
 
 IMPLICIT NONE
 
@@ -635,7 +636,7 @@ type EBSDBatchNameListType
         integer(kind=irg)       :: numsy
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: maskradius
-        integer(kind=irg)       :: nregions
+        integer(kind=c_int32_t) :: sleepcycle
         real(kind=sgl)          :: L
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
@@ -644,7 +645,6 @@ type EBSDBatchNameListType
         real(kind=sgl)          :: energymin
         real(kind=sgl)          :: energymax
         real(kind=sgl)          :: gammavalue
-        real(kind=sgl)          :: hipassw
         real(kind=dbl)          :: beamcurrent
         real(kind=dbl)          :: dwelltime
         character(1)            :: maskpattern

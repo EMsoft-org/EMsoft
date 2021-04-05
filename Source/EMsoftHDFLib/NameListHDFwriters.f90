@@ -2949,7 +2949,7 @@ type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 type(EBSDBatchNameListType),INTENT(INOUT)             :: enl
 !f2py intent(in,out) ::  enl
 
-integer(kind=irg),parameter                           :: n_int = 7, n_real = 9
+integer(kind=irg),parameter                           :: n_int = 7, n_real = 8
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
@@ -2963,19 +2963,18 @@ groupname = SC_EBSDBatchNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ enl%ncols, enl%nrows, enl%numsx, enl%numsy, enl%nthreads, enl%nregions, enl%maskradius /)
+io_int = (/ enl%ncols, enl%nrows, enl%numsx, enl%numsy, enl%nthreads, int(enl%sleepcycle), enl%maskradius /)
 intlist(1) = 'ncols'
 intlist(2) = 'nrows'
 intlist(3) = 'numsx'
 intlist(4) = 'numsy'
 intlist(5) = 'nthreads'
-intlist(6) = 'nregions'
+intlist(6) = 'sleepcycle'
 intlist(7) = 'maskradius'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
-io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
-             enl%hipassw /)
+io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -2984,7 +2983,6 @@ reallist(5) = 'ypc'
 reallist(6) = 'energymin'
 reallist(7) = 'energymax'
 reallist(8) = 'gammavalue'
-reallist(9)= 'hipassw'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a few doubles
