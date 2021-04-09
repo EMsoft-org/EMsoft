@@ -494,6 +494,7 @@ type EBSDMasterNameListType
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
+        logical                 :: doLegendre
 end type EBSDMasterNameListType
 
 ! namelist for the ISEMaster program

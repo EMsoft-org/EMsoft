@@ -261,6 +261,7 @@ czero = cmplx(0.D0,0.D0)
 
 ! is the master pattern used for spherical indexing only ?  If so, then we need to modifiy the k-vector sampling
 doLegendre = .FALSE.
+if (emnl%doLegendre.eqv..TRUE.) doLegendre = .TRUE.
 
 !=============================================
 !=============================================

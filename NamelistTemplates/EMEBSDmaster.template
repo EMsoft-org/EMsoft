@@ -7,6 +7,9 @@
  npx = 500,
 ! number of OpenMP threads (0 to use the maximum available)
  nthreads = 1,
+! for Spherical Indexing runs, the lattitudinal grid needs to be a Legendre grid instead 
+! of the standard Lambert grid.  Set to .TRUE. for a Legendre grid.
+ doLegendre = .FALSE.,
 ! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
 ! this file will also contain the output data of the master program
  energyfile = 'MCoutput.h5',

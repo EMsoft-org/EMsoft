@@ -2792,10 +2792,11 @@ logical                 :: useEnergyWeighting
 logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
+logical                 :: doLegendre
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, h5copypath, BetheParametersFile, stdout, useEnergyWeighting
+                          combinesites, h5copypath, BetheParametersFile, stdout, useEnergyWeighting, doLegendre
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2812,6 +2813,7 @@ useEnergyWeighting = .FALSE.    ! use the Monte Carlo depth histogram to scale t
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
+doLegendre = .FALSE.            ! when .TRUE., Legendre lattitudinal grid values will be used. 
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -2846,6 +2848,7 @@ emnl%useEnergyWeighting = useEnergyWeighting
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
+emnl%doLegendre = doLegendre
 
 end subroutine GetEBSDMasterNameList
 

@@ -1296,9 +1296,9 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
 !f2py intent(in,out) ::  emnl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real = 1
+integer(kind=irg),parameter                           :: n_int = 9, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites, &
-                                                         useEnergyWeighting
+                                                         useEnergyWeighting, Legendre
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -1330,7 +1330,12 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
-io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform, useEnergyWeighting /)
+if (emnl%doLegendre) then 
+  Legendre = 1
+else 
+  Legendre = 0
+end if
+io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform, useEnergyWeighting, Legendre /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
@@ -1339,6 +1344,7 @@ intlist(5) = 'combinesites'
 intlist(6) = 'restart'
 intlist(7) = 'uniform'
 intlist(8) = 'useEnergyWeighting'
+intlist(9) = 'doLegendre'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
