@@ -547,7 +547,7 @@ else
   ! get the tmp file name from the input name list instead of the dot product file
   ! to allow for multiple instantiations of this program to run simultaneously
   dinl%tmpfile = trim(ronl%tmpfile)
-  if (dinl%usetmpfile.eq.'n') then 
+  if (ronl%usetmpfile.eq.'n') then 
     call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
   end if 
 end if
