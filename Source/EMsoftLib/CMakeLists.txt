@@ -125,6 +125,7 @@ set(EMsoftLib_SRCS
 )
 
 set(EMsoftLib_C_SRCS
+  ${EMsoftLib_SOURCE_DIR}/msleep.c
   ${EMsoftLib_SOURCE_DIR}/mbir.c
   ${EMsoftLib_SOURCE_DIR}/mbirHeader.h
   ${EMsoftLib_SOURCE_DIR}/denoise.c

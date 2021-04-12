@@ -637,7 +637,7 @@ type EBSDBatchNameListType
         integer(kind=irg)       :: numsy
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: maskradius
-        integer(kind=c_int32_t) :: sleepcycle
+        integer(kind=c_int)     :: sleepcycle
         real(kind=sgl)          :: L
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
