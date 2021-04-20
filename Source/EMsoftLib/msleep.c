@@ -3,6 +3,7 @@
 #else
 #include <sys/time.h>
 #endif
+#include <stddef.h>
 
 void msleep(int tms)
 {
