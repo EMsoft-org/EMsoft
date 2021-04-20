@@ -317,6 +317,8 @@ type LaueSlitNameListType
         real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
         real(kind=dbl)          :: absl             ! sample absorption length [mm]
         real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
+        real(kind=dbl)          :: beamstopwidth    ! beam stop width [mm]
+        real(kind=dbl)          :: beamstopheight   ! beam stop height [mm]
         real(kind=sgl)          :: spotw
         real(kind=sgl)          :: sampletilt       ! for side-reflection mode
         real(kind=sgl)          :: gammavalue

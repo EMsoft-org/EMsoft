@@ -1431,6 +1431,8 @@ real(kind=dbl)          :: Dz               ! detector pattern center z coordina
 real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
 real(kind=dbl)          :: absl             ! sample absorption length [mm]
 real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
+real(kind=dbl)          :: beamstopwidth    ! beam stop width [mm]
+real(kind=dbl)          :: beamstopheight   ! beam stop height [mm]
 real(kind=sgl)          :: spotw
 real(kind=sgl)          :: sampletilt
 real(kind=sgl)          :: gammavalue
@@ -1448,7 +1450,7 @@ character(fnlen)        :: xtalname
 
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
+namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, beamstopwidth, beamstopheight,&
                            samplethickness,ps,Ny,Nz,Dx,Dy,Dz,vs,absl, binarize, sampletilt, &
                            beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
                            orientationfile,tiffprefix,hdfname,xtalname, gammavalue, projectionmode
@@ -1472,6 +1474,8 @@ Dz               = 0.D0    ! pattern center z coordinate
 vs               = 0.10D0  ! size of the voxels that make up the sample (mm)
 absl             = 0.5D0   ! absorption length (mm)
 beamstopatf      = 0.1D0   ! beam stop attenuation factor
+beamstopwidth    = 2.0D0   ! beam stop width [mm]
+beamstopheight   = 2.0D0   ! beam stop height [mm]
 nthreads         = 1       ! number of parallel threads for pattern computation
 BPx              = 300     ! semi-edge length for back projection square Lambert maps
 spotw            = 0.1     ! spot size weight factor (1/(2*sigma^2))
@@ -1527,6 +1531,8 @@ lnl%Dz = Dz
 lnl%vs = vs               
 lnl%absl = absl             
 lnl%beamstopatf = beamstopatf
+lnl%beamstopwidth = beamstopwidth
+lnl%beamstopheight = beamstopheight
 lnl%spotw = spotw
 lnl%sampletilt = sampletilt
 lnl%BPx = BPx

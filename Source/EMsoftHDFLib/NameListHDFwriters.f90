@@ -668,7 +668,7 @@ type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueSlitNameListType),INTENT(IN)                 :: lnl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 3, n_dbl = 17
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 3, n_dbl = 19
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_dbl(n_dbl)   
@@ -698,7 +698,7 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 ! write all the single reals
 io_dbl = (/ lnl%Lw, lnl%Lh, lnl%Lx, lnl%Ly, lnl%Lz, lnl%VoltageH, lnl%VoltageL, lnl%Sx, &
             lnl%sampletodetector, lnl%samplethickness, lnl%ps, lnl%Dy, &
-            lnl%Dz, lnl%vs, lnl%absl, lnl%beamstopatf, lnl%intcutoffratio /)
+            lnl%Dz, lnl%vs, lnl%absl, lnl%beamstopatf, lnl%beamstopwidth, lnl%beamstopheight, lnl%intcutoffratio /)
 dbllist(1) = 'Lw'
 dbllist(2) = 'Lh'
 dbllist(3) = 'Lx'
@@ -715,7 +715,9 @@ dbllist(13) = 'Dz'
 dbllist(14) = 'vs'
 dbllist(15) = 'absl'
 dbllist(16) = 'beamstopatf'
-dbllist(17) = 'intcutoffratio'
+dbllist(17) = 'beamstopwidth'
+dbllist(18) = 'beamstopheight'
+dbllist(19) = 'intcutoffratio'
 call HDF_writeNMLdbles(HDF_head, io_dbl, dbllist, n_dbl)
 
 ! write all the strings

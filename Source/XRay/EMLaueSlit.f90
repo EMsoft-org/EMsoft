@@ -134,8 +134,8 @@ integer(kind=irg),allocatable 			       :: batchnumangles(:)
 integer(kind=irg),parameter 			         :: batchsize = 100
 type(AngleType),pointer                    :: angles
 
-integer(kind=irg)						               :: i, j, icnt, numvox, hdferr, npx, npy, refcnt, io_int(1), Lstart, &
-                                              g(3), gr(3), rf, NUMTHREADS, TID, BPnpx, BPnpy, m, betamin, betamax
+integer(kind=irg)						               :: i, j, icnt, numvox, hdferr, npx, npy, refcnt, io_int(1), Lstart, bsw, bsh, &
+                                              g(3), gr(3), rf, NUMTHREADS, TID, BPnpx, BPnpy, m, betamin, betamax, NNy, NNz
 real(kind=sgl) 							               :: l, kouter, kinner, tstart, tstop, mi, ma, lambdamin, lambdamax, kv(3), &
                                               scl, kv2(3), shortg, info, gg, mps
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternsum(:,:,:), bppatterns(:,:,:), bp(:,:)
@@ -460,17 +460,20 @@ end if
 
 
 ! next we need the Legendre lattitudes for the back projector 
-call Message(' Computing Legendre lattitudinal grid values')
-allocate(diagonal(BPnpx),upd(BPnpx))
-diagonal = 0.D0
-upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,BPnpx) /)
-call dsterf(BPnpx-2, diagonal, upd, info) 
-! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
-allocate(LegendreArray(0:BPnpx-1))
-LegendreArray(0:BPnpx-1) = diagonal(BPnpx:1:-1)
-! set the center eigenvalue to 0
-LegendreArray((BPnpx-1)/2) = 0.D0
-deallocate(diagonal, upd)
+if (trim(lnl%backprojection).eq.'Yes') then 
+  call Message(' Computing Legendre lattitudinal grid values')
+  write (*,*) ' BPnpx = ', BPnpx
+  allocate(diagonal(BPnpx),upd(BPnpx))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,BPnpx) /)
+  call dsterf(BPnpx-2, diagonal, upd, info) 
+  ! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+  allocate(LegendreArray(0:BPnpx-1))
+  LegendreArray(0:BPnpx-1) = diagonal(BPnpx:1:-1)
+  ! set the center eigenvalue to 0
+  LegendreArray((BPnpx-1)/2) = 0.D0
+  deallocate(diagonal, upd)
+end if 
 
 !=============================================
 !=============================================
@@ -480,7 +483,6 @@ deallocate(diagonal, upd)
 ! Write them to the HDF5 output file, along with (optionally) the pattern tiff files
 
 patternsum = 0.0 
-bppatterns = 0.0
 
 ! set the number of OpenMP threads 
   call OMP_SET_NUM_THREADS(lnl%nthreads)
@@ -556,6 +558,18 @@ end do ! outer loop
   io_int(1) = tstop
   call WriteValue('Execution time [s]: ',io_int,1)
 
+! apply the rectangular beam stop to all patterns; we assume that the beam stop is 
+! centered.  First convert the beam stop dimensions to pixels, then multiply all pixels 
+! inside the beam stop by the attenuation factor
+  bsw = int( 0.5 * lnl%beamstopwidth / lnl%ps )
+  bsh = int( 0.5 * lnl%beamstopheight / lnl%ps )
+  NNy = lnl%Ny/2
+  NNz = lnl%Nz/2
+  write (*,*) ' ---> Applying beam stop attenuation for stop size ', 2*bsw, 2*bsh
+
+  patternsum(NNy-bsw:NNy+bsw,NNz-bsh:NNz+bsh,1:numangles) = & 
+      patternsum(NNy-bsw:NNy+bsw,NNz-bsh:NNz+bsh,1:numangles) * lnl%beamstopatf
+
 
 ! write the hyperslab to the HDF5 file 
 dataset = 'LauePatterns'
@@ -609,10 +623,14 @@ if (trim(lnl%tiffprefix).ne.'undefined') then
   npx = lnl%Ny 
   npy = lnl%Nz 
 
+! use the same intensity scaling factors for all patterns 
+  ma = maxval(patternsum)
+  mi = minval(patternsum)
+
 ! optionally, write the individual tiff image files 
   do ii=1,numangles
-! output the ADP map as a tiff file 
     write (pnum,"(I4.4)") ii
+    ! fname = trim(EMsoft_getEMdatapathname())//trim(lnl%tiffprefix)//'_'//pnum//'.tiff'
     fname = trim(EMsoft_getEMdatapathname())//trim(lnl%tiffprefix)//'_'//pnum//'.tiff'
     fname = EMsoft_toNativePath(fname)
     TIFF_filename = trim(fname)
@@ -621,8 +639,6 @@ if (trim(lnl%tiffprefix).ne.'undefined') then
     allocate(TIFF_image(npx,npy))
 
 ! fill the image with whatever data you have (between 0 and 255)
-    ma = maxval(patternsum(:,:,ii))
-    mi = minval(patternsum(:,:,ii))
 
     TIFF_image = 255 - int(255 * (patternsum(:,:,ii)-mi)/(ma-mi))
 

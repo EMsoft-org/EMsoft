@@ -339,7 +339,7 @@ if (lnl%projectionmode.eq.'T') then
       kexit = kvox + kvec * scl       ! this is with respect to the optical axis
       kinpost = sqrt(sum((kexit-kvox)**2))
       dins = kinpre + kinpost 
-      atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
+      atf = exp( - dins/lnl%absl ) ! * lnl%beamstopatf
       if (binarize.eqv..TRUE.) atf = 1.0
 ! and draw the reflection
       dvec = dvec / lnl%ps 
