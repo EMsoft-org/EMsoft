@@ -15,6 +15,7 @@ endif()
 
 file(STRINGS "@EMsoftLib_SOURCE_DIR@/stringconstants.in" EMSOFT_STRING_CONSTANTS)
 foreach(SC ${EMSOFT_STRING_CONSTANTS})
+  message(STATUS "SC: ${SC}")
   string(FIND "${SC}" "!" COMMENT_POS)
   list(LENGTH SC LIST_LENGTH)
   string(FIND "${SC}" "[CATEGORY]" CATEGORY_POS)
@@ -47,9 +48,6 @@ foreach(SC ${EMSOFT_STRING_CONSTANTS})
       ${CPP_STRING_CONSTANTS}
       "    const ${EMSOFT_STRING_CLASS} ${VAR_NAME}(${VAR_VALUE})!\n"
       )
-
-  endif()
-
 
   endif()
 endforeach()
