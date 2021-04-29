@@ -1,5 +1,5 @@
 #if defined (_MSC_VER)
-#include <time.h>
+#include <winsock2.h>
 #else
 #include <sys/time.h>
 #endif
