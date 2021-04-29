@@ -49,9 +49,6 @@ foreach(SC ${EMSOFT_STRING_CONSTANTS})
       )
 
   endif()
-
-
-  endif()
 endforeach()
 
 
