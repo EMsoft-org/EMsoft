@@ -682,7 +682,7 @@ contains
       case(pix_i8 )
         allocate(data(this%size()))
         data = image_get_i8 (this) ! cast from i8  => i16
-        if(this%unsigned) where(data.lt.0) data = data+z'0100' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+256 ! handle unsigned => signed
       case(pix_i16)
         allocate(data(this%size()))
         data = transfer(this%buff, data)
@@ -704,11 +704,11 @@ contains
       case(pix_i8 )
         allocate(data(this%size()))
         data = image_get_i8 (this) ! cast from i8  => i32
-        if(this%unsigned) where(data.lt.0) data = data+z'00000100' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+256 ! handle unsigned => signed
       case(pix_i16)
         allocate(data(this%size()))
         data = image_get_i16(this) ! cast from i16 => i32
-        if(this%unsigned) where(data.lt.0) data = data+z'00010000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+65536 ! handle unsigned => signed
       case(pix_i32)
         allocate(data(this%size()))
         data = transfer(this%buff, data)
@@ -730,15 +730,15 @@ contains
       case(pix_i8 )
         allocate(data(this%size()))
         data = image_get_i8 (this) ! cast from i8  => i64
-        if(this%unsigned) where(data.lt.0) data = data+z'0000000000000100' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+256 ! handle unsigned => signed
       case(pix_i16)
         allocate(data(this%size()))
         data = image_get_i16(this) ! cast from i16 => i64
-        if(this%unsigned) where(data.lt.0) data = data+z'0000000000010000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+65536 ! handle unsigned => signed
       case(pix_i32)
         allocate(data(this%size()))
         data = image_get_i32(this) ! cast from i32 => i64
-        if(this%unsigned) where(data.lt.0) data = data+z'0000000100000000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+4294967296_8 ! handle unsigned => signed
       case(pix_i64)
         allocate(data(this%size()))
         data = transfer(this%buff, data)
@@ -760,11 +760,11 @@ contains
       case(pix_i8 )
         allocate(data(this%size()))
         data = image_get_i8 (this) ! cast from i8  => r32
-        if(this%unsigned) where(data.lt.0) data = data+z'00000100' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+256 ! handle unsigned => signed
       case(pix_i16)
         allocate(data(this%size()))
         data = image_get_i16(this) ! cast from i16 => r32
-        if(this%unsigned) where(data.lt.0) data = data+z'00010000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+65536 ! handle unsigned => signed
       case(pix_r32)
         allocate(data(this%size()))
         data = transfer(this%buff, data)
@@ -786,11 +786,11 @@ contains
       case(pix_i8 )
         allocate(data(this%size()))
         data = image_get_i8 (this) ! cast from i8  => r64
-        if(this%unsigned) where(data.lt.0) data = data+z'0000000000010000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+65536 ! handle unsigned => signed
       case(pix_i16)
         allocate(data(this%size()))
         data = image_get_i16(this) ! cast from i16 => r64
-        if(this%unsigned) where(data.lt.0) data = data+z'0000000100000000' ! handle unsigned => signed
+        if(this%unsigned) where(data.lt.0) data = data+4294967296_8 ! handle unsigned => signed
       case(pix_i32)
         allocate(data(this%size()))
         data = image_get_i32(this) ! cast from i32 => r64
