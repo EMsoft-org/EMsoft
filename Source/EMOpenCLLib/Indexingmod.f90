@@ -87,6 +87,7 @@ contains
 !> @date 06/01/20 MDG 5.0 change in handling of pattern binning (as of EMsoft version 5.0.3)
 !> @date 10/06/20 MDG 5.1 added normalized cross correlation as optional similarity metric
 !> @date 03/11/21 MDG 5.2 added min dp value to program output
+!> @date 04/29/21 MDG 5.2 makes the dot product sorting conditional, which speeds up program by factor of 2
 !--------------------------------------------------------------------------
 subroutine EBSDDIdriver(Cnmldeffile, Cprogname, cproc, ctimeproc, cerrorproc, objAddress, cancel) &
            bind(c, name='EBSDDIdriver') 
@@ -228,7 +229,7 @@ real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:), eudic
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
-                                                       tmpimageexpt(:), OSMmap(:,:)
+                                                       tmpimageexpt(:), OSMmap(:,:), maxsortarr(:), minsortarr(:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:), dparray(:), &
                                                        eulerarray(:,:),eulerarray2(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:)
@@ -761,6 +762,11 @@ if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 rdata = 0.D0
 fdata = 0.D0
 
+allocate(minsortarr(totnumexpt), maxsortarr(totnumexpt), stat=istat)
+if (istat .ne. 0) stop 'could not allocate minsort and maxsort arrays'
+minsortarr = -2.0
+maxsortarr = 0.0
+
 !=====================================================
 ! determine loop variables to avoid having to duplicate 
 ! large sections of mostly identical code
@@ -1062,19 +1068,25 @@ dictionaryloop: do ii = 1,cratio+1
         if (dp.lt.minvres) minvres = dp
 
 ! this might be simplified later for the remainder of the patterns
+! sorting is conditional on the max value of the new dot products [suggested by D. Rowenhorst]
+! this causes an overall program speed up by a factor of 2 (does depend on data set a little)
         do qq = 1,ppendE(jj)
             jjj = (jj-1)*Ne+qq
-            resultarray(1:Nd) = results((qq-1)*Nd+1:qq*Nd)
-            indexarray(1:Nd) = indexlist((iii-1)*Nd+1:iii*Nd)
+            maxsortarr(jjj) = maxval(results((qq-1)*Nd+1:qq*Nd))
+            if (maxsortarr(jjj).gt.minsortarr(jjj)) then
+              resultarray(1:Nd) = results((qq-1)*Nd+1:qq*Nd)
+              indexarray(1:Nd) = indexlist((iii-1)*Nd+1:iii*Nd)
 
-            call SSORT(resultarray,indexarray,Nd,-2)
-            resulttmp(nnk+1:2*nnk,jjj) = resultarray(1:nnk)
-            indextmp(nnk+1:2*nnk,jjj) = indexarray(1:nnk)
+              call SSORT(resultarray,indexarray,Nd,-2)
+              resulttmp(nnk+1:2*nnk,jjj) = resultarray(1:nnk)
+              indextmp(nnk+1:2*nnk,jjj) = indexarray(1:nnk)
 
-            call SSORT(resulttmp(:,jjj),indextmp(:,jjj),2*nnk,-2)
+              call SSORT(resulttmp(:,jjj),indextmp(:,jjj),2*nnk,-2)
 
-            resultmain(1:nnk,jjj) = resulttmp(1:nnk,jjj)
-            indexmain(1:nnk,jjj) = indextmp(1:nnk,jjj)
+              resultmain(1:nnk,jjj) = resulttmp(1:nnk,jjj)
+              indexmain(1:nnk,jjj) = indextmp(1:nnk,jjj)
+              minsortarr(jjj) = resulttmp(nnk, jjj)
+            end if 
         end do
 
 ! handle the callback routines if requested 
