@@ -995,8 +995,8 @@ dictionaryloop: do ii = 1,cratio+1
       io_int(1) = ii
       call WriteValue('Dictionaryloop index = ',io_int,1)
     end if
-
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, vlen, tock, ttime, dicttranspose, EBSDdictpatflt) &
+    call OMP_SET_NESTED(.TRUE.)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, tock, ttime, dicttranspose, EBSDdictpatflt) &
 !$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip) &
 !$OMP& PRIVATE(mean, sdev)
 
@@ -1012,8 +1012,8 @@ dictionaryloop: do ii = 1,cratio+1
 
     if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
 
-! the master thread should be the one working on the GPU computation
-!$OMP MASTER
+! only one thread should be the one working on the GPU computation
+!$OMP TASK 
     if (ii.gt.1) then
       iii = ii-1        ! the index ii is already one ahead, since the GPU thread lags one cycle behind the others...
       if (verbose.eqv..TRUE.) then 
@@ -1026,13 +1026,15 @@ dictionaryloop: do ii = 1,cratio+1
 
       allocate(dicttranspose(Nd*correctsize))
       dicttranspose = 0.0
-
+      write(*,*) ' Transpose Before'
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ll,mm) SCHEDULE(DYNAMIC)
       do ll = 1,correctsize
         do mm = 1,Nd
             dicttranspose((ll-1)*Nd+mm) = T0dict((mm-1)*correctsize+ll)
         end do
       end do
-
+!$OMP END PARALLEL DO 
+      write(*,*) ' Transpose After'
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
       call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_dict', ierr)
@@ -1052,9 +1054,9 @@ dictionaryloop: do ii = 1,cratio+1
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
         call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_expt', ierr)
-
+        write(*,*) ' GPU Inner Before'
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,dinl%devid,kernel,context,command_queue)
-
+        write(*,*) ' GPU Inner After'
         if (dinl%similaritymetric.eq.'ncc') results = results * Nval
 
         dp =  maxval(results)
@@ -1070,6 +1072,8 @@ dictionaryloop: do ii = 1,cratio+1
 ! this might be simplified later for the remainder of the patterns
 ! sorting is conditional on the max value of the new dot products [suggested by D. Rowenhorst]
 ! this causes an overall program speed up by a factor of 2 (does depend on data set a little)
+        write(*,*) ' Sort Inner Before'
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(qq,jjj) SCHEDULE(DYNAMIC)
         do qq = 1,ppendE(jj)
             jjj = (jj-1)*Ne+qq
             maxsortarr(jjj) = maxval(results((qq-1)*Nd+1:qq*Nd))
@@ -1088,7 +1092,8 @@ dictionaryloop: do ii = 1,cratio+1
               minsortarr(jjj) = resulttmp(nnk, jjj)
             end if 
         end do
-
+!$OMP END PARALLEL DO 
+        write(*,*) ' Sort Inner After'
 ! handle the callback routines if requested 
         if (Clinked.eqv..TRUE.) then 
 ! has the cancel flag been set by the calling program ?
@@ -1153,10 +1158,11 @@ dictionaryloop: do ii = 1,cratio+1
       cn = cn + dn
 
     end if
+!$OMP END TASK
 
-!$OMP END MASTER
 
 ! here we carry out the dictionary pattern computation, unless we are in the ii=cratio+1 step
+!$OMP TASK
     if (ii.lt.cratio+1) then
      if (verbose.eqv..TRUE.) then
        if (associated(dict,dict1)) then 
@@ -1168,8 +1174,11 @@ dictionaryloop: do ii = 1,cratio+1
 
      if (trim(dinl%indexingmode).eq.'dynamic') then
       allocate(binned(binx,biny))
-
-!$OMP DO SCHEDULE(DYNAMIC)
+      write(*,*) ' Dynamic Dict Before'
+!$OMP PARALLEL DO SCHEDULE(DYNAMIC) DEFAULT(SHARED) PRIVATE(qq,binned, quat,TID,iii,jj,ll,mm,pp,ierr,io_int, &
+!$OMP& vlen,  EBSDdictpatflt, ma, mi, &
+!$OMP& EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, imagedictflt, imagedictfltflip,  &
+!$OMP& mean, sdev)
       do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
        if (cancelled.eqv..FALSE.) then
          binned = 0.0
@@ -1230,7 +1239,8 @@ dictionaryloop: do ii = 1,cratio+1
          eulerarray(1:3,(ii-1)*Nd+pp) = 180.0/cPi*ro2eu(FZarray(1:4,(ii-1)*Nd+pp))
        end if
       end do
-!$OMP END DO
+!$OMP END PARALLEL DO
+      write(*,*) ' Dynamic Dict After'
       deallocate(binned)
     else  ! we are doing static indexing, so only 2 threads in total
 
@@ -1266,6 +1276,8 @@ dictionaryloop: do ii = 1,cratio+1
    deallocate(EBSDpatterninteger,EBSDpatternad,EBSDpatternintd,imagedictflt,imagedictfltflip)
 
 ! and we end the parallel section here (all threads will synchronize).
+!$OMP END TASK
+!$OMP TASKWAIT
 !$OMP END PARALLEL
 
 if (cancelled.eqv..TRUE.) EXIT dictionaryloop
