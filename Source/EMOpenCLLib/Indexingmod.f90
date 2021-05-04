@@ -88,6 +88,7 @@ contains
 !> @date 10/06/20 MDG 5.1 added normalized cross correlation as optional similarity metric
 !> @date 03/11/21 MDG 5.2 added min dp value to program output
 !> @date 04/29/21 MDG 5.2 makes the dot product sorting conditional, which speeds up program by factor of 2
+!> @date 05/03/21 DJR 5.2 reconfigured the OpenMP calls to use parallel sections and nested parallization.
 !--------------------------------------------------------------------------
 subroutine EBSDDIdriver(Cnmldeffile, Cprogname, cproc, ctimeproc, cerrorproc, objAddress, cancel) &
            bind(c, name='EBSDDIdriver') 
@@ -681,6 +682,7 @@ dict1 = 0.0
 dict2 = 0.0
 dict => dict1
 
+
 allocate(results(Ne*Nd),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for results'
 results = 0.0
@@ -925,6 +927,28 @@ end if
 ! on how powerful the GPU card is...
 !=====================================================
 
+!=====================================================
+! Revision to the above 03 May 2021 
+! With newer GPUs it is increasingly hard to keep them occupied. 
+! Thus the code below has been rewritten using nested OpenMP threading.  
+! The outside threads are minamally parallel in that there are only two 
+! parallel SECTIONS, and thus two threads created.  With the revisions there 
+! is no need to keep track of the master/child threads here. 
+! The first SECTION is doing the hard work of sendind the calculated/precalculated 
+! dictionary to the GPU then sending in batches of experimental patterns to the GPU, 
+! taking the dot product and then allowing the CPU to rank the results.  
+! The second SECTION does either the calculation of the dictionary (dynamic) or 
+! fetches it off disk (static). It will perform this work while the first section 
+! is performing the DP calculation and using some fancy pointer math prepares the new
+! dictionary chunk for the next batch.  
+! Within each SECTION there are portions that undergo nested parallelization for some 
+! key FOR loops, where many threads can be thrown at the problem.  Notebaly the creation 
+! of dictionary patterns, and the sorting of the dot product results.  Using many threads 
+! here makes creating the dictionary patterns much less of a burden and keeps the GPU
+! much bussier.  
+! There is some overhead with making lots of threads on each iteration. Future versions will 
+! try and address this.  
+
 call Time_tick(tickstart)
 call Time_tick(tickstart2)
 
@@ -996,24 +1020,14 @@ dictionaryloop: do ii = 1,cratio+1
       call WriteValue('Dictionaryloop index = ',io_int,1)
     end if
     call OMP_SET_NESTED(.TRUE.)
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, tock, ttime, dicttranspose, EBSDdictpatflt) &
-!$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip) &
-!$OMP& PRIVATE(mean, sdev)
-
-! allocate the local arrays that are used by each thread
-    allocate(EBSDpatterninteger(binx,biny))
-    EBSDpatterninteger = 0
-    allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
-    EBSDpatternad = 0.0
-    EBSDpatternintd = 0.0
-    allocate(imagedictflt(correctsize),imagedictfltflip(correctsize))
-
-    TID = OMP_GET_THREAD_NUM()
-
-    if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
-
+!$OMP PARALLEL NUM_THREADS(2) DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,qq,ierr,io_int, tock, ttime, dicttranspose,  &
+!$OMP& EBSDdictpatflt,EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip, &
+!$OMP& binned, ma, mi, mean, sdev)
+    
 ! only one thread should be the one working on the GPU computation
-!$OMP TASK 
+!$OMP SECTIONS
+!$OMP SECTION  
+    
     if (ii.gt.1) then
       iii = ii-1        ! the index ii is already one ahead, since the GPU thread lags one cycle behind the others...
       if (verbose.eqv..TRUE.) then 
@@ -1026,7 +1040,7 @@ dictionaryloop: do ii = 1,cratio+1
 
       allocate(dicttranspose(Nd*correctsize))
       dicttranspose = 0.0
-      write(*,*) ' Transpose Before'
+      
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ll,mm) SCHEDULE(DYNAMIC)
       do ll = 1,correctsize
         do mm = 1,Nd
@@ -1034,7 +1048,7 @@ dictionaryloop: do ii = 1,cratio+1
         end do
       end do
 !$OMP END PARALLEL DO 
-      write(*,*) ' Transpose After'
+     
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
       call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_dict', ierr)
@@ -1054,9 +1068,9 @@ dictionaryloop: do ii = 1,cratio+1
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
         call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_expt', ierr)
-        write(*,*) ' GPU Inner Before'
+        
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,dinl%devid,kernel,context,command_queue)
-        write(*,*) ' GPU Inner After'
+        
         if (dinl%similaritymetric.eq.'ncc') results = results * Nval
 
         dp =  maxval(results)
@@ -1072,8 +1086,8 @@ dictionaryloop: do ii = 1,cratio+1
 ! this might be simplified later for the remainder of the patterns
 ! sorting is conditional on the max value of the new dot products [suggested by D. Rowenhorst]
 ! this causes an overall program speed up by a factor of 2 (does depend on data set a little)
-        write(*,*) ' Sort Inner Before'
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(qq,jjj) SCHEDULE(DYNAMIC)
+       
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(qq,jjj,resultarray,indexarray ) SCHEDULE(DYNAMIC)
         do qq = 1,ppendE(jj)
             jjj = (jj-1)*Ne+qq
             maxsortarr(jjj) = maxval(results((qq-1)*Nd+1:qq*Nd))
@@ -1093,7 +1107,7 @@ dictionaryloop: do ii = 1,cratio+1
             end if 
         end do
 !$OMP END PARALLEL DO 
-        write(*,*) ' Sort Inner After'
+       
 ! handle the callback routines if requested 
         if (Clinked.eqv..TRUE.) then 
 ! has the cancel flag been set by the calling program ?
@@ -1117,10 +1131,10 @@ dictionaryloop: do ii = 1,cratio+1
       call WriteValue('',io_real,3,"(' min./max. dot product = ',F9.6,' /',F9.6,';',F6.1,'% complete')")
 
       if (.not.Clinked) then
-        if (mod(iii,10) .eq. 0) then
+        if (mod(iii,2) .eq. 0) then
 ! do a remaining time estimate
 ! and print information
-          if (iii.eq.10) then
+          if (iii.eq.2) then
               tock = Time_tock(tickstart)
               ttime = float(tock) * float(cratio) / float(iii)
               tstop = ttime
@@ -1158,11 +1172,19 @@ dictionaryloop: do ii = 1,cratio+1
       cn = cn + dn
 
     end if
-!$OMP END TASK
+
 
 
 ! here we carry out the dictionary pattern computation, unless we are in the ii=cratio+1 step
-!$OMP TASK
+!$OMP SECTION
+    allocate(EBSDpatterninteger(binx,biny))
+    EBSDpatterninteger = 0
+    allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
+    EBSDpatternad = 0.0
+    EBSDpatternintd = 0.0
+    allocate(imagedictflt(correctsize),imagedictfltflip(correctsize))
+
+
     if (ii.lt.cratio+1) then
      if (verbose.eqv..TRUE.) then
        if (associated(dict,dict1)) then 
@@ -1174,7 +1196,7 @@ dictionaryloop: do ii = 1,cratio+1
 
      if (trim(dinl%indexingmode).eq.'dynamic') then
       allocate(binned(binx,biny))
-      write(*,*) ' Dynamic Dict Before'
+      
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC) DEFAULT(SHARED) PRIVATE(qq,binned, quat,TID,iii,jj,ll,mm,pp,ierr,io_int, &
 !$OMP& vlen,  EBSDdictpatflt, ma, mi, &
 !$OMP& EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, imagedictflt, imagedictfltflip,  &
@@ -1240,14 +1262,14 @@ dictionaryloop: do ii = 1,cratio+1
        end if
       end do
 !$OMP END PARALLEL DO
-      write(*,*) ' Dynamic Dict After'
+     
       deallocate(binned)
     else  ! we are doing static indexing, so only 2 threads in total
 
 ! get a set of patterns from the precomputed dictionary file... 
 ! we'll use a hyperslab to read a block of preprocessed patterns from file 
 
-      if (TID .ne. 0) then
+!      if (TID .ne. 0) then
 ! read data from the hyperslab
        dataset = SC_EBSDpatterns
        dims2 = (/ correctsize, ppend(ii) /)
@@ -1260,7 +1282,7 @@ dictionaryloop: do ii = 1,cratio+1
          dict((pp-1)*correctsize+1:pp*correctsize) = EBSDdictpatflt(1:correctsize,pp)
        end do
      end if   
-    end if
+!    end if
 
     if (verbose.eqv..TRUE.) then
        io_int(1) = TID
@@ -1276,8 +1298,8 @@ dictionaryloop: do ii = 1,cratio+1
    deallocate(EBSDpatterninteger,EBSDpatternad,EBSDpatternintd,imagedictflt,imagedictfltflip)
 
 ! and we end the parallel section here (all threads will synchronize).
-!$OMP END TASK
-!$OMP TASKWAIT
+!$OMP END SECTIONS NOWAIT
+!$OMP BARRIER
 !$OMP END PARALLEL
 
 if (cancelled.eqv..TRUE.) EXIT dictionaryloop
