@@ -135,3 +135,4 @@ IDL/various
 /src_programs/*.c
 /src_programs/go*
 /manuals_todo/Eshelby
+Release*
