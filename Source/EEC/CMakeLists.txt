@@ -15,7 +15,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMEECmaster.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
                         TEMPLATE ${TMPLT_DIR}/EMEECmaster.template 
-                        SOLUTION_FOLDER EMsoftPublic/EEC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/EEC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                        )
@@ -24,7 +24,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   #                       SOURCES ${APP_DIR}/EMGBOdm.f90 
   #                       LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
   #                       TEMPLATE ${TMPLT_DIR}/EMGBOdm.template 
-  #                       SOLUTION_FOLDER EMsoftPublic/OLIO 
+  #                       SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/OLIO 
                           # INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                           # )
 

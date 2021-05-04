@@ -66,7 +66,7 @@ target_link_libraries(EMsoftHDFLib
 
 set_target_properties (EMsoftHDFLib PROPERTIES
   LINKER_LANGUAGE Fortran
-  FOLDER EMsoftPublic
+  FOLDER ${EMSOFTPUBLIC_DIR_NAME}
   BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}"
 )
 

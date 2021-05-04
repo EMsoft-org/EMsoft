@@ -12,7 +12,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                               SOURCES ${APP_DIR}/EMCPLMmaster.f90 
                               LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                               TEMPLATE ${TMPLT_DIR}/EMCPLMmaster.template 
-                              SOLUTION_FOLDER EMsoftPublic/OM
+                              SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/OM
                               INSTALL_PROGRAM TRUE
                               INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                               )

@@ -181,13 +181,13 @@ add_library(EMsoftLib_C STATIC ${EMsoftLib_C_SRCS})
 set_target_properties (EMsoftLib_C PROPERTIES
   LINKER_LANGUAGE Fortran
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
-  FOLDER EMsoftPublic
+  FOLDER ${EMSOFTPUBLIC_DIR_NAME}
 )
 add_library(EMsoftLib_Cpp STATIC ${EMsoftLib_Cpp_SRCS})
 set_target_properties (EMsoftLib_Cpp PROPERTIES
   LINKER_LANGUAGE Fortran
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
-  FOLDER EMsoftPublic
+  FOLDER ${EMSOFTPUBLIC_DIR_NAME}
 )
 target_include_directories(EMsoftLib_Cpp PRIVATE ${SHTfile_BINARY_DIR})
 
@@ -218,7 +218,7 @@ target_include_directories(EMsoftLib PUBLIC ${CLFortran_INCLUDE_DIRS} ${FFTW3_IN
 set_target_properties (EMsoftLib PROPERTIES
                   LINKER_LANGUAGE Fortran
                    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
-                  FOLDER EMsoftPublic
+                  FOLDER ${EMSOFTPUBLIC_DIR_NAME}
                   )
 set_source_files_properties(${EMsoftLib_BINARY_DIR}/stringconstants.f90 PROPERTIES GENERATED TRUE)
 add_dependencies(EMsoftLib EMsoftLib_Generate_StringConstants)

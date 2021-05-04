@@ -105,7 +105,7 @@ include(${CMP_SOURCE_DIR}/cmpProject.cmake)
 target_link_libraries(${PROJECT_NAME} ${${PROJECT_NAME}_LINK_LIBS})
 LibraryProperties( ${PROJECT_NAME} ${EXE_DEBUG_EXTENSION} )
 set_target_properties (${PROJECT_NAME} PROPERTIES
-  FOLDER EMsoftPublic/${PROJECT_NAME}
+  FOLDER ${EMSOFTPUBLIC_DIR_NAME}/${PROJECT_NAME}
 )
 
 #---------------------------------------------------------------------

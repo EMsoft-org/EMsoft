@@ -16,7 +16,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMECPQCmaster.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMECPQCmaster.template 
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                       )
@@ -25,7 +25,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMEBSDQCmaster.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMEBSDQCmaster.template 
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -34,7 +34,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMEBSD2DQCmaster.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMEBSD2DQCmaster.template 
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -42,7 +42,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   Add_EMsoft_Executable(TARGET EMmkqxtal
                         SOURCES ${APP_DIR}/EMmkqxtal.f90 
                         LINK_LIBRARIES EMsoftHDFLib
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -51,7 +51,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMECPQC.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMECP.template 
-                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -60,7 +60,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMCBEDQC.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMCBEDQC.template  
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )  
@@ -69,7 +69,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMCBED2DQC.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
                         TEMPLATE ${TMPLT_DIR}/EMCBED2DQC.template  
-                        SOLUTION_FOLDER EMsoftPublic/QC
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/QC
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )   

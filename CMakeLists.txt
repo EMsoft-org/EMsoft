@@ -95,6 +95,7 @@ set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "3")
 
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
+get_filename_component(EMSOFTPUBLIC_DIR_NAME ${EMsoft_SOURCE_DIR} NAME CACHE)
 
 # --------------------------------------------------------------------
 # Generate Git hash and build date information
@@ -185,8 +186,8 @@ endif(BUILD_SHARED_LIBS)
 
 get_property(EMsoftBinaryDir GLOBAL PROPERTY EMsoftBinaryDir)
 if("${EMsoftBinaryDir}" STREQUAL "")
-  set(EMsoftBinaryDir "${EMsoftPublic_BINARY_DIR}")
-  set_property(GLOBAL PROPERTY EMsoftBinaryDir "${EMsoftPublic_BINARY_DIR}")
+  set(EMsoftBinaryDir "${EMsoft_BINARY_DIR}")
+  set_property(GLOBAL PROPERTY EMsoftBinaryDir "${EMsoft_BINARY_DIR}")
 endif()
 
 get_property(EMsoftSearchDirs GLOBAL PROPERTY EMsoftSearchDirs)

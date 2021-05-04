@@ -25,7 +25,7 @@ set(EMsoftTestDir "${EMsoft_SOURCE_DIR}/Source/Test")
 #                   SOURCES ${EMsoftTestDir}/fooTest.f90
 #                   TEST_NAME fooTest
 #                   LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-#                   SOLUTION_FOLDER EMsoftPublic/Test)
+#                   SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/Test)
 #
 # The argument LINK_LIBRARIES needs to have all the proper libraries that the
 # test will link against. EXE_LINK_LIBRARIES is just a CMake variable that
@@ -60,7 +60,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOURCES ${EMsoftTestDir}/${test}Test.f90
                       TEST_NAME ${test}
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      SOLUTION_FOLDER EMsoftPublic/Test
+                      SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/Test
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                                     ${EMsoft_SOURCE_DIR}/Source/Test)
     if(MSVC)

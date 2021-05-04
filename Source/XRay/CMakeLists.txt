@@ -13,7 +13,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOURCES ${APP_DIR}/PFInversion.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
                       TEMPLATE ${TMPLT_DIR}/PFInversion.template
-                      SOLUTION_FOLDER EMsoftPublic/XRay
+                      SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/XRay
                       INSTALL_PROGRAM TRUE
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                       )
@@ -23,7 +23,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOURCES ${APP_DIR}/EMLauemaster.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
                       TEMPLATE ${TMPLT_DIR}/EMLauemaster.template
-                      SOLUTION_FOLDER EMsoftPublic/XRay
+                      SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/XRay
                       INSTALL_PROGRAM TRUE
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                       )
@@ -32,7 +32,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   #                     SOURCES ${APP_DIR}/EMLaue.f90
   #                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
   #                     TEMPLATE ${TMPLT_DIR}/EMLaue.template
-  #                     SOLUTION_FOLDER EMsoftPublic/XRay
+  #                     SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/XRay
   #                     INSTALL_PROGRAM TRUE
   #                     INCLUDE_DIRS ${EMsoftLib_BINARY_DIR} ${EMsoftHDFLib_BINARY_DIR} ${EMsoft_BINARY_DIR}/EMsoftLib
   #                     )
@@ -41,7 +41,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOURCES ${APP_DIR}/EMLaueSlit.f90
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
                       TEMPLATE ${TMPLT_DIR}/EMLaue.template
-                      SOLUTION_FOLDER EMsoftPublic/XRay
+                      SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/XRay
                       INSTALL_PROGRAM TRUE
                       INCLUDE_DIRS ${EMsoftLib_BINARY_DIR} ${EMsoftHDFLib_BINARY_DIR} ${EMsoft_BINARY_DIR}/EMsoftLib
                       )

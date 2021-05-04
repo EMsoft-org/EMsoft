@@ -12,7 +12,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMGBO.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
                         TEMPLATE ${TMPLT_DIR}/EMGBO.template 
-                        SOLUTION_FOLDER EMsoftPublic/GBs
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/GBs
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -21,7 +21,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMGBOdm.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
                         TEMPLATE ${TMPLT_DIR}/EMGBOdm.template 
-                        SOLUTION_FOLDER EMsoftPublic/GBs 
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/GBs 
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
@@ -31,7 +31,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOURCES ${APP_DIR}/EMoSLERP.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                         TEMPLATE ${TMPLT_DIR}/EMoSLERP.template 
-                        SOLUTION_FOLDER EMsoftPublic/GBs
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/GBs
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )

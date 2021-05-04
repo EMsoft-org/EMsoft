@@ -44,7 +44,7 @@ target_link_libraries(EMOpenCLLib
 
 set_target_properties (EMOpenCLLib PROPERTIES
   LINKER_LANGUAGE Fortran
-  FOLDER EMsoftPublic
+  FOLDER ${EMSOFTPUBLIC_DIR_NAME}
   BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}"
 )
 
