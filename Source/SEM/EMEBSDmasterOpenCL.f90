@@ -96,6 +96,7 @@ end program EMEBSDmasterOpenCL
 !> @date 12/10/16 MDG 2.1 updated for new OpenCL module
 !> @date 03/04/21 MDG 3.0 revisions to bring code up to date with EMsoft 5.3 libraries
 !> @date 03/07/21 MDG 3.1 debugging to fix error for large unit cells 
+!> @date 05/06/21 MDG 3.2 implementation of OpenMP sections and nested parallellism
 !--------------------------------------------------------------------------
 subroutine EBSDmasterpatternOpenCL(emnl, progname, nmldeffile)
 
@@ -160,7 +161,7 @@ integer(kind=irg)                               :: nt, nns, nnw, tots, totw ! th
 real(kind=sgl)                                  :: FN(3), k(3), fnat, kn
 integer(kind=irg)                               :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, &
                                                    ip, jp, izz, iE, iz, one,ierr,ierr2,ss, Estart, lastEnergy
-integer(kind=irg)                               :: izzmax, SamplingType, TID, NUMTHREADS
+integer(kind=irg)                               :: izzmax, SamplingType, TID, NUMTHREADS, nthreads1, nthreads2
 integer(kind=irg),allocatable                   :: kij(:,:) 
 integer(kind=irg)                               :: nat(maxpasym)
 real(kind=dbl)                                  :: res(2)
@@ -196,8 +197,14 @@ integer(kind=4)                                 :: numd,nump,irec,ii,jj,kk,pp,qq
 
 complex(kind=4),target                          :: coef(3,3),cvals(9)
 integer(kind=4),target                          :: numdepth
-integer(kind=4),allocatable,target              :: arrsize(:),arrsizesum(:),offset(:),ns(:)
-complex(kind=4),allocatable,target              :: LghCumulative(:),SghCumulative(:,:),A(:)
+integer(kind=4),allocatable,target              :: arrsize1(:),arrsizesum1(:),offset1(:),ns1(:)
+integer(kind=4),allocatable,target              :: arrsize2(:),arrsizesum2(:),offset2(:),ns2(:)
+integer(kind=4),allocatable,target              :: arrsize3(:),arrsizesum3(:),offset3(:),ns3(:)
+integer(kind=4),pointer                         :: ARC1(:),ARC2(:),ARC3(:),ARsumC1(:),ARsumC2(:),ARsumC3(:)
+integer(kind=4),pointer                         :: OFC1(:), OFC2(:), OFC3(:), NSC1(:), NSC2(:), NSC3(:)
+complex(kind=4),pointer                         :: LghC1(:), LghC2(:), LghC3(:), SghC1(:,:), SghC2(:,:), SghC3(:,:), &
+                                                   AC1(:), AC2(:), AC3(:)
+complex(kind=4),allocatable,target              :: Sgh1(:,:), Sgh2(:,:), Sgh3(:,:), Lgh1(:), Lgh2(:),Lgh3(:), A1(:), A2(:), A3(:)
 
 integer(kind=4)                                 :: size1,size2
 
@@ -229,7 +236,7 @@ character(15)                                   :: tstre
 character(fnlen,kind=c_char)                    :: line2(1)
 logical                                         :: overwrite=.TRUE., insert=.TRUE., g_exists
 integer(HSIZE_T)                                :: dims4(4),cnt4(4),offset4(4)
-integer(HSIZE_T)                                :: dims3(3), cnt3(3), offset3(3)
+integer(HSIZE_T)                                :: dims3(3), cnt3(3), offfset3(3)
 logical                                         :: f_exists, readonly
 character(fnlen, KIND=c_char),allocatable,target:: stringarray(:)
 character(fnlen)                                :: dataset, groupname, datagroupname
@@ -516,7 +523,9 @@ call CLerror_check('EBSDmasterpatternOpenCL:clCreateKernel', ierr)
 ierr = clReleaseProgram(prog)
 call CLerror_check('EBSDmasterpatternOpenCL:clReleaseProgram', ierr)
 
-allocate(arrsize(npx*npy),arrsizesum(npx*npy),offset(npx*npy),ns(npx*npy),stat=istat)
+allocate(arrsize1(npx*npy),arrsizesum1(npx*npy),offset1(npx*npy),ns1(npx*npy),stat=istat)
+allocate(arrsize2(npx*npy),arrsizesum2(npx*npy),offset2(npx*npy),ns2(npx*npy),stat=istat)
+allocate(arrsize3(npx*npy),arrsizesum3(npx*npy),offset3(npx*npy),ns3(npx*npy),stat=istat)
 
 !=============================================
 ! should we create a new file or open an existing file?
@@ -708,23 +717,23 @@ dataset = SC_mLPSH
 dataset = SC_masterSPNH
       dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
       cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
-      offset3 = (/ 0, 0, 0 /)
+      offfset3 = (/ 0, 0, 0 /)
       call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
       if (g_exists) then 
-        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offfset3, cnt3, HDF_head, insert)
       else
-        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offfset3, cnt3, HDF_head)
       end if
 
 dataset = SC_masterSPSH
       dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
       cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
-      offset3 = (/ 0, 0, 0 /)
+      offfset3 = (/ 0, 0, 0 /)
       call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
       if (g_exists) then 
-        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offfset3, cnt3, HDF_head, insert)
       else
-        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offfset3, cnt3, HDF_head)
       end if
 
     call HDF_pop(HDF_head,.TRUE.)
@@ -751,6 +760,8 @@ else
 end if
 
 call Time_tick(timestart)
+nthreads1 = ((emnl%nthreads-3)/4)*3
+nthreads2 = (emnl%nthreads-3)/4
 
 energyloop: do iE = Estart,1,-1
 
@@ -820,13 +831,118 @@ energyloop: do iE = Estart,1,-1
 !    ktmp => khead
 !    kheadtmp => khead
 
-    beamloop : do ii = 1,ceiling(float(numk)/float(npx*npy))
-        arrsize = 0
-        arrsizesum = 0
-        offset = 0
-        ns = 0
+    arrsize1 = 0
+    arrsizesum1 = 0
+    offset1 = 0
+    ns1 = 0
+    arrsize2 = 0
+    arrsizesum2 = 0
+    offset2 = 0
+    ns2 = 0
+    arrsize3 = 0
+    arrsizesum3 = 0
+    offset3 = 0
+    ns3 = 0
 
-        if (ii .le. floor(float(numk)/float(npx*npy))) then
+    nullify(SghC1, SghC2, ARC1, ARsumC1, OFC1, NSC1, ARC2, ARsumC2, OFC2, & 
+            NSC2, AC1, AC2, LghC2, LghC3, ARC3, OFC3)
+
+    beamloop : do ii = 1,ceiling(float(numk)/float(npx*npy)) + 3   !+3 for OpenMP sections
+
+        if (ii .le. floor(float(numk)/float(npx*npy))+3) then
+
+if (associated(SghC1)) write (*,*) 'SghC1', shape(SghC1)
+if (associated(SghC2)) write (*,*) 'SghC2', shape(SghC2)
+if (associated(ARC1)) write (*,*) 'ARC1', shape(ARC1)
+if (associated(ARC2)) write (*,*) 'ARC2', shape(ARC2)
+if (associated(ARsumC1)) write (*,*) 'ARsumC1', shape(ARsumC1)
+if (associated(ARsumC2)) write (*,*) 'ARsumC2', shape(ARsumC2)
+if (associated(OFC1)) write (*,*) 'OFC1', shape(OFC1)
+if (associated(OFC2)) write (*,*) 'OFC2', shape(OFC2)
+if (associated(NSC1)) write (*,*) 'NSC1', shape(NSC1)
+if (associated(NSC2)) write (*,*) 'NSC2', shape(NSC2)
+if (associated(AC1)) write (*,*) 'AC1', shape(AC1)
+if (associated(AC2)) write (*,*) 'AC2', shape(AC2)
+if (associated(LghC2)) write (*,*) 'LghC2', shape(LghC2)
+if (associated(LghC3)) write (*,*) 'LghC3', shape(LghC3)
+if (associated(ARC3)) write (*,*) 'ARC3', shape(ARC3)
+if (associated(OFC3)) write (*,*) 'OFC3', shape(OFC3)
+
+! manage the section pointers to the Sgh, Lgh, and A arrays 
+            if (mod(ii,3).eq.1) then 
+              write (*,*) ' ii mod 3 = 1'
+              SghC1 => Sgh1
+              SghC2 => Sgh3
+              ARC1 => arrsize1
+              ARsumC1 => arrsizesum1
+              OFC1 => offset1
+              NSC1 => ns1
+              ARC2 => arrsize3
+              ARsumC2 => arrsizesum3
+              OFC2 => offset3
+              NSC2 => ns3
+              AC1 => A1
+              AC2 => A3
+              LghC2 => Lgh3
+              LghC3 => Lgh2
+              ARC3 => arrsize2
+              OFC3 => offset2
+            end if 
+            if (mod(ii,3).eq.2) then 
+              write (*,*) ' ii mod 3 = 2'
+              SghC2 => Sgh1
+              SghC1 => Sgh2
+              ARC2 => arrsize1
+              ARsumC2 => arrsizesum1
+              OFC2 => offset1
+              NSC2 => ns1
+              ARC1 => arrsize2
+              ARsumC1 => arrsizesum2
+              OFC1 => offset2
+              NSC1 => ns2
+              AC2 => A1
+              AC1 => A2
+              LghC2 => Lgh1
+              LghC3 => Lgh3
+              ARC3 => arrsize3
+              OFC3 => offset3
+            end if 
+            if (mod(ii,3).eq.0) then 
+              write (*,*) ' ii mod 3 = 0'
+              SghC2 => Sgh2
+              SghC1 => Sgh3
+              ARC2 => arrsize2
+              ARsumC2 => arrsizesum2
+              OFC2 => offset2
+              NSC2 => ns2
+              ARC1 => arrsize3
+              ARsumC1 => arrsizesum3
+              OFC1 => offset3
+              NSC1 => ns3
+              AC1 => A3
+              AC2 => A2
+              LghC2 => Lgh2
+              LghC3 => Lgh1
+              ARC3 => arrsize1
+              OFC3 => offset1
+            end if 
+write (*,*) 'shapes after re-assignments :'
+if (associated(SghC1)) write (*,*) 'SghC1', shape(SghC1)
+if (associated(SghC2)) write (*,*) 'SghC2', shape(SghC2)
+if (associated(ARC1)) write (*,*) 'ARC1', shape(ARC1)
+if (associated(ARC2)) write (*,*) 'ARC2', shape(ARC2)
+if (associated(ARsumC1)) write (*,*) 'ARsumC1', shape(ARsumC1)
+if (associated(ARsumC2)) write (*,*) 'ARsumC2', shape(ARsumC2)
+if (associated(OFC1)) write (*,*) 'OFC1', shape(OFC1)
+if (associated(OFC2)) write (*,*) 'OFC2', shape(OFC2)
+if (associated(NSC1)) write (*,*) 'NSC1', shape(NSC1)
+if (associated(NSC2)) write (*,*) 'NSC2', shape(NSC2)
+if (associated(AC1)) write (*,*) 'AC1', shape(AC1)
+if (associated(AC2)) write (*,*) 'AC2', shape(AC2)
+if (associated(LghC2)) write (*,*) 'LghC2', shape(LghC2)
+if (associated(LghC3)) write (*,*) 'LghC3', shape(LghC3)
+if (associated(ARC3)) write (*,*) 'ARC3', shape(ARC3)
+if (associated(OFC3)) write (*,*) 'OFC3', shape(OFC3)
 
 ! set the number of OpenMP threads 
             call OMP_SET_NUM_THREADS(emnl%nthreads)
@@ -835,17 +951,28 @@ energyloop: do iE = Estart,1,-1
                 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
             end if
 
+
+            call OMP_SET_NESTED(.TRUE.)
+
+! we do the prep-work first as a separate parallel region
 ! changed OMP section to default(shared) since it is easier to then identify the private variables
-!$OMP PARALLEL DEFAULT(SHARED) COPYIN(rlp) &
+!$OMP PARALLEL NUM_THREADS(3) DEFAULT(SHARED)  &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
 !$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat)
 
             NUMTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
 
-! if (TID.eq.0) write (*,*) ' initializing reflection lists and Bethe potentials'
+!$OMP SECTIONS
+!$OMP SECTION     ! section 1 computes the dynamical matrices
 
-!$OMP DO SCHEDULE(DYNAMIC)    
+if (ii.lt.floor(float(numk)/float(npx*npy))+1) then 
+
+write (*,*) 'inside section 1 ', TID
+
+!$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads1) DEFAULT(SHARED) &
+!$OMP& PRIVATE(kk, k, FN, reflist, firstw, nref, nns, nnw)
+
             do kk = 1,npx*npy
                 k = klist(1:3,(ii-1)*npx*npy+kk)
                 FN = k
@@ -854,34 +981,32 @@ energyloop: do iE = Estart,1,-1
 
 ! determine strong and weak reflections
                 call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
-                arrsize(kk) = nns
+                ARC1(kk) = nns
                     
-            end do
-!$OMP END DO
-
-! if (TID.eq.0) write (*,*) ' initializing SghCumulative and A arrays '
-!$OMP MASTER
-            if (allocated(SghCumulative)) deallocate(SghCumulative)
-            if (allocated(A)) deallocate(A)
-
-            do kk = 1,npx*npy
                 if (kk .lt. npx*npy) then
-                    arrsizesum(kk+1) = sum(arrsize(1:kk))
-                    offset(kk+1) = sum(arrsize(1:kk)**2)
+                    ARsumC1(kk+1) = sum(ARC1(1:kk))
+                    OFC1(kk+1) = sum(ARC1(1:kk)**2)
                 end if
             end do
 
-            allocate(SghCumulative(1:offset(npx*npy)+arrsize(npx*npy)**2,numsites),&
-            A(1:offset(npx*npy)+arrsize(npx*npy)**2),stat=istat)
-!$OMP END MASTER
-!$OMP BARRIER
+!$OMP END PARALLEL DO
 
-! if (TID.eq.0) write (*,*) ' initializing DynMat arrays '
+            if (allocated(Sgh1)) deallocate(Sgh1)
+            if (allocated(A1)) deallocate(A1)
+            ! if (allocated(SghC1)) deallocate(SghC1)
+            ! if (allocated(AC1)) deallocate(AC1)
 
-!$OMP DO SCHEDULE(DYNAMIC)    
+            allocate(Sgh1(1:OFC1(npx*npy)+ARC1(npx*npy)**2,numsites),&
+                     A1(1:OFC1(npx*npy)+ARC1(npx*npy)**2),stat=istat)
+            write (*,*) 'allocated Sgh1 ', shape(Sgh1)
+            write (*,*) 'allocated A1', shape(A1)
+
+! then comes the parallel region that does the actual dynamical matrix computations
+!$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads1) DEFAULT(SHARED) COPYIN(rlp) &
+!$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
+!$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat)
 
             do kk = 1,npx*npy
-
                 k = klist(1:3,(ii-1)*npx*npy+kk)
                 FN = k
 
@@ -891,13 +1016,11 @@ energyloop: do iE = Estart,1,-1
                 call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
 
                 if (allocated(DynMat)) deallocate(DynMat)
-
                 allocate(DynMat(nns,nns),stat=istat)
 
                 call GetDynMat(cell, reflist, firstw, rlp, DynMat, nns, nnw)
                 
                 if (allocated(Sghtmp)) deallocate(Sghtmp)
-
                 allocate(Sghtmp(nns,nns,numsites))
 
                 Sghtmp = cmplx(0.D0,0.D0)
@@ -906,7 +1029,7 @@ energyloop: do iE = Estart,1,-1
                 do ss = 1,numsites
                     do pp = 1,nns
                         do qq = 1,nns
-                           SghCumulative(offset(kk)+(pp-1)*nns+qq,ss) = Sghtmp(pp,qq,ss)
+                           SghC1(OFC1(kk)+(pp-1)*nns+qq,ss) = Sghtmp(pp,qq,ss)
                         end do
                     end do
                 end do
@@ -916,31 +1039,40 @@ energyloop: do iE = Estart,1,-1
 
                 absmax = maxval(abs(DynMat))
                 e = ceiling(log(absmax)/log(2.0))
-                ns(kk) = e+1
+                NSC1(kk) = e+1
 
-                if (ns(kk) .le. 0) then
-                    ns(kk) = 1
+                if (NSC1(kk) .le. 0) then
+                    NSC1(kk) = 1
                 else
-                    DynMat = DynMat/2**ns(kk)
+                    DynMat = DynMat/2**NSC1(kk)
                 end if
 
                 do pp = 1,nns
                     do qq = 1,nns
-                        A(offset(kk)+(pp-1)*nns+qq) = DynMat(pp,qq)
+                        AC1(OFC1(kk)+(pp-1)*nns+qq) = DynMat(pp,qq)
                     end do
                 end do
 
             end do
+!$OMP END PARALLEL DO
+write (*,*) ' end section 1'
+end if 
 
-!!$OMP END DO
-!$OMP END PARALLEL
+
+!$OMP SECTION  ! this single thread section (2) controls the GPU
+
+if ((ii.gt.1).and.(ii.lt.floor(float(numk)/float(npx*npy))+2)) then 
+write (*,*) 'inside section 2 ', TID
 
 ! allocate device memory
-            size_in_bytes = (offset(npx*npy)+arrsize(npx*npy)**2)*sizeof(A(1))
-            size_in_bytes_wavefn = (arrsizesum(npx*npy)+arrsize(npx*npy))*sizeof(A(1))
+            size_in_bytes = (OFC2(npx*npy)+ARC2(npx*npy)**2)*sizeof(AC2(1))
+            size_in_bytes_wavefn = (ARsumC2(npx*npy)+ARC2(npx*npy))*sizeof(AC2(1))
 
-            if (allocated(LghCumulative)) deallocate(LghCumulative)
-            allocate(LghCumulative(1:offset(npx*npy)+arrsize(npx*npy)**2),stat=istat)
+write (*,*) 'size_in_bytes = ', size_in_bytes 
+write (*,*) 'size_in_bytes_wavefn = ', size_in_bytes_wavefn 
+
+            if (associated(LghC2)) deallocate(LghC2)
+            allocate(LghC2(1:OFC2(npx*npy)+ARC2(npx*npy)**2),stat=istat)
 
             cl_expA = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes, C_NULL_PTR, ierr)
             call CLerror_check('EBSDmasterpatternOpenCL:clCreateBuffer:expA', ierr)
@@ -986,23 +1118,23 @@ energyloop: do iE = Estart,1,-1
 
 ! write list of initial arrays to buffer
 
-            ierr = clEnqueueWriteBuffer(command_queue, cl_Amat, CL_TRUE, 0_8, size_in_bytes, C_LOC(A(1)), &
+            ierr = clEnqueueWriteBuffer(command_queue, cl_Amat, CL_TRUE, 0_8, size_in_bytes, C_LOC(AC2(1)), &
                                         0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:Amat', ierr)
 
-            ierr = clEnqueueWriteBuffer(command_queue, cl_arrsize, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(arrsize(1)), &
+            ierr = clEnqueueWriteBuffer(command_queue, cl_arrsize, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(ARC2(1)), &
                                          0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:arrsize', ierr)
 
-            ierr = clEnqueueWriteBuffer(command_queue, cl_offset, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(offset(1)), &
+            ierr = clEnqueueWriteBuffer(command_queue, cl_offset, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(OFC2(1)), &
                                          0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:offset', ierr)
 
             ierr = clEnqueueWriteBuffer(command_queue, cl_arrsizesum, CL_TRUE, 0_8, size_in_bytes_dynmatsz, &
-                                         C_LOC(arrsizesum(1)),  0, C_NULL_PTR, C_NULL_PTR)
+                                         C_LOC(ARsumC2(1)),  0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:arrsizesum', ierr)
 
-            ierr = clEnqueueWriteBuffer(command_queue, cl_sqrsize, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(ns(1)), &
+            ierr = clEnqueueWriteBuffer(command_queue, cl_sqrsize, CL_TRUE, 0_8, size_in_bytes_dynmatsz, C_LOC(NSC2(1)), &
                                          0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:sqrsize', ierr)
 
@@ -1015,7 +1147,6 @@ energyloop: do iE = Estart,1,-1
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueWriteBuffer:lambdas', ierr)
 
 ! set kernel arguments
-
 
             ierr = clSetKernelArg(kernel, 0, sizeof(cl_expA), C_LOC(cl_expA))
             call CLerror_check('EBSDmasterpatternOpenCL:clSetKernelArg:expA', ierr)
@@ -1063,7 +1194,6 @@ energyloop: do iE = Estart,1,-1
             call CLerror_check('EBSDmasterpatternOpenCL:clSetKernelArg:lambdas', ierr)
 
 !execute the kernel
-! write (*,*) ' Executing OpenCL kernel '
             ierr = clEnqueueNDRangeKernel(command_queue, kernel, 2, C_NULL_PTR, C_LOC(globalsize), C_LOC(localsize),&
                                         0, C_NULL_PTR, C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueNDRangeKernel', ierr)
@@ -1073,54 +1203,11 @@ energyloop: do iE = Estart,1,-1
             call CLerror_check('EBSDmasterpatternOpenCL:clFinish', ierr)
 
 ! read the resulting vector from device memory
-            ierr = clEnqueueReadBuffer(command_queue, cl_T1, CL_TRUE, 0_8, size_in_bytes, C_LOC(LghCumulative(1)),&
+            ierr = clEnqueueReadBuffer(command_queue, cl_T1, CL_TRUE, 0_8, size_in_bytes, C_LOC(LghC2(1)),&
                                         0,C_NULL_PTR,C_NULL_PTR)
             call CLerror_check('EBSDmasterpatternOpenCL:clEnqueueReadBuffer:LghCumulative', ierr)
 
-! divide by integration depth explicitly (OpenCL kernel giving some problems)
-            LghCumulative = LghCumulative/float(izz-1)
-
-! write (*,*) ' Copying intensitites into master pattern arrays '
-            do pp = 1,npx*npy
-                ipx = kij(1,(ii-1)*npx*npy+pp)
-                ipy = kij(2,(ii-1)*npx*npy+pp)
-                ipz = kij(3,(ii-1)*npx*npy+pp)
-                size1 = arrsize(pp)
-                size2 = offset(pp)
-                do kk = 1,numset
-                    svals(kk) = real(sum(SghCumulative(size2+1:size2+size1**2,kk)*&
-                                      LghCumulative(size2+1:size2+size1**2)))
-                end do
-! apply 3d point group symmetry
-                if (usehex) then 
-                    call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv,usehex)
-                else
-
-                    if ((cell%SYM_SGnum.ge.195).and.(cell%SYM_SGnum.le.230)) then
-                        call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv,cubictype=SamplingType)
-                    else
-                        call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv)
-                    end if
-                end if
-
-! $OMP CRITICAL
-                if (emnl%combinesites.eqv..FALSE.) then
-                   do ix=1,nequiv
-                     if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
-                     if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
-                   end do
-                else
-                   do ix=1,nequiv
-                     if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
-                     if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
-                   end do
-                end if
-! $OMP END CRITICAL
-
-            end do
-
-            write(6,'(A,I8,A)') 'Completed ',(ii*npx*npy),' beams.'
-
+! and release the memory objects (they might have different sizes the next time around)
             ierr = clReleaseMemObject(cl_expA)
             call CLerror_check('EBSDmasterpatternOpenCL:clReleaseMemObject:expA', ierr)
 
@@ -1159,6 +1246,70 @@ energyloop: do iE = Estart,1,-1
 
             ierr = clReleaseMemObject(cl_lambdas)
             call CLerror_check('EBSDmasterpatternOpenCL:clReleaseMemObject:lambdas', ierr)
+
+! divide by integration depth explicitly (OpenCL kernel giving some problems)
+            LghC2 = LghC2/float(izz-1)
+
+end if 
+write (*,*) ' end section 2'
+
+!$OMP SECTION  ! this section (3) handles the copying of results into the master pattern using symmetry
+
+if ((ii.gt.2).and.(ii.lt.floor(float(numk)/float(npx*npy))+3)) then 
+
+write (*,*) 'inside section 3 ', TID
+
+!$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads2) DEFAULT(SHARED) &
+!$OMP PRIVATE(pp, ipx, ipy, ipz, size1, size2, kk, svals, iequiv, nequiv)
+
+            do pp = 1,npx*npy
+                ipx = kij(1,(ii-1)*npx*npy+pp)
+                ipy = kij(2,(ii-1)*npx*npy+pp)
+                ipz = kij(3,(ii-1)*npx*npy+pp)
+                size1 = ARC3(pp)
+                size2 = OFC3(pp)
+                do kk = 1,numset
+                    svals(kk) = real(sum(SghC3(size2+1:size2+size1**2,kk)*&
+                                      LghC3(size2+1:size2+size1**2)))
+                end do
+
+! apply 3d point group symmetry
+                if (usehex) then 
+                    call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv,usehex)
+                else
+
+                    if ((cell%SYM_SGnum.ge.195).and.(cell%SYM_SGnum.le.230)) then
+                        call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv,cubictype=SamplingType)
+                    else
+                        call Apply3DPGSymmetry(cell,ipx,ipy,ipz,emnl%npx,iequiv,nequiv)
+                    end if
+                end if
+
+!$OMP CRITICAL
+                if (emnl%combinesites.eqv..FALSE.) then
+                   do ix=1,nequiv
+                     if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
+                     if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
+                   end do
+                else
+                   do ix=1,nequiv
+                     if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
+                     if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
+                   end do
+                end if
+!$OMP END CRITICAL
+            end do
+!$OMP END PARALLEL DO
+
+end if 
+write (*,*) ' end section 3'
+
+!$OMP END SECTIONS NOWAIT
+!$OMP BARRIER
+!$OMP END PARALLEL
+
+            write(6,'(A,I8,A)') 'Completed ',(ii*npx*npy),' beams using nested parallellism.'
+
 
         else if (ii .eq. ceiling(float(numk)/float(npx*npy))) then
             write(6,'(A,I8,A)')'Performing computation of last ',MODULO(numk,npx*npy),' beam directions on the CPU'
@@ -1381,14 +1532,14 @@ dataset = SC_mLPSH
 dataset = SC_masterSPNH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
-  offset3 = (/ 0, 0, iE-1 /)
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
+  offfset3 = (/ 0, 0, iE-1 /)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offfset3, cnt3, HDF_head, insert)
 
 dataset = SC_masterSPSH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
-  offset3 = (/ 0, 0, iE-1 /)
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
+  offfset3 = (/ 0, 0, iE-1 /)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offfset3, cnt3, HDF_head, insert)
 
   call HDF_pop(HDF_head,.TRUE.)
 
