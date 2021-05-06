@@ -110,12 +110,16 @@ function(Add_EMsoft_Executable)
     target_link_options(${Z_TARGET} PUBLIC $<$<CONFIG:Release>:LINKER:-no_compact_unwind>)
   endif()
 
-  # if(WIN32)
-  #   set_target_properties(${Z_TARGET} PROPERTIES 
-  #     LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcmrt.lib /NODEFAULTLIB:msvcurt.lib /NODEFAULTLIB:msvcrtd.lib"
-  #     CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1 /MTd"
-  #     )
-  # endif()
+  if(WIN32)
+    # Fortran Compile Options for the target
+    target_compile_options(${Z_TARGET} PUBLIC 
+      $<$<COMPILE_LANGUAGE:Fortran>:/assume:byterecl>
+      $<$<COMPILE_LANGUAGE:Fortran>:/Qopenmp>
+      $<$<COMPILE_LANGUAGE:Fortran>:/Qdiag-disable:11082>
+      $<$<COMPILE_LANGUAGE:Fortran>:/Qdiag-disable:7025>
+      $<$<COMPILE_LANGUAGE:Fortran>:/Qip>
+      )
+  endif()
 endfunction()
 
 # --------------------------------------------------------------------------
@@ -152,9 +156,10 @@ function(AddEMsoftUnitTest)
     )
 
     add_library(${Z_TARGET}Lib STATIC "${Z_SOURCES}")
-    set_target_properties (${Z_TARGET}Lib PROPERTIES LINKER_LANGUAGE Fortran)
+    set_target_properties(${Z_TARGET}Lib PROPERTIES LINKER_LANGUAGE Fortran)
     target_link_libraries(${Z_TARGET}Lib ${Z_LINK_LIBRARIES})
-    set_target_properties( ${Z_TARGET}Lib PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+
+    set_target_properties(${Z_TARGET}Lib PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
     target_include_directories(${Z_TARGET}Lib PUBLIC ${Z_INCLUDE_DIRS})
 
     add_executable( ${Z_TARGET} "${TEST_SOURCE_FILE}")
@@ -166,9 +171,9 @@ function(AddEMsoftUnitTest)
     endif()
     
     if(WIN32)
-      set_target_properties(${Z_TARGET} PROPERTIES 
+      set_target_properties(${Z_TARGET}Lib PROPERTIES 
           LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcmrt.lib /NODEFAULTLIB:msvcurt.lib /NODEFAULTLIB:msvcrtd.lib"
-          CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1 /MTd"
+          CMAKE_CXX_FLAGS_DEBUG "/D_DEBUG /MDd /Zi /Ob0 /Od /RTC1"
           )
     endif()
     add_test(${Z_TARGET} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${Z_TARGET})
