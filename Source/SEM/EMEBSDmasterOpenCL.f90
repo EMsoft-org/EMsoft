@@ -50,12 +50,16 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use io
+use error
 use stringconstants
 
 IMPLICIT NONE
 
 character(fnlen)                                :: nmldeffile, progname, progdesc
 type(EBSDMasterOpenCLNameListType)              :: emnl
+
+integer(kind=irg)                               :: N
+real(kind=sgl)                                  :: Nf
 
 nmldeffile = 'EMEBSDmasterOpenCL.nml'
 progname = 'EMEBSDmasterOpenCL.f90'
@@ -69,6 +73,18 @@ call Interpret_Program_Arguments(nmldeffile,2,(/ 0, 28 /), progname)
 
 ! deal with the namelist stuff
 call GetEBSDMasterOpenCLNameList(nmldeffile,emnl)
+
+! make sure there are at least 7 OpenMP threads
+if (emnl%nthreads.lt.7) then 
+  call FatalError('EMEBSDmasterOpenCL','This program requires a minimum of 7 threads !!!')
+end if 
+
+! next make sure that the number of threads is of the form 4N+3 
+Nf = (float(emnl%nthreads)-3.0)/4.0
+if ((Nf-int(Nf)).ne.0.0) then 
+  call FatalError('EMEBSDmasterOpenCL','nthreads must be of the form 4N+3 with N integer > 0 !!!')
+end if 
+
 
 ! perform the zone axis computations
 call EBSDmasterpatternOpenCL(emnl, progname, nmldeffile)
@@ -861,11 +877,14 @@ energyloop: do iE = Estart,1,-1
                 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
             end if
 
-
+! This program uses nested OpenMP directives
             call OMP_SET_NESTED(.TRUE.)
 
-! we do the prep-work first as a separate parallel region
-! changed OMP section to default(shared) since it is easier to then identify the private variables
+! this is the main parallel portion of the program; it will be split into 3 separate 
+! OpenMP sections, one to pre-compute the dynamical matrices, one to control the GPU,
+! and one for the post-processing steps.  The total number of allocated threads should
+! be equal to 4N+3; 3N of those threads are assigned to section 1, and N to section 3.
+! Section 2 controls the GPU and does not require more than 1 thread. 
 !$OMP PARALLEL NUM_THREADS(3) DEFAULT(SHARED) COPYIN(rlp) &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
 !$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat, size_in_bytes, size_in_bytes_wavefn)
@@ -874,7 +893,10 @@ energyloop: do iE = Estart,1,-1
             TID = OMP_GET_THREAD_NUM()
 
 !$OMP SECTIONS
-!$OMP SECTION     ! section 1 computes the dynamical matrices
+!$OMP SECTION     
+!==========================================
+! section 1 computes the dynamical matrices
+!==========================================
 
 if (ii.lt.floor(float(numk)/float(npx*npy))+1) then 
 
@@ -898,6 +920,9 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
               NSC1 => ns3
             end if 
 
+! we'll sweep through a block of k-vectors to determine how large each
+! of the dynamical matrices will be; that then allows us to allocate arrays 
+! of the proper size.
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads1) DEFAULT(SHARED) &
 !$OMP& PRIVATE(kk, k, FN, reflist, firstw, nref, nns, nnw)
 
@@ -905,6 +930,7 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
                 k = klist(1:3,(ii-1)*npx*npy+kk)
                 FN = k
 
+! get the linked reflection list 
                 call Initialize_ReflectionList(cell, reflist, BetheParameters, FN, k, emnl%dmin, nref)
 
 ! determine strong and weak reflections
@@ -914,6 +940,7 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
 
 !$OMP END PARALLEL DO                    
 
+! compute the size and offest arrays
             do kk = 1,npx*npy
                 if (kk .lt. npx*npy) then
                     ARsumC1(kk+1) = sum(ARC1(1:kk))
@@ -921,8 +948,7 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
                 end if
             end do
 
-
-
+! manage pointers now that we know the array sizes needed
             if (mod(ii,3).eq.1) then 
               if (allocated(Sgh1)) deallocate(Sgh1)
               if (allocated(A1)) deallocate(A1)
@@ -948,7 +974,8 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
               AC1 => A3
             end if 
 
-! then comes the parallel region that does the actual dynamical matrix computations
+! then comes the parallel region that does the actual dynamical matrix computations;
+! it uses nthreads1 = N of the 4N+3 threads
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads1) DEFAULT(SHARED) COPYIN(rlp) &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
 !$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat)
@@ -1004,7 +1031,10 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
 end if 
 
 
-!$OMP SECTION  ! this single thread section (2) controls the GPU
+!$OMP SECTION  
+!==========================================
+! this single thread section (2) controls the GPU
+!==========================================
 
 if ((ii.gt.1).and.(ii.lt.floor(float(numk)/float(npx*npy))+2)) then 
 
@@ -1225,7 +1255,11 @@ if ((ii.gt.1).and.(ii.lt.floor(float(numk)/float(npx*npy))+2)) then
 
 end if 
 
-!$OMP SECTION  ! this section (3) handles the copying of results into the master pattern using symmetry
+
+!$OMP SECTION  
+!==========================================
+! this section (3) handles the copying of results into the master pattern using symmetry
+!==========================================
 
 if ((ii.gt.2).and.(ii.lt.floor(float(numk)/float(npx*npy))+3)) then 
 
@@ -1296,18 +1330,21 @@ end if
 !$OMP BARRIER
 !$OMP END PARALLEL
 
-            if (ii.ge.3) write(6,'(A,I8,A)') 'Completed ',((ii-2)*npx*npy),' beams.'
+! update the number of completed beam directions on the program output
+            if (ii.ge.3) write(6,'(A,I8,A)') 'Completed ',((ii-2)*npx*npy),' beam directions.'
 
-
+! we'll use the regular Bloch wave approach for the final block of beam directions;
+! this is unlikely to be a multiple of npx*npy.
         else if (ii .eq. ceiling(float(numk)/float(npx*npy))+3) then
             write(6,'(A,I8,A)')'Performing computation of last ',MODULO(numk,npx*npy),' beam directions on the CPU'
+
 ! set the number of OpenMP threads 
             call OMP_SET_NUM_THREADS(emnl%nthreads)
             call OMP_SET_NESTED(.FALSE.)
 
 ! old version used default(private) and had some issues with intensities being 
 ! placed incorrectly in the master pattern arrays; new version uses default(shared)
-!$OMP PARALLEL COPYIN(rlp) DEFAULT(SHARED) &
+!$OMP PARALLEL COPYIN(rlp) DEFAULT(SHARED) NUM_THREADS(emnl%nthreads) &
 !$OMP& PRIVATE(NUMTHREADS, TID, jj, k, FN, reflist, nref, firstw, nns, nnw, DynMat, istat) &
 !$OMP& PRIVATE(Lgh, Sghtmp, kn, kk, svals, ipx, ipy, ipz, iequiv, nequiv, ix)
 
