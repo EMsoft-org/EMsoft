@@ -63,10 +63,6 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/Test
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                                     ${EMsoft_SOURCE_DIR}/Source/Test)
-    if(MSVC)
-        target_compile_options( ${test}Test PRIVATE "/MT$<$<CONFIG:Debug>:d>")
-        target_link_options(${test}Test PRIVATE "/NODEFAULTLIB:MSVCRT")
-    endif()
   endforeach()
 
 endif()
