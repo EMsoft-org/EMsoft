@@ -703,6 +703,57 @@ character(2)             :: globalopt
 character(1)             :: single_opt
 end type EBSDDENameListType
 
+type HREBSDpreviewNameListType
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: nregionsmin
+integer(kind=irg)       :: nregionsmax
+integer(kind=irg)       :: nsteps
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: dimROI
+real(kind=sgl)          :: hipasswmax
+real(kind=sgl)          :: lowpasswmax
+character(fnlen)        :: patternfile
+character(fnlen)        :: tifffile
+character(fnlen)        :: xcffile
+character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+end type HREBSDpreviewNameListType
+
+type HREBSDNameListType
+integer(kind=irg)        :: numsx
+integer(kind=irg)        :: numsy
+integer(kind=irg)        :: ipf_wd
+integer(kind=irg)        :: ipf_ht
+integer(kind=irg)        :: nthreads
+integer(kind=irg)        :: N_ROI
+integer(kind=irg)        :: size_ROI
+integer(kind=irg)        :: roi_distance
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+
+real(kind=sgl)           :: delta
+real(kind=sgl)           :: totaltilt
+real(kind=sgl)           :: C11
+real(kind=sgl)           :: C12
+real(kind=sgl)           :: C44
+real(kind=sgl)           :: highpass
+real(kind=sgl)           :: lowpass
+real(kind=sgl)           :: PC(3)
+
+character(fnlen)         :: masterfile
+character(fnlen)         :: datafile
+character(fnlen)         :: exptfile
+character(fnlen)         :: reffile
+character(fnlen)         :: inputtype
+character(fnlen)         :: HDFstrings(10)
+character(1)             :: Remap
+end type HREBSDNameListType
+
 ! namelist for the EMEBSDdefect program
 type EBSDdefectNameListType
         integer(kind=irg)       :: stdout

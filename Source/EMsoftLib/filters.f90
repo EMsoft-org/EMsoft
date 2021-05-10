@@ -1279,4 +1279,201 @@ output = (output - mi)/(ma - mi)
 
 end subroutine InversionDivision
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: HannWindow
+!
+!> @author Chaoyi Zhu, Carnegie Mellon University
+!
+!> @brief Hann windowing function for pattern region of interest
+!
+!> @param roi_size: size of the ROI
+! 
+!> @date 03/18/2021 CZ 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine HannWindow(roi_size, window)
+!DEC$ ATTRIBUTES DLLEXPORT :: HannWindow
+
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)           :: roi_size
+real(kind=sgl),INTENT(INOUT)           :: window(roi_size, roi_size)
+integer(kind=irg)                      :: i, j
+
+do i=1,roi_size
+    do j=1,roi_size
+        window(i,j)=cos((cPi*(i-roi_size/2)/roi_size))*cos((cPi*(roi_size/2-j)/roi_size))      
+    end do
+end do
+end subroutine HannWindow
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: init_BandPassFilter
+!
+!> @author Chaoyi Zhu, Carnegie Mellon University
+!
+!> @brief  Initialize high pass filter and low pass filter with predefined cut-off frequencies
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param high_pass cut-off frequency for high pass filter
+!> @param low_pass cut-off frequency for low pass filter
+! 
+!> @date 03/18/21 CZ 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine init_BandPassFilter(dims, high_pass, low_pass, hpmask_shifted, &
+lpmask_shifted, inp, outp, planf, planb) 
+!DEC$ ATTRIBUTES DLLEXPORT :: init_BandPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+real(kind=sgl),INTENT(IN)               :: high_pass, low_pass
+integer(kind=irg),INTENT(IN)            :: dims(2)
+real(kind=sgl),INTENT(INOUT)            :: hpmask_shifted(dims(1),dims(2)), lpmask_shifted(dims(1),dims(2))
+!f2py intent(in,out) ::  hpmask_shifted, lpmask_shifted
+complex(C_DOUBLE_COMPLEX),pointer,INTENT(INOUT) :: inp(:,:), outp(:,:)
+!f2py intent(in,out) ::  inp, outp
+type(C_PTR),INTENT(INOUT)               :: planf, planb
+!f2py intent(in,out) ::  planf, planb
+
+integer(kind=irg)                       :: i, j
+real(kind=sgl)                          :: grid(dims(1))
+real(kind=sgl),dimension(dims(1),dims(2))    :: X_grid, Y_grid, D
+complex(kind=sgl)                       :: val
+real(kind=sgl)                          :: hpmask(dims(1),dims(2)), lpmask(dims(1),dims(2))
+
+! generate the meshgrid in the frequency space
+grid(1:dims(1))=(/(-1.0 + (i-1)*(2.0/(dims(1)-1)), i=1,dims(1))/)
+call meshgrid2d(grid, grid, X_grid, Y_grid)
+
+! distance from the zero frequency to a cut-off frequency
+do i=1,dims(1)
+  do j=1,dims(2)
+    D(i,j)=0.5*sqrt(X_grid(i,j)**2+Y_grid(i,j)**2)
+  end do
+end do
+! generate the mask for high pass filter
+do i = 1,dims(1)
+  do j = 1,dims(2)
+    if (abs(D(i,j)).ge.high_pass+high_pass/4) then
+      hpmask(i,j) = 1.0
+    else if ((abs(D(i,j)).ge.high_pass-high_pass/4).AND.(abs(D(i,j)).le.high_pass+high_pass/4)) then
+      hpmask(i,j) = (abs(D(i,j))-(high_pass-high_pass/4))/(high_pass/2)
+    else
+      hpmask(i,j) = 0.0
+    end if
+  end do
+end do
+
+hpmask_shifted = 0.0
+call ifftshift(dims, hpmask, hpmask_shifted)
+
+! generate the mask for low pass filter
+do i = 1,dims(1)
+  do j = 1,dims(2)
+    if (abs(D(i,j)).le.low_pass-low_pass/4) then
+      lpmask(i,j) = 1.0
+    else if ((abs(D(i,j)).ge.low_pass-low_pass/4).AND.(abs(D(i,j)).le.low_pass+low_pass/4)) then
+      lpmask(i,j) = 1.0-(abs(D(i,j))-(low_pass-low_pass/4))/(low_pass/2)
+    else
+      lpmask(i,j) = 0.0
+    end if
+  end do
+end do
+
+lpmask_shifted = 0.0
+call ifftshift(dims, lpmask, lpmask_shifted)
+
+! then we set up the fftw plans for forward and reverse transforms
+planf = fftw_plan_dft_2d(dims(2), dims(1), inp, outp, FFTW_FORWARD, FFTW_ESTIMATE)
+planb = fftw_plan_dft_2d(dims(2), dims(1), inp, outp, FFTW_BACKWARD, FFTW_ESTIMATE)
+
+end subroutine init_BandPassFilter
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: applyBandPassFilter
+!
+!> @author Chaoyi Zhu, Carnegie Mellon University
+!
+!> @brief  Apply high pass filter and low pass filter with predefined cut-off frequencies
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+! 
+!> @date 03/18/21 CZ 1.0 original
+!--------------------------------------------------------------------------
+recursive function applyBandPassFilter(rdata, dims, hpmask, lpmask, inp, outp, planf, planb) result(fdata)
+!DEC$ ATTRIBUTES DLLEXPORT :: applyBandPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: dims(2)
+real(kind=dbl),INTENT(IN)               :: rdata(dims(1),dims(2)), lpmask(dims(1),dims(2)), hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),pointer,INTENT(INOUT) :: inp(:,:), outp(:,:)
+!f2py intent(in,out) ::  inp, outp
+type(C_PTR),INTENT(IN)                  :: planf, planb
+real(kind=dbl)                          :: fdata(dims(1),dims(2))
+integer(kind=irg)                       :: j, k
+complex(kind=dbl)                       :: hpmask_complex(dims(1),dims(2)), lpmask_complex(dims(1),dims(2))
+
+! apply the hi-pass mask to rdata
+do j=1,dims(1)
+ do k=1,dims(2)
+  inp(j,k) = cmplx(rdata(j,k),0.D0)    
+  hpmask_complex(j,k) = cmplx(hpmask(j,k),0.D0)    
+  lpmask_complex(j,k) = cmplx(lpmask(j,k),0.D0) 
+ end do
+end do
+
+call fftw_execute_dft(planf, inp, outp)
+inp = outp * hpmask * lpmask
+
+call fftw_execute_dft(planb, inp, outp) 
+fdata(1:dims(1),1:dims(2)) = real(outp)
+
+
+end function applyBandPassFilter
+
+
+subroutine meshgrid2d(xgv, ygv, X, Y)
+  implicit none
+  real(kind=sgl),intent(in)   :: xgv(:), ygv(:)
+  real(kind=sgl),intent(out)  :: X(:,:), Y(:,:)
+  integer(kind=irg)           :: sX, sY, i
+
+  sX = size(xgv) 
+  sY = size(ygv) 
+  X(:,:) = spread( xgv, 1, sY )
+  Y(:,:) = spread( ygv, 2, sX )
+end subroutine 
+
+subroutine ifftshift(dims, X, Y)
+  implicit none
+  integer(kind=irg),intent(in)                    :: dims(2)
+  real(kind=sgl),intent(in)                       :: X(dims(1),dims(2))
+  real(kind=sgl),intent(out)                      :: Y(dims(1),dims(2))
+  ! shift the quadrants
+  if (mod(dims(1),2).eq.0) then
+    Y(dims(1)/2+1:dims(1),1:dims(2)/2)=X(1:dims(1)/2,dims(2)/2+1:dims(2))
+    Y(1:dims(1)/2,dims(2)/2+1:dims(2))=X(dims(1)/2+1:dims(1),1:dims(2)/2)
+    Y(1:dims(1)/2,1:dims(2)/2)=X(dims(1)/2+1:dims(1),dims(2)/2+1:dims(2))
+    Y(dims(1)/2+1:dims(1),dims(2)/2+1:dims(2))=X(1:dims(1)/2,1:dims(2)/2)
+  else
+    Y(dims(1)/2+2:dims(1),1:dims(2)/2)=X(1:dims(1)/2,dims(2)/2+2:dims(2))
+    Y(1:dims(1)/2,dims(2)/2+2:dims(2))=X(dims(1)/2+2:dims(1),1:dims(2)/2)
+    Y(1:dims(1)/2,1:dims(2)/2)=X(dims(1)/2+1:dims(1),dims(2)/2+1:dims(2))
+    Y(dims(1)/2+2:dims(1),dims(2)/2+2:dims(2))=X(1:dims(1)/2,1:dims(2)/2)
+  endif
+end subroutine 
+
 end module filters
