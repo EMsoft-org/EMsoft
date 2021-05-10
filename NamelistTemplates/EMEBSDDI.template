@@ -154,7 +154,8 @@
 !###################################################################
 ! SYSTEM PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
-!
+! THE FOLLOWING TWO PARAMETERS MUST BE SET TO THE SAME VALUE TO AVOID POTENTIAL ISSUES WITH THE GPU COMPUTATION 
+! THEY WILL BE REPLACED BY A SINGLE PARAMETER IN A FUTURE RELEASE
 ! number of dictionary files arranged in column for dot product on GPU (multiples of 16 perform better)
  numdictsingle = 1024,
 ! number of experimental files arranged in column for dot product on GPU (multiples of 16 perform better)

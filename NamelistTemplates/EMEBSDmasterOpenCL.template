@@ -24,11 +24,15 @@
  globalworkgrpsz = 150,
 ! block size ... k-vector space is sampled in blocks of size blocksize x blocksize 
 ! must be a power of 2
- blocksize = 64,
+ blocksize = 32,
 ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)
  uniform = .FALSE.,
-! number of OpenMP threads
- nthreads = 2
+! number of OpenMP threads; this number must be a multiple of 4 + 3, i.e., 4N+3  
+! the program uses 3 threads to set up nested OpenMP sections, one for pre-processing, one 
+! for the GPU, and one to do the post-processing; the pre-processing section is allocated 3N
+! threads, the post-processing section has N threads. Hence this program requires a minimum of 
+! 7 threads.
+ nthreads = 7,
  /
