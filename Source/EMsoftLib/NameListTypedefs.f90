@@ -687,6 +687,7 @@ integer(kind=irg)        :: strategy
 integer(kind=irg)        :: refresh
 integer(kind=irg)        :: iwrite
 integer(kind=irg)        :: method(3)
+integer(kind=irg)        :: GrainID
 real(kind=sgl)           :: VTR 
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
@@ -701,6 +702,7 @@ character(fnlen)         :: outputfile
 character(1)             :: hybrid
 character(2)             :: globalopt
 character(1)             :: single_opt
+character(1)             :: single_grain
 end type EBSDDENameListType
 
 type HREBSDpreviewNameListType

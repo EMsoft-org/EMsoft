@@ -4788,8 +4788,8 @@ reffile = 'undefined'
 inputtype = 'Binary'
 HDFstrings = ''
 Remap = 'n'
-highpass = 0.02
-lowpass = 0.15
+highpass = 0.05
+lowpass = 0.3
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4843,6 +4843,8 @@ HREBSD%reffile = reffile
 HREBSD%inputtype = inputtype 
 HREBSD%HDFstrings = HDFstrings
 HREBSD%Remap = Remap
+HREBSD%highpass=highpass
+HREBSD%lowpass=lowpass
 HREBSD%PC = PC
 end subroutine GetHREBSDNameList
 
@@ -4883,6 +4885,7 @@ integer(kind=irg)        :: strategy
 integer(kind=irg)        :: refresh
 integer(kind=irg)        :: iwrite
 integer(kind=irg)        :: method(3)
+integer(kind=irg)        :: GrainID
 real(kind=sgl)           :: VTR 
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
@@ -4894,9 +4897,10 @@ real(kind=sgl)           :: c1
 real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
-character(1)            :: hybrid
-character(2)            :: globalopt
+character(1)             :: hybrid
+character(2)             :: globalopt
 character(1)             :: single_opt
+character(1)             :: single_grain
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
@@ -4952,7 +4956,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe
+                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe, single_grain, GrainID
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4962,6 +4966,7 @@ strategy=2
 refresh=10
 iwrite=7
 method=(/0,1,1/)
+GrainID=1
 VTR= -1
 CR_XC=0.9
 F_XC=0.5
@@ -4974,6 +4979,7 @@ c2=2
 hybrid='n'
 globalopt='DE'
 single_opt='n'
+single_grain='n'
 objective=1
 outputfile='undefined'
 stdout          = 6
@@ -5062,6 +5068,7 @@ de%strategy=strategy
 de%refresh=refresh
 de%iwrite=iwrite
 de%method=method
+de%GrainID=GrainID
 de%VTR=VTR
 de%CR_XC=CR_XC
 de%F_XC=F_XC
@@ -5075,6 +5082,7 @@ de%hybrid=hybrid
 de%globalopt=globalopt
 de%objective=objective
 de%single_opt=single_opt
+de%single_grain=single_grain
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
