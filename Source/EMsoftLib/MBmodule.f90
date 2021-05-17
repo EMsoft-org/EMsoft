@@ -1288,6 +1288,226 @@ Lgh = matmul(tmp3,transpose(CGG))
 
 end subroutine CalcLgh
 
+! ###################################################################
+!
+! SUBROUTINE: CalcLgh_anisotropic
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the anisotropic Lgh matrix for EBSD, ECCI, ECP, etc simulations
+!
+!> @param DMat dynamical matrix
+!> @param Lgh output array
+!> @param thick integration thickness
+!> @param kn normal wave vector component
+!> @param chig anisotropy correction factors
+!> @param nn number of strong beams
+!> @param gzero index of incident beam
+!> @param depthstep depth step size
+!> @param lambdaE energy weight factors
+!> @param izz number of energy weight factors
+!
+!> @date 04/21/21  MDG 1.0 original, based on CalcLgh
+! ###################################################################
+recursive subroutine CalcLgh_anisotropic(DMat,Lgh,thick,kn,chig,nn,gzero,depthstep,lambdaE,izz)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcLgh_anisotropic
+
+use local
+use io
+use files
+use constants
+use error
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)        :: nn
+complex(kind=dbl),INTENT(IN)        :: DMat(nn,nn)
+complex(kind=dbl),INTENT(OUT)       :: Lgh(nn,nn)
+real(kind=dbl),INTENT(IN)           :: thick
+real(kind=dbl),INTENT(IN)           :: kn
+real(kind=dbl),INTENT(IN)           :: chig(nn)
+integer(kind=irg),INTENT(IN)        :: gzero
+real(kind=dbl),INTENT(IN)           :: depthstep
+integer(kind=irg),INTENT(IN)        :: izz
+real(kind=sgl),INTENT(IN)           :: lambdaE(izz)
+
+integer                             :: i,j,k, iz
+complex(kind=dbl)                   :: CGinv(nn,nn), Minp(nn,nn), tmp3(nn,nn)
+
+real(kind=dbl)                      :: tpi, dzt
+complex(kind=dbl)                   :: Ijk(nn,nn), q, getMIWORK(1), qold
+
+integer(kind=irg)                   :: INFO, LDA, LDVR, LDVL,  JPIV(nn), MILWORK
+complex(kind=dbl)                   :: CGG(nn,nn), W(nn)
+complex(kind=dbl),allocatable       :: MIWORK(:)
+
+integer(kind=irg),parameter         :: LWMAX = 5000 
+complex(kind=dbl)                   :: VL(nn,nn),  WORK(LWMAX)
+real(kind=dbl)                      :: RWORK(2*nn)
+character                           :: JOBVL, JOBVR
+integer(kind=sgl)                   :: LWORK
+
+! compute the eigenvalues and eigenvectors
+! using the LAPACK CGEEV, CGETRF, and CGETRI routines
+! 
+ Minp = DMat
+
+! set some initial LAPACK variables 
+ LDA = nn
+ LDVL = nn
+ LDVR = nn
+ INFO = 0
+
+ ! first initialize the parameters for the LAPACK ZGEEV, CGETRF, and CGETRI routines
+ JOBVL = 'N'   ! do not compute the left eigenvectors
+ JOBVR = 'V'   ! do compute the right eigenvectors
+ LWORK = -1 ! so that we can ask the routine for the actually needed value
+
+! call the routine to determine the optimal workspace size
+ LDA = nn
+  call zgeev(JOBVL,JOBVR,nn,Minp,LDA,W,VL,LDVL,CGG,LDVR,WORK,LWORK,RWORK,INFO)
+  LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
+
+! then call the eigenvalue solver
+  LDA = nn
+  call zgeev(JOBVL,JOBVR,nn,Minp,LDA,W,VL,LDVL,CGG,LDVR,WORK,LWORK,RWORK,INFO)
+  if (INFO.ne.0) call FatalError('Error in CalcLgh3: ','ZGEEV return not zero')
+
+ CGinv = CGG
+ 
+ LDA=nn
+ call zgetrf(nn,nn,CGinv,LDA,JPIV,INFO)
+ MILWORK = -1
+ LDA=nn
+ call zgetri(nn,CGinv,LDA,JPIV,getMIWORK,MILWORK,INFO)
+ MILWORK =  INT(real(getMIWORK(1)))
+ if (.not.allocated(MIWORK)) allocate(MIWORK(MILWORK))
+ MIWORK = cmplx(0.D0,0.D0)
+ LDA=nn
+ call zgetri(nn,CGinv,LDA,JPIV,MIWORK,MILWORK,INFO)
+ deallocate(MIWORK)
+
+! in all the time that we've used these routines, we haven't
+! had a single problem with the matrix inversion, so we don't
+! really need to do this test:
+!
+! if ((cabs(sum(matmul(CGG,CGinv)))-dble(nn)).gt.1.E-8) write (*,*) 'Error in matrix inversion; continuing'
+
+
+! then compute the integrated intensity matrix
+ W = W/cmplx(2.0*kn,0.0)
+
+! recall that alpha(1:nn) = CGinv(1:nn,gzero)
+
+! first the Ijk matrix (this is Winkelmann's B^{ij}(t) matrix)
+! combined with numerical integration over [0, z0] interval,
+! taking into account depth profiles from Monte Carlo simulations ...
+! the depth profile lambdaE must be added to the absorption 
+! components of the Bloch wave eigenvalues.
+! At this point we also include the anisotropic correct factors chig ... 
+
+tpi = 2.D0*cPi*depthstep
+dzt = depthstep/thick
+ do j=1,nn
+  do k=1,nn
+     q =  cmplx(0.D0,0.D0)
+     qold = cmplx(tpi*(aimag(W(j))+aimag(W(k))),tpi*(real(W(j))-real(W(k))))
+     if(real(qold) .lt. 0.0) qold = -qold
+     do iz = 1,izz
+       q = q + dble(lambdaE(iz)) * exp( - qold * dble(iz) ) 
+     end do
+     Ijk(j,k) = conjg(CGinv(j,gzero)) * q * CGinv(k,gzero)
+  end do
+ end do
+Ijk = Ijk * dzt
+
+do k=1,nn
+  CGG(:,k) = CGG(:,k) * chig(k)
+end do 
+
+! do j=1,nn
+!   CGG(j,:) = CGG(j,:) * chig(:)
+! end do 
+
+
+! then the matrix multiplications to obtain Lgh 
+tmp3 = matmul(conjg(CGG),Ijk) 
+Lgh = matmul(tmp3,transpose(CGG))
+
+end subroutine CalcLgh_anisotropic
+
+! ###################################################################
+!
+! SUBROUTINE: getChigCorrections
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the anisotropic correction factors for a particular beam direction
+!
+!> @param cell unit cell structure
+!> @param reflist linked list of reflections
+!> @param nns number of strong reflections
+!> @param ani anisotropic weighting parameters 
+!> @param dk kk - keffin 
+!> @param chig anisotropy correction factors
+!
+!> @date 04/21/21  MDG 1.0 original, based on Winkelmann paper
+! ###################################################################
+recursive subroutine getChigCorrections(cell, reflist, nn, ani, dk, qu, chig)
+!DEC$ ATTRIBUTES DLLEXPORT :: getChigCorrections
+
+use local
+use io
+use files
+use quaternions
+use constants
+use crystal
+use error
+
+IMPLICIT NONE
+
+type(unitcell),INTENT(IN)             :: cell
+type(reflisttype),INTENT(IN),pointer  :: reflist
+integer(kind=irg),INTENT(IN)          :: nn
+real(kind=dbl),INTENT(IN)             :: ani(2)
+real(kind=sgl),INTENT(IN)             :: dk(3)
+real(kind=sgl),INTENT(IN)             :: qu(4)
+real(kind=dbl),INTENT(OUT)            :: chig(nn)
+
+type(reflisttype),pointer             :: rltmp
+integer(kind=irg)                     :: i 
+real(kind=dbl)                        :: kdiff(3), kdp, hkl(3), s
+
+rltmp => reflist%next
+s = ani(2)**2
+chig(1) = 1.0
+do i=1,nn 
+  if (i.eq.1) then 
+    chig(i) = 1.D0
+  else
+    hkl = dble(quat_Lp(qu, float(rltmp%hkl)))
+    call TransSpace(cell, hkl, hkl, 'r', 'c')
+    hkl = hkl/sqrt(sum(hkl*hkl))
+    ! kdiff = dk + hkl
+    ! kdp = CalcDot(cell, kdiff, kdiff, 'c') / s
+    ! kdp = CalcDot(cell, dk, sngl(hkl), 'c')**2 / s
+    kdp = CalcDot(cell, dk, sngl(hkl), 'c') 
+    s = exp( - (kdp / ani(2))**2 )
+    ! chig(i) = 1.D0 + ani(1) * exp( - kdp )
+    if (kdp.gt.0) then 
+      chig(i) = 1.D0 - ani(1) * s 
+    else
+      chig(i) = 1.D0 + ani(1) * s 
+    end if 
+  end if
+  ! write(*,*) rltmp%hkl, hkl, kdp, s, chig(i) 
+  rltmp => rltmp%nexts 
+end do
+
+! stop
+
+end subroutine getChigCorrections
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE: GetDynMat

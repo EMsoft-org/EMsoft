@@ -3428,11 +3428,11 @@ namelist /EBSDmastervars/ stdout,dmin,npx,platid,devid,globalworkgrpsz,energyfil
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
 npx = 500                       ! Nx pixels (total = 2Nx+1)
-nthreads = 1
+nthreads = 7                    ! program requires at least 7 threads !
 platid = 1
 devid = 1
 globalworkgrpsz = 150
-blocksize = 64
+blocksize = 32
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 copyfromenergyfile = 'undefined'   
@@ -9437,6 +9437,161 @@ enl%datafile = datafile                       ! output HDF5 file
 enl%multiplier = multiplier
 
 end subroutine GetEBSDFullNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEBSDanisotropicNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDanisotropic.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl EBSD name list structure
+!
+!> @date 04/21/21 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDanisotropicNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDanisotropicNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(EBSDanisotropicNameListType),INTENT(INOUT) :: enl
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+real(kind=dbl)          :: dmin
+real(kind=dbl)          :: EkeV
+real(kind=dbl)          :: depthmax
+real(kind=dbl)          :: depthstep
+real(kind=dbl)          :: beamcurrent
+real(kind=dbl)          :: dwelltime
+real(kind=dbl)          :: sig
+real(kind=dbl)          :: omega
+real(kind=sgl)          :: L
+real(kind=sgl)          :: thetac
+real(kind=sgl)          :: delta
+real(kind=sgl)          :: aniso(2)
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+real(kind=sgl)          :: xpc
+real(kind=sgl)          :: ypc
+integer(kind=irg)       :: binning
+character(3)            :: scalingmode
+real(kind=sgl)          :: gammavalue
+character(1)            :: maskpattern
+integer(kind=irg)       :: nthreads
+character(3)            :: eulerconvention
+character(fnlen)        :: depthprofile
+character(fnlen)        :: anglefile
+character(fnlen)        :: datafile
+character(fnlen)        :: xtalname
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / EBSDanisotropicdata / xtalname, dmin, EkeV, depthmax, depthstep, beamcurrent, &
+          dwelltime, sig, omega, L, xpc, ypc, thetac, delta, numsx, numsy, binning, scalingmode, gammavalue, maskpattern,&
+          nthreads, eulerconvention, anglefile, datafile, aniso, depthprofile 
+
+! set the input parameters to default values (except for xtalname, anglefile and datafile, which must be present)
+
+xtalname = 'undefined'        ! name of xtal
+depthprofile = 'undefined'    ! name of xtal
+dmin = 0.04D0                 ! maximum g vector used in computation
+EkeV = 20.D0                  ! incident electron energy [kV]
+depthmax = 100.D0             ! depth cutoff [nm]
+depthstep = 1.D0              ! depth bin size [nm]
+beamcurrent = 1000.D0         ! [nA]
+dwelltime = 1000.D0           ! [micro seconds]
+sig = 70.D0                   ! sample tilt angle [degrees]
+omega = 0.D0                  ! tilt about RD axis [degrees]
+L = 15000.0                   ! scintillator to sample distance [micro m]
+xpc = 0.0                     ! units of pixel [dimensionless]
+ypc = 0.0                     ! units of pixel [dimensionless] 
+thetac = 10.0                 ! camera elevation [degrees]
+delta = 59.2                  ! physical size of detector pixel [micro m]
+numsx = 0                     ! number of pixel is x direction of scintillator
+numsy = 0                     ! number of pixel is y direction of scintillator
+binning = 1                   ! detector binning
+scalingmode = 'not'           ! intensity scaling in detector
+gammavalue = 0.34             ! intensity scaling factor
+maskpattern = 'n'             ! circular mask or not
+nthreads = 1                  ! number of CPU threads for computation
+eulerconvention = 'tsl'       ! euler angle convention
+anglefile = 'undefined'       ! list of euler angles for which simulation is done
+datafile = 'undefined'        ! output HDF5 file
+aniso = (/ 0.0, 48.0 /)       ! anisotropy model constants
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDanisotropicdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+ if (trim(depthprofile).eq.'undefined') then
+  call FatalError('GetEBSDanisotropicNameList:',' depthprofile file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(anglefile).eq.'undefined') then
+  call FatalError('GetEBSDanisotropicNameList:',' angle file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetEBSDanisotropicNameList:',' xtal file is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEBSDanisotropicNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then
+  call FatalError('GetEBSDanisotropicNameList:',' pattern size numsx is zero in '//nmlfile)
+ end if
+
+ if (numsy.eq.0) then
+  call FatalError('GetEBSDanisotropicNameList:',' pattern size numsy is zero in '//nmlfile)
+ end if
+end if
+
+enl%xtalname = xtalname                       ! name of xtal
+enl%dmin = dmin                               ! maximum g vector used in computation
+enl%EkeV = EkeV                               ! incident electron energy [kV]
+enl%depthmax = depthmax                       ! depth cutoff [nm]
+enl%depthstep = depthstep                     ! depth bin size [nm]
+enl%beamcurrent = beamcurrent                 ! [nA]
+enl%dwelltime = dwelltime                     ! [micro seconds]
+enl%sig = sig                                 ! sample tilt angle [degrees]
+enl%omega = omega                             ! tilt about RD axis [degrees]
+enl%L = L                                     ! scintillator to sample distance [micro m]
+enl%xpc = xpc                                 ! units of pixel [dimensionless]
+enl%ypc = ypc                                 ! units of pixel [dimensionless] 
+enl%thetac = thetac                           ! camera elevation [degrees]
+enl%delta = delta                             ! physical size of detector pixel [micro m]
+enl%numsx = numsx                             ! number of pixel is x direction of scintillator
+enl%numsy = numsy                             ! number of pixel is y direction of scintillator
+enl%binning = binning                         ! detector binning
+enl%scalingmode = scalingmode                 ! intensity scaling in detector
+enl%gammavalue = gammavalue                   ! intensity scaling factor
+enl%maskpattern = maskpattern                 ! circular mask or not
+enl%nthreads = nthreads                       ! number of CPU threads for computation
+enl%eulerconvention = eulerconvention         ! euler angle convention
+enl%anglefile = anglefile                     ! list of euler angles for which simulation is done
+enl%datafile = datafile                       ! output HDF5 file
+enl%aniso = aniso                             ! anisotropy model constants 
+enl%depthprofile = depthprofile               ! file name for Monte Carlo depth profile
+
+end subroutine GetEBSDanisotropicNameList
 
 
 !--------------------------------------------------------------------------

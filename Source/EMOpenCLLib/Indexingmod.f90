@@ -87,8 +87,8 @@ contains
 !> @date 06/01/20 MDG 5.0 change in handling of pattern binning (as of EMsoft version 5.0.3)
 !> @date 10/06/20 MDG 5.1 added normalized cross correlation as optional similarity metric
 !> @date 03/11/21 MDG 5.2 added min dp value to program output
-!> @date 04/29/21 MDG 5.2 makes the dot product sorting conditional, which speeds up program by factor of 2
-!> @date 05/03/21 DJR 5.2 reconfigured the OpenMP calls to use parallel sections and nested parallization.
+!> @date 04/29/21 MDG 5.3 makes the dot product sorting conditional, which speeds up program by factor of 2
+!> @date 05/03/21 DJR 5.4 reconfigured the OpenMP calls to use parallel sections and nested parallization.
 !--------------------------------------------------------------------------
 subroutine EBSDDIdriver(Cnmldeffile, Cprogname, cproc, ctimeproc, cerrorproc, objAddress, cancel) &
            bind(c, name='EBSDDIdriver') 

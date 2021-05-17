@@ -1828,5 +1828,88 @@ call Message('--> Output file generated with Master Pattern data copied from '//
 
 end subroutine EBSDcopyMPdata 
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: EBSDgetDepthProfile
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief extract a depth profile from a Monte Carlo file; we assume a generic detector position 
+!
+!> @param MCfile filename of the EBSD Monte Carlo file
+!> @param nz number of depth bins
+!> @param dp depth profile 
+!> @param dv depth values [nm]
+!
+!> @date 04/21/21 MDG 1.0 new routine used in EMEBSDanisotropic trial program 
+!--------------------------------------------------------------------------
+recursive subroutine EBSDgetDepthProfile(MCfile, mcnl, nz, dp, dv)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDgetDepthProfile
+
+use HDF5
+use HDFsupport
+use typedefs 
+use NameListTypedefs
+use constants
+use initializersHDF
+use diffraction
+
+IMPLICIT NONE 
+
+character(fnlen), INTENT(IN)              :: MCfile 
+type(MCCLNameListType),INTENT(INOUT)      :: mcnl
+integer(kind=irg), INTENT(OUT)            :: nz 
+real(kind=sgl), INTENT(OUT), allocatable  :: dp(:) 
+real(kind=sgl), INTENT(OUT), allocatable  :: dv(:) 
+
+integer(kind=irg)                         :: hdferr, izzmax, iE, ix, iy, iz, izz, istat, nsx 
+real(kind=sgl)                            :: thick, nabsl
+type(EBSDMCdataType)                      :: EBSDMCdata
+type(unitcell)                            :: cell
+type(DynType)                             :: Dyn
+type(gnode)                               :: rlp
+
+!=============================================
+!=============================================
+! ---------- read Monte Carlo .h5 output file and extract necessary parameters
+call h5open_EMsoft(hdferr)
+call readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccumz=.TRUE.)
+call h5close_EMsoft(hdferr)
+
+nsx = (mcnl%numsx-1)/2
+
+! determine the 99% histogram thickness
+izzmax = 0
+iE = EBSDMCdata%numEbins
+do ix=-nsx/10,nsx/10
+  do iy=-nsx/10,nsx/10
+   istat = sum(EBSDMCdata%accum_z(iE,:,ix,iy))
+   izz = 1
+   do while (sum(EBSDMCdata%accum_z(iE,1:izz,ix,iy)).lt.(0.99*istat)) 
+    izz = izz+1
+   end do
+   if (izz.gt.izzmax) izzmax = izz
+  end do
+end do
+thick = izzmax * mcnl%depthstep
+
+call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, 0.05, sngl(mcnl%EkeV), noLUT=.TRUE., verbose=.FALSE.) 
+rlp%method = 'WK'
+
+nz = izzmax 
+allocate(dp(nz), dv(nz),stat=istat)
+cell%voltage = mcnl%Ekev
+call CalcUcg(cell,rlp,(/0,0,0/))
+nabsl = rlp%xgp
+do iz=1,nz
+  dv(iz) = iz * mcnl%depthstep
+  dp(iz) = float(sum(EBSDMCdata%accum_z(iE,iz,-nsx/10:nsx/10,-nsx/10:nsx/10)))
+  dp(iz) = dp(iz) * exp(2.0*sngl(cPi)*(iz-1)*mcnl%depthstep/nabsl) / float(EBSDMCdata%totnum_el)
+end do
+
+deallocate(EBSDMCdata%accum_z)
+
+end subroutine EBSDgetDepthProfile
+
 
 end module EBSDmod
