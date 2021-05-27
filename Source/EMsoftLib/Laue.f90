@@ -189,24 +189,24 @@ use rotations
 
 IMPLICIT NONE
 
-type(LaueNameListType),INTENT(IN)			:: lnl 
+type(LaueNameListType),INTENT(IN)		:: lnl 
 real(kind=dbl),INTENT(IN) 					:: qu(4) 
-type(Laue_g_list),pointer                   :: reflist 
+type(Laue_g_list),pointer           :: reflist 
 real(kind=sgl),INTENT(IN) 					:: kouter 
 real(kind=sgl),INTENT(IN) 					:: kinner 
 integer(kind=irg),INTENT(IN) 				:: npx 
 integer(kind=irg),INTENT(IN) 				:: npy 
 integer(kind=irg),INTENT(IN) 				:: refcnt
-real(kind=sgl) 								:: pattern(npx, npy)
+real(kind=sgl) 								      :: pattern(npx, npy)
 
-real(kind=sgl) 								:: r1, r2, grot(3), gyz, gbig, gsmall, kspot, kprime(3), kp(3), scl
-type(Laue_g_list),pointer                   :: rltmp
-integer(kind=irg)							:: gg, traref
+real(kind=sgl) 								      :: r1, r2, grot(3), gyz, gbig, gsmall, kspot, kprime(3), kp(3), scl
+type(Laue_g_list),pointer           :: rltmp
+integer(kind=irg)							      :: gg, traref
 
 traref = 1  ! reflection mode = 1
 if (trim(lnl%Lauemode).eq.'transmission') traref = 2 ! transmission mode = 2
 
-scl = lnl%SDdistance * 1000.0 / lnl%pixelsize 
+scl = lnl%SDdistance / lnl%pixelsize 
 
 pattern = 0.0
 
@@ -228,7 +228,7 @@ do gg=1,refcnt
       kp = (kprime/abs(kprime(1))) * scl
       if ( (abs(kp(2)).le.(lnl%numpx/2)).and.(abs(kp(3)).le.(lnl%numpy/2)) ) then 
 ! draw the reflection on the transmission screen 
-	    call addLauereflection(pattern, lnl%numpx, lnl%numpy, kp, sngl(rltmp%sfs), lnl%spotw)
+  	    call addLauereflection(pattern, lnl%numpx, lnl%numpy, kp, sngl(rltmp%sfs), lnl%spotw)
       end if
     end if 
     if ((kprime(1).lt.0.0).and.(traref.eq.1)) then 
@@ -490,14 +490,14 @@ integer(kind=irg),INTENT(IN)			:: npx
 integer(kind=irg),INTENT(IN)			:: npy
 real(kind=sgl),INTENT(INOUT) 			:: pattern(npx, npy)
 !f2py intent(in,out) ::  pattern
-real(kind=sgl),INTENT(IN)				:: kp(3)
+real(kind=sgl),INTENT(IN)				  :: kp(3)
 real(kind=sgl),INTENT(IN) 				:: sfs 
-real(kind=sgl),INTENT(IN)				:: spotw 
+real(kind=sgl),INTENT(IN)				  :: spotw 
 
 integer(kind=irg),parameter 			:: dd = 15
-real(kind=sgl),allocatable,save 		:: xar(:,:), yar(:,:) 
-real(kind=sgl) 							:: row(dd), px, py, evals(dd,dd), dx, dy
-integer(kind=irg) 						:: i, ddd, ix, iy
+real(kind=sgl),allocatable,save 	:: xar(:,:), yar(:,:) 
+real(kind=sgl) 							      :: row(dd), px, py, evals(dd,dd), dx, dy
+integer(kind=irg) 						    :: i, ddd, ix, iy
 
 ! make sure that the xar and yar arrays are allocated 
 if (allocated(xar).eqv..FALSE.) then 
