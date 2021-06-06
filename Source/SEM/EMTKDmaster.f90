@@ -197,7 +197,7 @@ call h5open_EMsoft(hdferr)
 ! does the file exist ?
 energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
 energyfile = EMsoft_toNativePath(energyfile)
-call Message('opening '//trim(emnl%energyfile), frm = "(A)" )
+call Message('opening '//trim(energyfile), frm = "(A)" )
 inquire(file=energyfile, exist=f_exists)
 
 if (.not.f_exists) then
@@ -208,17 +208,17 @@ end if
 ! readonly = .TRUE.
 ! hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
-hdferr =  HDF_openFile(energyfile, HDF_head)
+hdferr =  HDF_openFile(energyfile, HDF_head, readonly=.TRUE.)
 
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can try to read all the information
 groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 datagroupname = SC_MCfoil
-call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
-if (.not.g_exists) then
-  call FatalError('ComputeMasterPattern','This HDF file does not contain any TKD Monte Carlo data')
-end if
+! call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
+! if (.not.g_exists) then
+!   call FatalError('ComputeMasterPattern','This HDF file does not contain any TKD Monte Carlo data')
+! end if
 call HDF_pop(HDF_head)
 
 ! check whether or not the MC file was generated using DREAM.3D
@@ -227,10 +227,10 @@ call HDF_pop(HDF_head)
 groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 datagroupname = SC_MCfoil
-call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
-if (.not.g_exists) then
-  call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
-end if
+! call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
+! if (.not.g_exists) then
+!   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
+! end if
 call HDF_pop(HDF_head)
 
 groupname = SC_EMheader
@@ -324,9 +324,6 @@ deallocate(acc_z)
 
 ! and close everything
 call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran interface
-call h5close_EMsoft(hdferr)
 
 etotal = num_el 
 
@@ -520,8 +517,6 @@ if (emnl%restart.eqv..TRUE.) then
 !=============================================
   datagroupname = 'TKDmaster'
   nullify(HDF_head%next)
-! Initialize FORTRAN interface.
-  call h5open_EMsoft(hdferr)
 
 ! Create a new file using the default properties.
   readonly = .TRUE.
@@ -537,9 +532,6 @@ dataset = SC_lastEnergy
 
   call HDF_pop(HDF_head,.TRUE.)
 
-! and close the fortran hdf interface
-  call h5close_EMsoft(hdferr)
-
 else
 
 !=============================================
@@ -547,8 +539,6 @@ else
 !=============================================
 
   nullify(HDF_head%next)
-! Initialize FORTRAN interface.
-  call h5open_EMsoft(hdferr)
 
 ! Open an existing file or create a new file using the default properties.
   if (trim(energyfile).eq.trim(outname)) then
@@ -713,9 +703,6 @@ dataset = SC_masterSPSH
 ! =====================================================
 
   call HDF_pop(HDF_head,.TRUE.)
-
-! and close the fortran hdf interface
- call h5close_EMsoft(hdferr)
 
 end if
 
@@ -1005,8 +992,6 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numsites) = mLPNH(-emnl%npx:emnl%npx, emn
   datagroupname = 'TKDmaster'
 
   nullify(HDF_head%next)
-! Initialize FORTRAN HDF interface.
-  call h5open_EMsoft(hdferr)
 
 ! open the existing file using the default properties.
   hdferr =  HDF_openFile(outname, HDF_head)
@@ -1067,8 +1052,6 @@ dataset = SC_masterSPSH
 
   call HDF_pop(HDF_head,.TRUE.)
 
-! and close the fortran hdf interface
-  call h5close_EMsoft(hdferr)
 
  if ((emnl%Esel.eq.-1).and.(iE.ne.1)) then 
   call Message('Intermediate data stored in file '//trim(emnl%outname), frm = "(A/)")
@@ -1083,5 +1066,8 @@ end do energyloop
 if (emnl%Esel.ne.-1) then
   call Message('Final data stored in file '//trim(emnl%outname), frm = "(A/)")
 end if
+
+! and close the fortran hdf interface
+call h5close_EMsoft(hdferr)
 
 end subroutine ComputeMasterPattern
