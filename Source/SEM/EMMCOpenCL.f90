@@ -570,7 +570,9 @@ end if
 
                    if (maxval(abs(idxy)).le.nx) then
 ! If Ec larger than Emin, then we should count this electron
-                       if (energyres(j).gt.mcnl%Ehistmin) then
+! occasionally, the GPU returns an energy value that is larger than the maximum energy 
+! likely du to an error in the OpenCL code; we intercept these rare events here
+                       if ( (energyres(j).gt.mcnl%Ehistmin).and.(energyres(j).le.mcnl%EkeV) ) then
 
                            iE = nint((energyres(j)-mcnl%Ehistmin)/mcnl%Ebinsize)+1
 ! first add this electron to the correct exit distance vs. energy bin (coarser than the angular plot)
