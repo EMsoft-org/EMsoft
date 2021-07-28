@@ -735,25 +735,29 @@ integer(kind=irg)        :: nthreads
 integer(kind=irg)        :: N_ROI
 integer(kind=irg)        :: size_ROI
 integer(kind=irg)        :: roi_distance
-integer(kind=irg)       :: patx
-integer(kind=irg)       :: paty
+integer(kind=irg)        :: patx
+integer(kind=irg)        :: paty
 
 real(kind=sgl)           :: delta
 real(kind=sgl)           :: totaltilt
 real(kind=sgl)           :: C11
 real(kind=sgl)           :: C12
 real(kind=sgl)           :: C44
+real(kind=sgl)           :: C33
+real(kind=sgl)           :: C13
 real(kind=sgl)           :: highpass
 real(kind=sgl)           :: lowpass
 real(kind=sgl)           :: PC(3)
+real(kind=sgl)           :: step_size
 
 character(fnlen)         :: masterfile
 character(fnlen)         :: datafile
 character(fnlen)         :: exptfile
-character(fnlen)         :: reffile
 character(fnlen)         :: inputtype
 character(fnlen)         :: HDFstrings(10)
 character(1)             :: Remap
+character(3)             :: crystal
+character(1)             :: PCrefine
 end type HREBSDNameListType
 
 ! namelist for the EMEBSDdefect program

@@ -4745,23 +4745,29 @@ real(kind=sgl)           :: totaltilt
 real(kind=sgl)           :: C11
 real(kind=sgl)           :: C12
 real(kind=sgl)           :: C44
+real(kind=sgl)           :: C13
+real(kind=sgl)           :: C33
 real(kind=sgl)           :: lowpass
 real(kind=sgl)           :: highpass
 real(kind=sgl)           :: PC(3)
+real(kind=sgl)           :: step_size
+
 
 character(fnlen)         :: masterfile
 character(fnlen)         :: datafile
 character(fnlen)         :: exptfile
-character(fnlen)         :: reffile
 character(fnlen)         :: inputtype
 character(fnlen)         :: HDFstrings(10)
 character(1)             :: Remap
+character(1)             :: PCrefine
+character(3)             :: crystal
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / HREBSDNamelist / numsx, numsy, ipf_wd, ipf_ht, nthreads, N_ROI, size_ROI, &
                             roi_distance, delta, totaltilt, C11, C12, C44, masterfile, &
                             datafile, exptfile, inputtype, HDFstrings, Remap, highpass, &
-                            lowpass, reffile, patx, paty, PC
+                            lowpass, patx, paty, PC, C13, C33, crystal, PCrefine, step_size
+                            
 
 ! set the input parameters to default values (except for xtalname, which must be present)
        
@@ -4781,13 +4787,17 @@ totaltilt = 30.0
 C11 = 276.0
 C12 = 159.0
 C44 = 132.0
+C13 = 0.0
+C33 = 0.0
+crystal = 'cub'
+step_size = 1 ! micron
 masterfile = 'undefined'
 datafile = 'undefined'
 exptfile = 'undefined'
-reffile = 'undefined'
 inputtype = 'Binary'
 HDFstrings = ''
 Remap = 'n'
+PCrefine = 'n'
 highpass = 0.05
 lowpass = 0.3
 
@@ -4836,13 +4846,18 @@ HREBSD%totaltilt = totaltilt
 HREBSD%C11 = C11
 HREBSD%C12 = C12
 HREBSD%C44 = C44
+HREBSD%C13 = C13
+HREBSD%C13 = C13
+HREBSD%C33 = C33
+HREBSD%crystal = crystal
+HREBSD%step_size = step_size
 HREBSD%masterfile = masterfile
 HREBSD%datafile = datafile
 HREBSD%exptfile = exptfile
-HREBSD%reffile = reffile
 HREBSD%inputtype = inputtype 
 HREBSD%HDFstrings = HDFstrings
 HREBSD%Remap = Remap
+HREBSD%PCrefine = PCrefine
 HREBSD%highpass=highpass
 HREBSD%lowpass=lowpass
 HREBSD%PC = PC
