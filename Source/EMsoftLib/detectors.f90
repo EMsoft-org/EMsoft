@@ -232,6 +232,118 @@ end if
 !====================================
 end subroutine GenerateEBSDDetector
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDanisotropicGenerateDetector
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief generate the geometric detector array
+!
+!> @param enl EBSD name list structure
+!> @param mcnl Monte Carlo name list structure
+!> @param EBSDMCdata MC data
+!> @param EBSDdetector detector arrays
+!
+!> @date 04/21/21  MDG 1.0 original based on the GenerateEBSDDetector routine
+!--------------------------------------------------------------------------
+recursive subroutine EBSDanisotropicGenerateDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDanisotropicGenerateDetector
+
+use local
+use typedefs
+use NameListTypedefs
+use files
+use constants
+use io
+use Lambert
+
+IMPLICIT NONE
+
+type(EBSDanisotropicNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
+type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
+type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
+type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
+logical,INTENT(IN),OPTIONAL             :: verbose
+
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)  ! scintillator coordinate arrays [microns]
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                          :: alp, ca, sa, cw, sw
+real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
+real(kind=sgl),allocatable              :: z(:,:)           
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy, elp  
+real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
+real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
+real(kind=sgl)                          :: ixy(2)
+
+!====================================
+! ------ generate the detector arrays
+!====================================
+! This needs to be done only once for a given detector geometry
+allocate(scin_x(enl%numsx),scin_y(enl%numsy),stat=istat)
+! if (istat.ne.0) then ...
+! change to the detector point of view necessitates negating the x pattern center coordinate
+scin_x = - ( -enl%xpc - ( 1.0 - enl%numsx ) * 0.5 - (/ (i-1, i=1,enl%numsx) /) ) * enl%delta
+scin_y = ( enl%ypc - ( 1.0 - enl%numsy ) * 0.5 - (/ (i-1, i=1,enl%numsy) /) ) * enl%delta
+
+! auxiliary angle to rotate between reference frames
+alp = 0.5 * cPi - (mcnl%sig - enl%thetac) * dtor
+ca = cos(alp)
+sa = sin(alp)
+
+cw = cos(mcnl%omega * dtor)
+sw = sin(mcnl%omega * dtor)
+
+! we will need to incorporate a series of possible distortions 
+! here as well, as described in Gert Nolze's paper; for now we 
+! just leave this place holder comment instead
+
+! compute auxilliary interpolation arrays
+! if (istat.ne.0) then ...
+
+elp = enl%numsy + 1
+L2 = enl%L * enl%L
+do j=1,enl%numsx
+  sx = L2 + scin_x(j) * scin_x(j)
+  Ls = -sw * scin_x(j) + enl%L*cw
+  Lc = cw * scin_x(j) + enl%L*sw
+  do i=1,enl%numsy
+   rhos = 1.0/sqrt(sx + scin_y(i)**2)
+   EBSDdetector%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   EBSDdetector%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   EBSDdetector%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+  end do
+end do
+deallocate(scin_x, scin_y)
+
+! normalize the direction cosines.
+allocate(z(enl%numsx,enl%numsy))
+  z = 1.0/sqrt(EBSDdetector%rgx*EBSDdetector%rgx+EBSDdetector%rgy*EBSDdetector%rgy+EBSDdetector%rgz*EBSDdetector%rgz)
+  EBSDdetector%rgx = EBSDdetector%rgx*z
+  EBSDdetector%rgy = EBSDdetector%rgy*z
+  EBSDdetector%rgz = EBSDdetector%rgz*z
+deallocate(z)
+!====================================
+
+do i=1,enl%numsx
+  do j=1,enl%numsy
+    EBSDdetector%detector(i,j)%dc = (/ EBSDdetector%rgx(i,j), EBSDdetector%rgy(i,j), EBSDdetector%rgz(i,j) /)
+  end do 
+end do 
+
+if (present(verbose)) then
+  if (verbose.eqv..TRUE.) call Message(' -> completed detector generation', frm = "(A)")
+end if 
+
+!====================================
+end subroutine EBSDanisotropicGenerateDetector
+
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:GenerateEBSDBatchDetector

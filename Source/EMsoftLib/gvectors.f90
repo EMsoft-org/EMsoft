@@ -363,6 +363,7 @@ end if
 gcnt = 0
 icnt = 0
 th = lmnl%intfactor * threshold
+
 do h=-imh,imh
  do k=-imk,imk
   do l=-iml,iml

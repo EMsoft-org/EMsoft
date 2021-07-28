@@ -819,6 +819,36 @@ type EBSDFullNameListType
         character(fnlen)        :: xtalname
 end type EBSDFullNameListType
 
+! namelist for the EMEBSDanisotropic program
+type EBSDanisotropicNameListType
+        real(kind=dbl)          :: dmin
+        real(kind=dbl)          :: EkeV
+        real(kind=dbl)          :: depthmax
+        real(kind=dbl)          :: depthstep
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        real(kind=dbl)          :: sig
+        real(kind=dbl)          :: omega
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: aniso(2)
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        integer(kind=irg)       :: binning
+        character(3)            :: scalingmode
+        real(kind=sgl)          :: gammavalue
+        character(1)            :: maskpattern
+        integer(kind=irg)       :: nthreads
+        character(3)            :: eulerconvention
+        character(fnlen)        :: depthprofile
+        character(fnlen)        :: anglefile
+        character(fnlen)        :: datafile
+        character(fnlen)        :: xtalname
+end type EBSDanisotropicNameListType
+
 type localOSMNameListType
         integer(kind=irg)       :: numnm
         character(fnlen)        :: dpfile

@@ -35,6 +35,9 @@
 !> @author Saransh Singh, Carnegie Mellon University
 !
 !> @brief ebsd master pattern on using scattering matrix GPU
+!>
+!> This program works, but it is very memory intensive... It is probably 
+!> not the best way to compute the master pattern.  
 !
 !> @date 03/11/15 SS  1.0 original
 !> @date 04/03/15 MDG 2.0 converted input/output to HDF format
@@ -975,7 +978,7 @@ if (ii.lt.floor(float(numk)/float(npx*npy))+1) then
             end if 
 
 ! then comes the parallel region that does the actual dynamical matrix computations;
-! it uses nthreads1 = N of the 4N+3 threads
+! it uses nthreads1 = 3N of the 4N+3 threads
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC) NUM_THREADS(nthreads1) DEFAULT(SHARED) COPYIN(rlp) &
 !$OMP& PRIVATE(NUMTHREADS, TID, kk, k, FN, reflist, firstw, nref, nns, nnw) &
 !$OMP& PRIVATE(DynMat, Sghtmp, ss, pp, qq, absmax, e, istat)

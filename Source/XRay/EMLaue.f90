@@ -138,6 +138,7 @@ logical 								                   :: verbose, f_exists, g_exists, insert=.TRUE.
 
 type(LaueMasterNameListType)               :: lmnl
 type(Laue_g_list),pointer                  :: reflist, rltmp          
+real(kind=dbl),allocatable                 :: LegendreArray(:), upd(:), diagonal(:)
 
 character(fnlen) 						               :: hdfname, groupname, datagroupname, attributename, dataset, fname, TIFF_filename
 character(11)                              :: dstr
@@ -149,7 +150,7 @@ integer(HSIZE_T)        			             :: dims3(3), cnt3(3), offset3(3)
 character(fnlen,kind=c_char)               :: line2(1)
 
 ! declare variables for use in object oriented image module
-integer                                    :: iostat, Lstart
+integer                                    :: iostat, Lstart, i, info
 character(len=128)                         :: iomsg
 logical                                    :: isInteger
 type(image_t)                              :: im
@@ -214,7 +215,6 @@ call Laue_Init_Reflist(cell, lmnl, reflist, refcnt, verbose)
     open(unit=dataunit, file=trim(hdfname), status='old',form='unformatted')
     close(unit=dataunit, status='delete')
   end if
-
   hdferr =  HDF_createFile(hdfname, HDF_head)
 
 ! write the EMheader to the file
@@ -253,20 +253,10 @@ groupname = SC_EMData
 
 ! finally, write all the necessary data:  orientations and simulated patterns along with geometrical parameters
 dataset = 'kouter'
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
-      hdferr = HDF_writeDatasetFloat(dataset, kouter, HDF_head, overwrite)
-    else
-      hdferr = HDF_writeDatasetFloat(dataset, kouter, HDF_head)
-    end if
+    hdferr = HDF_writeDatasetFloat(dataset, kouter, HDF_head)
 
 dataset = 'kinner'
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
-      hdferr = HDF_writeDatasetFloat(dataset, kinner, HDF_head, overwrite)
-    else
-      hdferr = HDF_writeDatasetFloat(dataset, kinner, HDF_head)
-    end if
+    hdferr = HDF_writeDatasetFloat(dataset, kinner, HDF_head)
 
 ! adjust array dimension to be multiple of 100
 	npx = lnl%numpx
@@ -288,12 +278,7 @@ dataset = 'kinner'
 	patternbatch = 0.0
 
 dataset = 'numangles'
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
-      hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head, overwrite)
-    else
-      hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head)
-    end if
+    hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head)
 
 ! create the hyperslabs and write zeroes to them for now
 dataset = 'LauePatterns'
@@ -301,22 +286,12 @@ dataset = 'LauePatterns'
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, numangles /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-	  if (g_exists) then 
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head, insert)
-	  else
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
-	  end if
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
   else 
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, batchnumangles(1) /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-	  if (g_exists) then 
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head, insert)
-	  else
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
-	  end if
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
   end if
 
 ! should we add the backprojections to the same file ?
@@ -335,26 +310,30 @@ dataset = 'backprojections'
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, numangles /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head, insert)
-    else
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
-    end if
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
   else 
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, batchnumangles(1) /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head, insert)
-    else
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
-    end if
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
   end if
 end if
 
 ! leave the output HDF5 file open so that we can write the hyperslabs as they are completed 
+
+! compute the LegendreArray if back projection is requested
+if (trim(lnl%backprojection).eq.'Yes') then 
+  allocate(diagonal(BPnpx),upd(BPnpx))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,BPnpx) /)
+  call dsterf(BPnpx-2, diagonal, upd, info) 
+  ! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+  allocate(LegendreArray(0:BPnpx-1))
+  LegendreArray(0:BPnpx-1) = diagonal(BPnpx:1:-1)
+  ! set the center eigenvalue to 0
+  LegendreArray((BPnpx-1)/2) = 0.D0
+  deallocate(diagonal, upd)
+end if 
 
 !=============================================
 !=============================================
@@ -383,7 +362,7 @@ Lstart = 8
       pid = (ii-1) * batchnumangles(1) + jj  
       pattern = getLauePattern(lnl, dble(angles%quatang(1:4,pid)), reflist, kouter, kinner, npx, npy, refcnt)
       patternbatch(1:npx,1:npy,jj) = pattern**lnl%gammavalue
-    end do 
+     end do 
 !$OMP END DO
     if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed '
     deallocate(pattern)
@@ -396,8 +375,8 @@ Lstart = 8
       do jj = 1,batchnumangles(ii)
         pid = (ii-1) * batchnumangles(1) + jj  
         bp = backprojectLauePattern( (/kouter, kinner/), lnl%pixelsize, lnl%SDdistance, Lstart, (/npx, npy/), &
-                                     (/BPnpx, BPnpy/), patternbatch(1:npx,1:npy,jj), lnl%Lauemode)
-        bppatterns(1:npx,1:npy,jj) = bp
+                                     (/lnl%BPx, lnl%BPx/), patternbatch(1:npx,1:npy,jj), lnl%Lauemode, LegendreArray)
+        bppatterns(1:BPnpx,1:BPnpy,jj) = bp
       end do 
 !$OMP END DO
       if (TID.eq.0) write (*,*) 'batch ',ii,'; backprojections completed '
