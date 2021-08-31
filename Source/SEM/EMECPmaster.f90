@@ -237,10 +237,10 @@ hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can open the file and read all the information
 datagroupname = '/EMheader/MCOpenCL'
-call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
-if (.not.g_exists) then
-  call FatalError('ECmasterpattern','This HDF file does not contain any Monte Carlo data')
-end if
+! call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
+! if (.not.g_exists) then
+!   call FatalError('ECmasterpattern','This HDF file does not contain any Monte Carlo data')
+! end if
 
 
 ! open the namelist group

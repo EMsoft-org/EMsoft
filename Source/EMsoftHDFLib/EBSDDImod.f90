@@ -1008,7 +1008,8 @@ nullify(HDF_head%next)
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
 
-hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
+! hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
+hdferr =  HDF_openFile(dpfile, HDF_head)
 
 ! open the Scan 1/EBSD/Data group
 groupname = 'Scan 1'
