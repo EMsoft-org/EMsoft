@@ -157,11 +157,13 @@ integer(kind=irg)       :: orthorhombicSetting
 integer(kind=irg)       :: nthreads
 character(fnlen)        :: dotproductfile
 character(fnlen)        :: newctffile
+character(fnlen)        :: newangfile
 
-namelist /ChangeSettingslist/ nthreads, orthorhombicSetting, dotproductfile, newctffile
+namelist /ChangeSettingslist/ nthreads, orthorhombicSetting, dotproductfile, newctffile, newangfile
 
 dotproductfile = 'undefined'
 newctffile = 'undefined'
+newangfile = 'undefined'
 orthorhombicSetting = 1
 nthreads = 1
 
@@ -179,14 +181,11 @@ if (.not.skipread) then
  if (trim(dotproductfile).eq.'undefined') then
   call FatalError('GetChangeSettingNameList:',' dotproductfile name is undefined in '//nmlfile)
  end if
-
- if (trim(newctffile).eq.'undefined') then
-  call FatalError('GetChangeSettingNameList:',' newctffile name is undefined in '//nmlfile)
- end if
 end if
 
 csnl%dotproductfile = dotproductfile 
 csnl%newctffile = newctffile
+csnl%newangfile = newangfile
 csnl%nthreads = nthreads
 csnl%orthorhombicSetting = orthorhombicSetting 
 
