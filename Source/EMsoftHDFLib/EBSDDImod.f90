@@ -309,8 +309,8 @@ allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
 ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
 ! and then generate the detector arrays; these are the generic arrays without pattern center 
 ! correction.
-ebsdnl%numsx = dinl%numsx
-ebsdnl%numsy = dinl%numsy
+ebsdnl%numsx = dinl%exptnumsx
+ebsdnl%numsy = dinl%exptnumsy
 ebsdnl%xpc = dinl%xpc
 ebsdnl%ypc = dinl%ypc
 ebsdnl%delta = dinl%delta
