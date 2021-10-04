@@ -335,8 +335,8 @@ if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
 !==========fill important parameters in namelist======
 !=====================================================
 
-binx = dinl%numsx/dinl%binning
-biny = dinl%numsy/dinl%binning
+binx = dinl%exptnumsx/dinl%binning
+biny = dinl%exptnumsy/dinl%binning
 recordsize = binx*biny*4
 L = binx*biny
 npy = mpnl%npx
@@ -358,8 +358,8 @@ IPAR2 = 0
 
 ! define the jpar array
 jpar(1) = dinl%binning
-jpar(2) = dinl%numsx
-jpar(3) = dinl%numsy
+jpar(2) = dinl%exptnumsx
+jpar(3) = dinl%exptnumsy
 jpar(4) = mpnl%npx
 jpar(5) = npy
 jpar(6) = EBSDMCdata%numEbins
@@ -507,7 +507,8 @@ call DI_Init(dict,'nil')
 !=====================================================
 ! account for the fact that the binning parameter may
 ! not be equal to 1 (used as of 5.0.3)
-allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
+! allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
+allocate(mask(binx,biny),masklin(binx*biny))
 mask = 1.0
 masklin = 0.0
 
@@ -515,18 +516,18 @@ masklin = 0.0
 ! define the circular mask if necessary and convert to 1D vector
 !===============================================================
 if (dinl%maskpattern.eq.'y') then
-  do ii = 1,dinl%exptnumsy
-      do jj = 1,dinl%exptnumsx
-          if((ii-dinl%exptnumsy/2)**2 + (jj-dinl%exptnumsx/2)**2 .ge. dinl%maskradius**2) then
+  do ii = 1,biny
+      do jj = 1,binx
+          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. dinl%maskradius**2) then
               mask(jj,ii) = 0.0
           end if
       end do
   end do
 end if
   
-do ii = 1,dinl%exptnumsy
-    do jj = 1,dinl%exptnumsx
-        masklin((ii-1)*dinl%exptnumsx+jj) = mask(jj,ii)
+do ii = 1,biny
+    do jj = 1,binx
+        masklin((ii-1)*binx+jj) = mask(jj,ii)
     end do
 end do
 
