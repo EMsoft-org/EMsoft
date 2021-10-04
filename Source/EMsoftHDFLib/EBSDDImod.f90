@@ -309,8 +309,10 @@ allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
 ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
 ! and then generate the detector arrays; these are the generic arrays without pattern center 
 ! correction.
-ebsdnl%numsx = dinl%exptnumsx
-ebsdnl%numsy = dinl%exptnumsy
+binx = dinl%exptnumsx/dinl%binning
+biny = dinl%exptnumsy/dinl%binning
+ebsdnl%numsx = binx
+ebsdnl%numsy = biny
 ebsdnl%xpc = dinl%xpc
 ebsdnl%ypc = dinl%ypc
 ebsdnl%delta = dinl%delta
@@ -335,8 +337,7 @@ if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
 !==========fill important parameters in namelist======
 !=====================================================
 
-binx = dinl%exptnumsx/dinl%binning
-biny = dinl%exptnumsy/dinl%binning
+
 recordsize = binx*biny*4
 L = binx*biny
 npy = mpnl%npx
@@ -358,8 +359,8 @@ IPAR2 = 0
 
 ! define the jpar array
 jpar(1) = dinl%binning
-jpar(2) = dinl%exptnumsx
-jpar(3) = dinl%exptnumsy
+jpar(2) = dinl%exptnumsx/dinl%binning
+jpar(3) = dinl%exptnumsy/dinl%binning
 jpar(4) = mpnl%npx
 jpar(5) = npy
 jpar(6) = EBSDMCdata%numEbins
@@ -730,10 +731,10 @@ if (ronl%method.eq.'FIT') then
 
           if (trim(ronl%PCcorrection).eq.'on') then 
 ! allocate the necessary arrays 
-            allocate(myEBSDdetector%rgx(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%rgy(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%rgz(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=mystat)
+            allocate(myEBSDdetector%rgx(binx,biny), &
+                     myEBSDdetector%rgy(binx,biny), &
+                     myEBSDdetector%rgz(binx,biny), &
+                     myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,binx,biny), stat=mystat)
           end if 
 
           TID = OMP_GET_THREAD_NUM()
