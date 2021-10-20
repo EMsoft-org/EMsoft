@@ -1767,7 +1767,8 @@ select case (itype)
           call HDF_readDatasetFloatArray2D(dataset,dims2, pmHDF_head, hdferr, eu)
           ! convert Euler angles to quaternions
           do i=1,numangles
-          angles%quatang(1:4,i) = eu2qu(eu(1:3,i))
+            eu(1,i)=eu(1,i)-dtor*90.0 ! default to HKL sample frame for stiffness matrix
+            angles%quatang(1:4,i) = eu2qu(eu(1:3,i))
           end do
           deallocate(eu)
 
@@ -1798,14 +1799,14 @@ select case (itype)
           ! extract simulation parameters
           dataset = 'xpc'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, PC(1))
-          enl%PC(1)=CEILING(0.5*enl%numsx-PC(1))
+          enl%PC(1)=(0.5*enl%numsx-PC(1))
           write(*,*)
           print *, "Pattern Center Information (0-bottom, 0-left):"
           print *, "PC_x:", enl%PC(1)
 
           dataset = 'ypc'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, PC(2))	
-          enl%PC(2)=CEILING(0.5*enl%numsy+PC(2))
+          enl%PC(2)=(0.5*enl%numsy+PC(2))
           print *, "PC_y:", enl%PC(2)
 
           dataset = 'L'
