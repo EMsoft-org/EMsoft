@@ -68,8 +68,9 @@ contains
 !> @date 07/10/16 MDG 1.5 swapped Error, MAD, and BC columns
 !> @date 02/18/18 MDG 1.6 made sure that Euler angles are ALWAYS positive
 !> @date 03/05/18 MDG 1.7 replaced BC=OSMmap, BC=IQmap, BANDS=pattern index columns
+!> @date 09/01/21 MDG 1.8 added orthorhombic setting option
 !--------------------------------------------------------------------------
-recursive subroutine ctfebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,OSMmap,IQmap,noindex)
+recursive subroutine ctfebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,OSMmap,IQmap,noindex,orthoset,orthoSG)
 !DEC$ ATTRIBUTES DLLEXPORT :: ctfebsd_writeFile
 
 use NameListTypedefs
@@ -89,6 +90,8 @@ real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2
 real(kind=sgl),INTENT(IN)                           :: OSMmap(ipar(7),ipar(8))
 real(kind=sgl),INTENT(IN)                           :: IQmap(ipar(3))
 logical,INTENT(IN),OPTIONAL                         :: noindex
+integer(kind=irg),INTENT(IN),OPTIONAL               :: orthoset
+integer(kind=irg),INTENT(IN),OPTIONAL               :: orthoSG
 
 integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup, BCval, BSval
 character(fnlen)                                    :: ctfname
@@ -96,7 +99,7 @@ character                                           :: TAB = CHAR(9)
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: donotuseindexarray
-real(kind=dbl)                                      :: cellparams(6)
+real(kind=dbl)                                      :: cellparams(6), a, b, c
 integer(kind=irg),allocatable                       :: osm(:), iq(:)
 
 donotuseindexarray = .FALSE.
@@ -132,7 +135,11 @@ ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
 write(dataunit2,'(A)') 'Channel Text File'
-write(dataunit2,'(A)') 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
+str1 = 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
+if (present(orthoset)) then 
+  str1 = trim(str1)//'; orthorhombic space group setting '//extendedHMOrthsymbols(orthoset,orthoSG)
+end if 
+write(dataunit2,'(A)') trim(str1)
 write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
@@ -158,9 +165,42 @@ call getXtalData(xtalname, cellparams, SGnum)
 
 ! unit cell size
 cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
-write(str1,'(F8.3)') cellparams(1)
-write(str2,'(F8.3)') cellparams(2)
-write(str3,'(F8.3)') cellparams(3)
+if (present(orthoset)) then   ! permute the lattice parameters to the correct orthorhombic setting 
+! settings  " a  b  c", " b  a -c", " c  a  b", "-c  b  a", " b  c  a", " a -c  b" 
+  select case(orthoset)
+    case(1) 
+      a = cellparams(1)
+      b = cellparams(2)
+      c = cellparams(3)
+    case(2) 
+      a = cellparams(2)
+      b = cellparams(1)
+      c = cellparams(3)
+    case(3) 
+      a = cellparams(3)
+      b = cellparams(1)
+      c = cellparams(2)
+    case(4) 
+      a = cellparams(3)
+      b = cellparams(2)
+      c = cellparams(1)
+    case(5) 
+      a = cellparams(2)
+      b = cellparams(3)
+      c = cellparams(1)
+    case(6) 
+      a = cellparams(1)
+      b = cellparams(3)
+      c = cellparams(2)
+  end select 
+  write(str1,'(F8.3)') a
+  write(str2,'(F8.3)') b
+  write(str3,'(F8.3)') c
+else
+  write(str1,'(F8.3)') cellparams(1)
+  write(str2,'(F8.3)') cellparams(2)
+  write(str3,'(F8.3)') cellparams(3)
+end if 
 str1 = adjustl(str1)
 str2 = adjustl(str2)
 str3 = adjustl(str3)
@@ -477,12 +517,14 @@ end subroutine ctftkd_writeFile
 !> @date 02/07/15  SS 1.0 original
 !> @date 03/10/16 MDG 1.1 moved from program to module and updated [TO BE COMPLETED]
 !> @date 11/08/18 MDG 2.0 rewrite and testing
+!> @date 09/01/21 MDG 2.1 added orthorhombic space group settings
 !--------------------------------------------------------------------------
-recursive subroutine angebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,IQmap,noindex)
+recursive subroutine angebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,IQmap,noindex,orthoset,orthoSG)
 !DEC$ ATTRIBUTES DLLEXPORT :: angebsd_writeFile
 
 use NameListTypedefs
 use constants 
+use typedefs
 
 
 IMPLICIT NONE
@@ -496,6 +538,8 @@ real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: IQmap(ipar(3))
 logical,INTENT(IN),OPTIONAL                         :: noindex
+integer(kind=irg),INTENT(IN),OPTIONAL               :: orthoset 
+integer(kind=irg),INTENT(IN),OPTIONAL               :: orthoSG
 
 integer(kind=irg)                                   :: ierr, ii, indx, SGnum
 character(fnlen)                                    :: angname
@@ -503,7 +547,7 @@ character(fnlen)                                    :: str1,str2,str3,str4,str5,
 character                                           :: TAB = CHAR(9)
 character(2)                                        :: TSLsymmetry
 real(kind=sgl)                                      :: euler(3), s, BSval
-real(kind=dbl)                                      :: cellparams(6), dtor
+real(kind=dbl)                                      :: cellparams(6), dtor, a, b, c
 logical                                             :: donotuseindexarray
 
 dtor = cPi/180.D0
@@ -536,7 +580,9 @@ ii = scan(trim(xtalname),'.')
 angname = xtalname(1:ii-1)
 write(dataunit2,'(A)') '# MaterialName  	'//trim(angname)
 write(dataunit2,'(A)') '# Formula     	'//trim(angname)
-write(dataunit2,'(A)') '# Info          patterns indexed using EMsoft::EMEBSDDI'
+str1 =  '# Info          patterns indexed using EMsoft::EMEBSDDI' 
+if (present(orthoset)) str1 = trim(str1)//'; orthorhombic space group setting '//extendedHMOrthsymbols(orthoset,orthoSG)
+write(dataunit2,'(A)') trim(str1)
 
 !==========================
 ! get space group, lattice parameters, and TSL symmetry string
@@ -547,9 +593,42 @@ write(dataunit2,'(A)') '# Symmetry              '//TSLsymmetry
 
 ! lattice parameters
 cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
-write(str1,'(F8.3)') cellparams(1)
-write(str2,'(F8.3)') cellparams(2)
-write(str3,'(F8.3)') cellparams(3)
+if (present(orthoset)) then   ! permute the lattice parameters to the correct orthorhombic setting 
+! settings  " a  b  c", " b  a -c", " c  a  b", "-c  b  a", " b  c  a", " a -c  b" 
+  select case(orthoset)
+    case(1) 
+      a = cellparams(1)
+      b = cellparams(2)
+      c = cellparams(3)
+    case(2) 
+      a = cellparams(2)
+      b = cellparams(1)
+      c = cellparams(3)
+    case(3) 
+      a = cellparams(3)
+      b = cellparams(1)
+      c = cellparams(2)
+    case(4) 
+      a = cellparams(3)
+      b = cellparams(2)
+      c = cellparams(1)
+    case(5) 
+      a = cellparams(2)
+      b = cellparams(3)
+      c = cellparams(1)
+    case(6) 
+      a = cellparams(1)
+      b = cellparams(3)
+      c = cellparams(2)
+  end select 
+  write(str1,'(F8.3)') a
+  write(str2,'(F8.3)') b
+  write(str3,'(F8.3)') c
+else
+  write(str1,'(F8.3)') cellparams(1)
+  write(str2,'(F8.3)') cellparams(2)
+  write(str3,'(F8.3)') cellparams(3)
+end if 
 str1 = adjustl(str1)
 str2 = adjustl(str2)
 str3 = adjustl(str3)

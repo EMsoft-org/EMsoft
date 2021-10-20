@@ -309,8 +309,10 @@ allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
 ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
 ! and then generate the detector arrays; these are the generic arrays without pattern center 
 ! correction.
-ebsdnl%numsx = dinl%numsx
-ebsdnl%numsy = dinl%numsy
+binx = dinl%exptnumsx/dinl%binning
+biny = dinl%exptnumsy/dinl%binning
+ebsdnl%numsx = binx
+ebsdnl%numsy = biny
 ebsdnl%xpc = dinl%xpc
 ebsdnl%ypc = dinl%ypc
 ebsdnl%delta = dinl%delta
@@ -335,8 +337,7 @@ if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
 !==========fill important parameters in namelist======
 !=====================================================
 
-binx = dinl%numsx/dinl%binning
-biny = dinl%numsy/dinl%binning
+
 recordsize = binx*biny*4
 L = binx*biny
 npy = mpnl%npx
@@ -358,8 +359,8 @@ IPAR2 = 0
 
 ! define the jpar array
 jpar(1) = dinl%binning
-jpar(2) = dinl%numsx
-jpar(3) = dinl%numsy
+jpar(2) = dinl%exptnumsx/dinl%binning
+jpar(3) = dinl%exptnumsy/dinl%binning
 jpar(4) = mpnl%npx
 jpar(5) = npy
 jpar(6) = EBSDMCdata%numEbins
@@ -507,7 +508,8 @@ call DI_Init(dict,'nil')
 !=====================================================
 ! account for the fact that the binning parameter may
 ! not be equal to 1 (used as of 5.0.3)
-allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
+! allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
+allocate(mask(binx,biny),masklin(binx*biny))
 mask = 1.0
 masklin = 0.0
 
@@ -515,18 +517,18 @@ masklin = 0.0
 ! define the circular mask if necessary and convert to 1D vector
 !===============================================================
 if (dinl%maskpattern.eq.'y') then
-  do ii = 1,dinl%exptnumsy
-      do jj = 1,dinl%exptnumsx
-          if((ii-dinl%exptnumsy/2)**2 + (jj-dinl%exptnumsx/2)**2 .ge. dinl%maskradius**2) then
+  do ii = 1,biny
+      do jj = 1,binx
+          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. dinl%maskradius**2) then
               mask(jj,ii) = 0.0
           end if
       end do
   end do
 end if
   
-do ii = 1,dinl%exptnumsy
-    do jj = 1,dinl%exptnumsx
-        masklin((ii-1)*dinl%exptnumsx+jj) = mask(jj,ii)
+do ii = 1,biny
+    do jj = 1,binx
+        masklin((ii-1)*binx+jj) = mask(jj,ii)
     end do
 end do
 
@@ -729,10 +731,10 @@ if (ronl%method.eq.'FIT') then
 
           if (trim(ronl%PCcorrection).eq.'on') then 
 ! allocate the necessary arrays 
-            allocate(myEBSDdetector%rgx(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%rgy(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%rgz(dinl%numsx,dinl%numsy), &
-                     myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=mystat)
+            allocate(myEBSDdetector%rgx(binx,biny), &
+                     myEBSDdetector%rgy(binx,biny), &
+                     myEBSDdetector%rgz(binx,biny), &
+                     myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,binx,biny), stat=mystat)
           end if 
 
           TID = OMP_GET_THREAD_NUM()
@@ -1008,7 +1010,8 @@ nullify(HDF_head%next)
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
 
-hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
+! hdferr =  HDF_openFile(dpfile, HDF_head, readonly=.FALSE.)
+hdferr =  HDF_openFile(dpfile, HDF_head)
 
 ! open the Scan 1/EBSD/Data group
 groupname = 'Scan 1'

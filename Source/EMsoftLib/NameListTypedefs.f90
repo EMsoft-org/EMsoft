@@ -132,6 +132,7 @@ type ChangeSettingNameListType
         integer(kind=irg)       :: orthorhombicSetting
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: newctffile
+        character(fnlen)        :: newangfile
 end type ChangeSettingNameListType
 
 ! namelist for the EMLorentz program

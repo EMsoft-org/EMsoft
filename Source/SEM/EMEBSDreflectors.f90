@@ -419,9 +419,9 @@ end if
 
 call Message(' Starting parallel integrations... (.=100, |=1000) ')
 ! use OpenMP to run on multiple cores ... 
-!$OMP PARALLEL DEFAULT(PRIVATE) &
-!$OMP& SHARED(k, nx, cp, sp, icnt, keep, th, incrad, numphi, gcart, cell, scl, masterNH, masterSH) &
-!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, nkeep, kinmasterNH, kinmasterSH)
+!$OMP PARALLEL DEFAULT(SHARED) &
+!$OMP& PRIVATE(NUMTHREADS, TID, kinNH, kinSH, ii, numtheta, ca, sa, theta, nums, dc, cosnorm, gz)&
+!$OMP& PRIVATE(i, j, v, x, gax, ax, qu, nix, niy, nixp, niyp, dx, dy, dxm, dym, iequiv, nequiv, ix)
 
 NUMTHREADS = OMP_GET_NUM_THREADS()
 TID = OMP_GET_THREAD_NUM()
