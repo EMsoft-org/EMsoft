@@ -688,6 +688,7 @@ integer(kind=irg)        :: strategy
 integer(kind=irg)        :: refresh
 integer(kind=irg)        :: iwrite
 integer(kind=irg)        :: method(3)
+integer(kind=irg)        :: GrainID
 real(kind=sgl)           :: VTR 
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
@@ -702,7 +703,63 @@ character(fnlen)         :: outputfile
 character(1)             :: hybrid
 character(2)             :: globalopt
 character(1)             :: single_opt
+character(1)             :: single_grain
 end type EBSDDENameListType
+
+type HREBSDpreviewNameListType
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: nregionsmin
+integer(kind=irg)       :: nregionsmax
+integer(kind=irg)       :: nsteps
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: dimROI
+real(kind=sgl)          :: hipasswmax
+real(kind=sgl)          :: lowpasswmax
+character(fnlen)        :: patternfile
+character(fnlen)        :: tifffile
+character(fnlen)        :: xcffile
+character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+end type HREBSDpreviewNameListType
+
+type HREBSDNameListType
+integer(kind=irg)        :: numsx
+integer(kind=irg)        :: numsy
+integer(kind=irg)        :: ipf_wd
+integer(kind=irg)        :: ipf_ht
+integer(kind=irg)        :: nthreads
+integer(kind=irg)        :: N_ROI
+integer(kind=irg)        :: size_ROI
+integer(kind=irg)        :: roi_distance
+integer(kind=irg)        :: patx
+integer(kind=irg)        :: paty
+
+real(kind=sgl)           :: delta
+real(kind=sgl)           :: totaltilt
+real(kind=sgl)           :: C11
+real(kind=sgl)           :: C12
+real(kind=sgl)           :: C44
+real(kind=sgl)           :: C33
+real(kind=sgl)           :: C13
+real(kind=sgl)           :: highpass
+real(kind=sgl)           :: lowpass
+real(kind=sgl)           :: PC(3)
+real(kind=sgl)           :: step_size
+
+character(fnlen)         :: masterfile
+character(fnlen)         :: datafile
+character(fnlen)         :: exptfile
+character(fnlen)         :: inputtype
+character(fnlen)         :: HDFstrings(10)
+character(1)             :: Remap
+character(3)             :: crystal
+character(1)             :: PCrefine
+end type HREBSDNameListType
 
 ! namelist for the EMEBSDdefect program
 type EBSDdefectNameListType

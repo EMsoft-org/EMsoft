@@ -4578,7 +4578,289 @@ enl%datafile = datafile
 enl%tmpfspath = tmpfspath
 
 end subroutine GetEBSDdefectNameList
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetHREBSDpreviewNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDDIpreview.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl name list structure
+!
+!> @date 01/24/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetHREBSDpreviewNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetHREBSDpreviewNameList
 
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(HREBSDpreviewNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: hipasswnsteps
+integer(kind=irg)       :: lowpasswnsteps
+integer(kind=irg)       :: nregionsmin
+integer(kind=irg)       :: nregionsmax
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: dimROI
+integer(kind=irg)       :: nsteps
+real(kind=sgl)          :: hipasswmax
+real(kind=sgl)          :: lowpasswmax
+character(fnlen)        :: patternfile
+character(fnlen)        :: tifffile
+character(fnlen)        :: xcffile
+character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: hDFstrings(10)
+
+namelist / HREBSDpreview / numsx, numsy, hipasswmax, lowpasswmax, &
+           patx, paty, tifffile,xcffile, exptfile, inputtype, HDFstrings, ipf_wd, &
+          ipf_ht, patternfile, dimROI, lowpasswmax
+
+! set the input parameters to default values
+numsx = 0
+numsy = 0
+hipasswmax = 0.05
+lowpasswmax = 0.2
+dimROI=8
+nregionsmin = 1
+nregionsmax = 10
+nsteps = 10
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
+patternfile = 'undefined'
+tifffile = 'undefined'
+xcffile = 'undefined'
+exptfile = 'undefined'
+inputtype = 'Binary'
+HDFstrings = ''
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=HREBSDpreview)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+        
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tifffile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' TIFF file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(xcffile).eq.'undefined') then
+      call FatalError('GetEBSDDIpreviewNameList:',' xcf file name is undefined in '//nmlfile)
+    end if
+
+    if (numsx.eq.0) then 
+        call FatalError('GetEBSDDIpreviewNameList:',' pattern size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then 
+        call FatalError('GetEBSDDIpreviewNameList:',' pattern size numsy is zero in '//nmlfile)
+    end if
+end if
+
+enl%numsx = numsx
+enl%numsy = numsy
+enl%hipasswmax = hipasswmax
+enl%nsteps = nsteps
+enl%lowpasswmax = lowpasswmax
+enl%nregionsmin = nregionsmin
+enl%nregionsmax = nregionsmax
+enl%patx = patx
+enl%paty = paty
+enl%ipf_wd = ipf_wd
+enl%ipf_ht = ipf_ht
+enl%dimROI = dimROI
+enl%patternfile = patternfile
+enl%tifffile = tifffile
+enl%xcffile = xcffile
+enl%exptfile = exptfile
+enl%inputtype = inputtype
+enl%HDFstrings = HDFstrings
+
+end subroutine GetHREBSDpreviewNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetHREBSDNameList
+!
+!> @author Chaoyi Zhu/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file for HREBSD
+!
+!> @param nmlfile namelist file name
+!> @param enl EBSD name list structure
+!> @param de differential evolution name list structure
+!> @date 01/30/20  CZ 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetHREBSDNameList(nmlfile, HREBSD, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetHREBSDNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(HREBSDNameListType),INTENT(INOUT)  :: HREBSD
+logical,OPTIONAL,INTENT(IN)             :: initonly
+logical                                 :: skipread = .FALSE.
+integer(kind=irg)        :: numsx
+integer(kind=irg)        :: numsy
+integer(kind=irg)        :: ipf_wd
+integer(kind=irg)        :: ipf_ht
+integer(kind=irg)        :: nthreads
+integer(kind=irg)        :: N_ROI
+integer(kind=irg)        :: size_ROI
+integer(kind=irg)        :: roi_distance
+integer(kind=irg)        :: patx
+integer(kind=irg)        :: paty
+
+real(kind=sgl)           :: delta
+real(kind=sgl)           :: totaltilt
+real(kind=sgl)           :: C11
+real(kind=sgl)           :: C12
+real(kind=sgl)           :: C44
+real(kind=sgl)           :: C13
+real(kind=sgl)           :: C33
+real(kind=sgl)           :: lowpass
+real(kind=sgl)           :: highpass
+real(kind=sgl)           :: PC(3)
+real(kind=sgl)           :: step_size
+
+
+character(fnlen)         :: masterfile
+character(fnlen)         :: datafile
+character(fnlen)         :: exptfile
+character(fnlen)         :: inputtype
+character(fnlen)         :: HDFstrings(10)
+character(1)             :: Remap
+character(1)             :: PCrefine
+character(3)             :: crystal
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / HREBSDNamelist / numsx, numsy, ipf_wd, ipf_ht, nthreads, N_ROI, size_ROI, &
+                            roi_distance, delta, totaltilt, C11, C12, C44, masterfile, &
+                            datafile, exptfile, inputtype, HDFstrings, Remap, highpass, &
+                            lowpass, patx, paty, PC, C13, C33, crystal, PCrefine, step_size
+                            
+
+! set the input parameters to default values (except for xtalname, which must be present)
+       
+numsx = 0
+numsy = 0
+ipf_wd = 1
+ipf_ht = 1
+nthreads = 1
+N_ROI = 21
+size_ROI = 8
+roi_distance = 250
+paty = 0
+patx = 0
+PC = (/0.5,0.5,0.5/)
+delta = 50.0
+totaltilt = 30.0
+C11 = 276.0
+C12 = 159.0
+C44 = 132.0
+C13 = 0.0
+C33 = 0.0
+crystal = 'cub'
+step_size = 1 ! micron
+masterfile = 'undefined'
+datafile = 'undefined'
+exptfile = 'undefined'
+inputtype = 'Binary'
+HDFstrings = ''
+Remap = 'n'
+PCrefine = 'n'
+highpass = 0.05
+lowpass = 0.3
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=HREBSDNamelist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ 
+ if (trim(masterfile).eq.'undefined') then
+  call FatalError('GetHREBSDNameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(exptfile).eq.'undefined') then
+  call FatalError('GetHREBSDNameList:',' pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetHREBSDNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsy.eq.0) then 
+  call FatalError('GetHREBSDNameList:',' pattern size numsy is zero '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+HREBSD%numsx = numsx
+HREBSD%numsy = numsy
+HREBSD%ipf_wd = ipf_wd
+HREBSD%ipf_ht = ipf_ht
+HREBSD%nthreads = nthreads
+HREBSD%N_ROI = N_ROI
+HREBSD%size_ROI = size_ROI
+HREBSD%roi_distance = roi_distance
+HREBSD%patx= patx
+HREBSD%paty= paty
+HREBSD%delta = delta
+HREBSD%totaltilt = totaltilt
+HREBSD%C11 = C11
+HREBSD%C12 = C12
+HREBSD%C44 = C44
+HREBSD%C13 = C13
+HREBSD%C13 = C13
+HREBSD%C33 = C33
+HREBSD%crystal = crystal
+HREBSD%step_size = step_size
+HREBSD%masterfile = masterfile
+HREBSD%datafile = datafile
+HREBSD%exptfile = exptfile
+HREBSD%inputtype = inputtype 
+HREBSD%HDFstrings = HDFstrings
+HREBSD%Remap = Remap
+HREBSD%PCrefine = PCrefine
+HREBSD%highpass=highpass
+HREBSD%lowpass=lowpass
+HREBSD%PC = PC
+end subroutine GetHREBSDNameList
 
 !--------------------------------------------------------------------------
 !
@@ -4602,9 +4884,11 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(EBSDDENameListType),INTENT(INOUT)  :: de
+!f2py intent(in,out) ::  de
 type(EBSDNameListType),INTENT(INOUT)    :: enl
-type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: p
 !f2py intent(in,out) ::  enl
+type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: p
+!f2py intent(in,out) ::  p
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4615,6 +4899,7 @@ integer(kind=irg)        :: strategy
 integer(kind=irg)        :: refresh
 integer(kind=irg)        :: iwrite
 integer(kind=irg)        :: method(3)
+integer(kind=irg)        :: GrainID
 real(kind=sgl)           :: VTR 
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
@@ -4626,9 +4911,10 @@ real(kind=sgl)           :: c1
 real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
-character(1)            :: hybrid
-character(2)            :: globalopt
+character(1)             :: hybrid
+character(2)             :: globalopt
 character(1)             :: single_opt
+character(1)             :: single_grain
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
@@ -4684,7 +4970,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe
+                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt, Fframe, single_grain, GrainID
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4694,6 +4980,7 @@ strategy=2
 refresh=10
 iwrite=7
 method=(/0,1,1/)
+GrainID=1
 VTR= -1
 CR_XC=0.9
 F_XC=0.5
@@ -4706,6 +4993,7 @@ c2=2
 hybrid='n'
 globalopt='DE'
 single_opt='n'
+single_grain='n'
 objective=1
 outputfile='undefined'
 stdout          = 6
@@ -4781,7 +5069,7 @@ if (.not.skipread) then
   call FatalError('GetEBSDDENameList:',' pattern size numsx is zero '//nmlfile)
  end if
 
- if (numsx.eq.0) then 
+ if (numsy.eq.0) then 
   call FatalError('GetEBSDDENameList:',' pattern size numsy is zero '//nmlfile)
  end if
 end if
@@ -4794,6 +5082,7 @@ de%strategy=strategy
 de%refresh=refresh
 de%iwrite=iwrite
 de%method=method
+de%GrainID=GrainID
 de%VTR=VTR
 de%CR_XC=CR_XC
 de%F_XC=F_XC
@@ -4807,6 +5096,7 @@ de%hybrid=hybrid
 de%globalopt=globalopt
 de%objective=objective
 de%single_opt=single_opt
+de%single_grain=single_grain
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy

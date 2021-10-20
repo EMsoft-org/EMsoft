@@ -14,7 +14,7 @@
 ! maximum number of iterations [50,100]
  itermax=100,
 ! intermediate output after 'refresh' iterations (No intermediate output if refresh < 1)
- refresh=0,
+ refresh=10,
 ! bounds for variables to be optimized (deformation tensor, 
 ! misorientation [degree], normalized PC [% detector width])
  bound = 0.001,2,2,
@@ -73,6 +73,10 @@
  HDFstrings = 'EMData' 'EBSD' 'EBSDPatterns' '' '' '' '' '' '' '',
 ! optimization for a single pattern
  single_opt='y',
+! optimization for a single grain (generate GrainID with MTEX)
+ single_grain='n',
+! grain ID number to be optimized 
+ GrainID=1,
 ! pattern coordinates to be used for single pattern optimization (0-based)
  patx = 0,
  paty = 0,

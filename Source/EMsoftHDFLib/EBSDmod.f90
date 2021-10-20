@@ -73,8 +73,13 @@ type EBSDMasterType
 end type EBSDMasterType
 
 type EBSDSEMArray
-        integer(kind=irg),allocatable   ::SEM_X(:)
-        integer(kind=irg),allocatable   ::SEM_Y(:)
+        real(kind=sgl)                  :: Step_X
+        real(kind=sgl)                  :: Step_Y
+        integer(kind=irg),allocatable   :: SEM_X(:)
+        integer(kind=irg),allocatable   :: SEM_Y(:)
+        integer(kind=irg),allocatable   :: GrainID(:)
+        real(kind=sgl),allocatable      :: GrainID_X(:)
+        real(kind=sgl),allocatable      :: GrainID_Y(:)
 end type
 
 interface CalcEBSDPatternDefect
