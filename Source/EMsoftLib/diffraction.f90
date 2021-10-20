@@ -1273,10 +1273,10 @@ integer(kind=irg),allocatable   :: rfamily(:,:,:),rnumfam(:)
 ! if this is a non-symmorphic space group, then also
 ! allocate the dbdiff array to tag potential double 
 ! diffraction reflections
- if (cell%nonsymmorphic) then
+ !if (cell%nonsymmorphic) then
    allocate(dbdiff(hhcc))
    dbdiff(1:hhcc) = .FALSE.
- endif
+ !endif
 
 ! and initialize the ones that need to be initialized
  zr(-hc:hc,-hc:hc,-hc:hc) = .FALSE.
@@ -1488,7 +1488,8 @@ integer(kind=irg),allocatable   :: rfamily(:,:,:),rnumfam(:)
 
 ! and clean up all variables
  deallocate(zr,z,Vg, Vgsave, rfamily, rnumfam, rg, family, numfam, idx, gg)
- if (cell%nonsymmorphic) deallocate(dbdiff)
+! if (cell%nonsymmorphic) 
+ deallocate(dbdiff)
 
 end subroutine DiffPage
 
