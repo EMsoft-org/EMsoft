@@ -1039,8 +1039,9 @@ end if
  
 call HDF_pop(HDF_head,.TRUE.) 
 
-! and generate the ctf output file as well... [.ang output to be added]
+! and generate the ctf/ang output files as well... 
 dinl%ctffile = ronl%ctffile
+dinl%angfile = ronl%angfile
 
 ipar = 0
 ipar(1) = 1
@@ -1067,6 +1068,11 @@ dinl%MCxtalname = trim(mcnl%xtalname)
 if (dinl%ctffile.ne.'undefined') then 
   call ctfebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex=.TRUE.)
   call Message('Data stored in ctf file : '//trim(ronl%ctffile))
+end if
+
+if (ronl%angfile.ne.'undefined') then 
+  call angebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%IQ,noindex=.TRUE.)
+  call Message('Data stored in ang file : '//trim(ronl%angfile))
 end if
 
 tstop = Time_tock(tickstart) 

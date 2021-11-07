@@ -8991,6 +8991,7 @@ integer(kind=irg)                                 :: nthreads
 integer(kind=irg)                                 :: matchdepth
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(fnlen)                                  :: angfile
 character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: PSvariantfile
 character(fnlen)                                  :: method
@@ -9008,12 +9009,13 @@ real(kind=sgl)                                    :: truedelta
 
 namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
                                 matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta, &
-                                usetmpfile
+                                usetmpfile, angfile
 
 nthreads = 1
 matchdepth = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
+angfile = 'undefined'
 tmpfile = 'undefined'
 PSvariantfile = 'undefined'
 method = 'FIT'
@@ -9044,10 +9046,6 @@ if (.not.skipread) then
         call FatalError('EMRefineOrientation:',' dotproduct file name is undefined in '//nmlfile)
     end if
 
-    if (trim(ctffile).eq.'undefined') then
-        call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
-    end if
-
     if (trim(tmpfile).eq.'undefined') then
         call FatalError('EMRefineOrientation:',' tmp file name is undefined in '//nmlfile)
     end if
@@ -9057,6 +9055,7 @@ enl%nthreads = nthreads
 enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
+enl%angfile = angfile
 enl%tmpfile = tmpfile
 enl%usetmpfile = usetmpfile
 enl%PSvariantfile = PSvariantfile

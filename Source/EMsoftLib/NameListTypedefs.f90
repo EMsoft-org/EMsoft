@@ -2095,6 +2095,7 @@ type RefineOrientationtype
         integer(kind=irg)       :: matchdepth
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(fnlen)        :: angfile
         character(fnlen)        :: tmpfile
         character(fnlen)        :: PSvariantfile
         character(fnlen)        :: method

@@ -5,6 +5,8 @@
  dotproductfile = 'undefined',
 ! name of ctf output file for refined orientations
  ctffile = 'undefined',
+! name of ang output file for refined orientations
+ angfile = 'undefined',
 ! name of temporary file for pre-processed patterns 
 ! (will override the temporary file name defined in the dot product file)
 ! if usetmpfile is set to 'y', then it is assumed that the tmpfile already
