@@ -5,7 +5,7 @@ set(EMsoftWorkbench_APPLICATION_NAME "")
 # -----------------------------------------------------------------------
 # 
 # -----------------------------------------------------------------------
-option(EMsoft_ENABLE_EMsoftWorkbench "Build_EMsoftWorkbench" ON)
+option(EMsoft_ENABLE_EMsoftWorkbench "Build_EMsoftWorkbench" OFF)
 if( EMsoft_ENABLE_EMsoftWorkbench AND APPLE)
   set(EMsoftWorkbench_APPLICATION_NAME "EMsoftWorkbench")
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
