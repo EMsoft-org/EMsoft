@@ -120,6 +120,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/DSHT.f90
   ${EMsoftLib_SOURCE_DIR}/fft_wrap.f90
   ${EMsoftLib_SOURCE_DIR}/ISEmod.f90
+  ${EMsoftLib_SOURCE_DIR}/PSOmod.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
