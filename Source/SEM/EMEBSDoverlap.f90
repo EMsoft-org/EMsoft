@@ -68,6 +68,7 @@
 !> @date  04/04/18  MDG 8.0 updated for new use of name lists and data structures
 !> @date  06/18/19  MDG 8.1 correction of overall pattern rotation matrix after error discovery for hexagonal master patterns
 !> @date  06/18/19  MDG 8.2 added option to perform a complete merger of two master pattern files into a single new file
+!> @date  12/10/21  MDG 8.3 modified CrystalData output to accommodate EMSphInx:mp2sht program needs
 ! ###################################################################
 
 program EMEBSDoverlap
@@ -663,17 +664,22 @@ groupname = SC_NMLparameters
 ! then we need to create it here with only the new SpaceGroupNumber 
 ! and the PointGroupNumber as data sets (since the merged pattern may have a different 
 ! symmetry than either of the member phases).
+!
+! Modified on 12/10/21 after T. Vermeij reported that the standalone EMSphInx mp2sht program
+! can not read the resulting overlap master file because of missing fields in the CrystalData group.
+!
 if (enl%newpgnum.ne.-1) then 
+! first reset the space group number and write cellA to the file
+  cellA%SYM_SGnum = SGPG(enl%newpgnum)
+  call SaveDataHDF(cellA, HDF_head)
+
+! then add the PointGroupNumber parameter
   groupname = SC_CrystalData
-    hdferr = HDF_createGroup(groupname, HDF_head)
+    hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! write the PointGroupNumber data set 
   dataset = 'PointGroupNumber'
     hdferr = HDF_writeDataSetInteger(dataset, enl%newpgnum, HDF_head)
-
-! write the SpaceGroupNumber data set 
-  dataset = SC_SpaceGroupNumber
-    hdferr = HDF_writeDataSetInteger(dataset, SGPG(enl%newpgnum), HDF_head)
 
   call HDF_pop(HDF_head)
 end if
