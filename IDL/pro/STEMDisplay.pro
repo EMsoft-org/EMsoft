@@ -20,7 +20,7 @@
 @STEMCTEMBFDFWidget      	; widget for CTEM and BFDF program modes
 @STEMCTEMBFDFWidget_event		; event handler for CTEM and BFDF program modes
 ;
-; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
+; Copyright (c) 2013-2022, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 

@@ -1,5 +1,5 @@
 ;!! orifinal  $Id: //depot/Release/ENVI51_IDL83/idl/idldir/lib/amoeba.pro#1 $
-; Copyright (c) 2013-2021, Marc De Graef Research Group/Carnegie Mellon University
+; Copyright (c) 2013-2022, Marc De Graef Research Group/Carnegie Mellon University
 ;       rights reserved. Unauthorized reproduction is prohibited.
 
 ; this routine was slightly modified to function with widgets in the Efit.pro routine.
