@@ -2060,6 +2060,7 @@ end subroutine patternmod_errormessage
 !> @date 04/04/18 MDG 1.1 added optional exptIQ parameter
 !> @date 06/02/20 MDG 2.0 changed handling of pattern binning (version 5.0.3)
 !> @date 10/06/20 MDG 2.1 add option for normalized cross correlation
+!> @date 02/16/22 MDG 2.2 fixed crash on Windows when experimental pattern is identically zero
 !--------------------------------------------------------------------------
 recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, &
                                         epatterns, exptIQ)
@@ -2341,32 +2342,38 @@ prepexperimentalloop: do iii = iiistart,iiiend
           EBSDPat(1:Px,kk) = exppatarray((jj-1)*Ppatsz+(kk-1)*Px+1:(jj-1)*Ppatsz+kk*Px)
         end do
 
-        if (present(exptIQ)) then
+! We need to intercept the very rare case where an experimental pattern is completely
+! equal to zero due to a camera communication glitch; this has happened with Bruker 
+! pattern data; if a pattern is identically zero, then we skip the following steps:
+        if (sum(EBSDPat).ne.0.0) then 
+
+            if (present(exptIQ)) then
 ! compute the pattern Image Quality 
-          exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(Px, Py, EBSDPat, ksqarray, Jres, planf))
-        end if
+                exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(Px, Py, EBSDPat, ksqarray, Jres, planf))
+            end if
 
 ! Hi-Pass filter
-        rrdata = dble(EBSDPat)
-        ffdata = applyHiPassFilter(rrdata, (/ Px, Py /), w, hpmask, inp, outp, HPplanf, HPplanb)
-        EBSDPat = sngl(ffdata)
+            rrdata = dble(EBSDPat)
+            ffdata = applyHiPassFilter(rrdata, (/ Px, Py /), w, hpmask, inp, outp, HPplanf, HPplanb)
+            EBSDPat = sngl(ffdata)
 
 ! in ncc mode, we multiply by the mask before scaling the intensities
-
-        if (ebsdnl%similaritymetric.eq.'ndp') then 
+            if (ebsdnl%similaritymetric.eq.'ndp') then 
 ! adaptive histogram equalization
-          ma = maxval(EBSDPat)
-          mi = minval(EBSDPat)
-    
-          EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
-          EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
-        else  ! use normalized cross correlation so subtract mean and divided by standard deviation
-          EBSDPat = EBSDPat * mask
-          mean = sum(EBSDPat) * Nval
-          EBSDPat = EBSDPat - mean 
-          sdev = sqrt(Nval2 * sum( EBSDPat*EBSDPat ))
-          EBSDPat = EBSDPat / sdev
-        end if
+              ma = maxval(EBSDPat)
+              mi = minval(EBSDPat)
+        
+              EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+              EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
+            else  ! use normalized cross correlation so subtract mean and divided by standard deviation
+              EBSDPat = EBSDPat * mask
+              mean = sum(EBSDPat) * Nval
+              EBSDPat = EBSDPat - mean 
+              sdev = sqrt(Nval2 * sum( EBSDPat*EBSDPat ))
+              EBSDPat = EBSDPat / sdev
+            end if
+
+        end if 
 
 ! convert back to 1D vector
         do kk=1,Py
