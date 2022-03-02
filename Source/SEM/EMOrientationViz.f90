@@ -866,7 +866,7 @@ else  ! we're creating an .mrc file, so we do not need any of the povray command
     end do    
 ! parameters specific to this volume
     psum = sum(sum(volume,1),1)
-    do iz=0,numz-1
+    do iz=1,numz
       FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
     end do
     MRCheader%amin = minval(volume)
