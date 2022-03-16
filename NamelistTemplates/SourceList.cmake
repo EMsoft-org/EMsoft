@@ -58,6 +58,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMLaue.template
   ${APP_DIR}/EMSphInx.template
   ${APP_DIR}/EMEBSDoverlap.template
+  ${APP_DIR}/EMEBSDmasterSHT.template
   ${APP_DIR}/EMCPLMmaster.template
 )
 
