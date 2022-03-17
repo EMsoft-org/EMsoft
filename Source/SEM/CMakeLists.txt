@@ -94,6 +94,33 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
 
+  Add_EMsoft_Executable(TARGET EMEBSDdepthmaster
+                        SOURCES ${APP_DIR}/EMEBSDdepthmaster.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDmaster.template 
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                        )
+
+  Add_EMsoft_Executable(TARGET EMEBSDdefect
+                        SOURCES ${APP_DIR}/EMEBSDdefect.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDdefect.template 
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                        )
+
+  Add_EMsoft_Executable(TARGET EMEBSDdefectRAM
+                        SOURCES ${APP_DIR}/EMEBSDdefectRAM.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDdefect.template 
+                        SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                        )
+
   Add_EMsoft_Executable(TARGET EMISEmaster 
                         SOURCES ${APP_DIR}/EMISEmaster.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
