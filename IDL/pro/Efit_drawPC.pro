@@ -45,8 +45,10 @@ common Efit_data_common, Efitdata
 px = Efitdata.detnumsx/2 + Efitdata.detxpc
 py = Efitdata.detnumsy/2 + Efitdata.detypc
 
-plots, px + [-10,10], [py, py], /dev, color = 250
-plots, [px, px], py + [-10,10], /dev, color = 250
-empty
+if ((px-10 gt 0) and (px+10 lt Efitdata.detnumsx) and (py-10 gt 0) and (py+10 lt Efitdata.detnumsy)) then begin
+    plots, px + [-10,10], [py, py], /dev, color = 250
+    plots, [px, px], py + [-10,10], /dev, color = 250
+    empty
+endif
 
 end
