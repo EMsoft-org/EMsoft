@@ -43,6 +43,7 @@ set(EMsoftHDFLib_SRCS
   ${EMsoftHDFLib_SOURCE_DIR}/hhHDFmod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/MDsubroutines.f90
   ${EMsoftHDFLib_SOURCE_DIR}/PSOmod.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/EBSDdefectHDFmod.f90
 
 # 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
 )
