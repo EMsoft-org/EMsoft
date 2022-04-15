@@ -96,7 +96,7 @@ integer(kind=irg),INTENT(IN),OPTIONAL               :: orthoSG
 integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup, BCval, BSval
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
-character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,st
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: donotuseindexarray
 real(kind=dbl)                                      :: cellparams(6), a, b, c
@@ -135,17 +135,21 @@ ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
 write(dataunit2,'(A)') 'Channel Text File'
-str1 = 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
+str1 = 'EMsoft'//TAB//' v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
 if (present(orthoset)) then 
   str1 = trim(str1)//'; orthorhombic space group setting '//extendedHMOrthsymbols(orthoset,orthoSG)
 end if 
 write(dataunit2,'(A)') trim(str1)
 write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
-write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
-write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
+write(st,"(I5)") ipar(7)
+write(dataunit2,'(A)') 'XCells'//TAB//trim(adjustl(st))
+write(st,"(I5)") ipar(8)
+write(dataunit2,'(A)') 'YCells'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'XStep'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'YStep'//TAB//trim(adjustl(st))
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
@@ -340,7 +344,7 @@ logical,INTENT(IN),OPTIONAL                         :: noindex
 integer(kind=irg)                                   :: ierr, i, ii, indx, SGnum, LaueGroup, BCval, BSval
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
-character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,st
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: donotuseindexarray
 real(kind=dbl)                                      :: cellparams(6)
@@ -379,13 +383,17 @@ ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
 write(dataunit2,'(A)') 'Channel Text File'
-write(dataunit2,'(A)') 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
+write(dataunit2,'(A)') 'EMsoft'//TAB//' v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
 write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())//'EMsoft'
 write(dataunit2,'(A)') 'JobMode Grid'
-write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
-write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F8.4)') 'XStep',TAB, tkdnl%StepX
-write(dataunit2,'(2A,F8.4)') 'YStep',TAB, tkdnl%StepY
+write(st,"(I5)") ipar(7)
+write(dataunit2,'(A)') 'XCells'//TAB//trim(adjustl(st))
+write(st,"(I5)") ipar(8)
+write(dataunit2,'(A)') 'YCells'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") tkdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'XStep'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") tkdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'YStep'//TAB//trim(adjustl(st))
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
@@ -945,7 +953,7 @@ integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr
 character(fnlen)                                    :: ctfname, xtn
 character                                           :: TAB = CHAR(9)
 character(1)                                        :: np
-character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10, st
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: donotuseindexarray
 real(kind=dbl)                                      :: cellparams(6)
@@ -972,13 +980,17 @@ ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
 write(dataunit2,'(A)') 'Channel Text File'
-write(dataunit2,'(A)') 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
+write(dataunit2,'(A)') 'EMsoft'//TAB//' v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
 write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode Grid'
-write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(3)
-write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(4)
-write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
+write(st,"(I5)") ipar(3)
+write(dataunit2,'(A)') 'XCells'//TAB//trim(adjustl(st))
+write(st,"(I5)") ipar(4)
+write(dataunit2,'(A)') 'YCells'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'XStep'//TAB//trim(adjustl(st))
+write(st,"(F8.4)") ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'YStep'//TAB//trim(adjustl(st))
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
