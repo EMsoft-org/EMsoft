@@ -188,7 +188,7 @@ if (enl%numav.ge.0) then
 end if
 
 ! and read the center pattern (again)
-offset3 = (/ 0, 0, enl%paty * enl%ipf_wd + enl%patx /)
+offset3 = (/ 0, 0, ( enl%paty -1 ) * enl%ipf_wd + enl%patx /)
 call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, enl%HDFstrings, expt)
 
 ! and close the pattern file
