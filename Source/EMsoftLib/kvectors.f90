@@ -645,9 +645,9 @@ if (mapmode.eq.'RoscaLambert') then
         if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
           call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
         else
-          istart = 1
+          istart = 0
           iend = npx
-          jstart = 1
+          jstart = 0
           jend = npx
             do j=jstart,jend
               do i=istart+(j-1)/2,2*j
@@ -662,7 +662,7 @@ if (mapmode.eq.'RoscaLambert') then
   case (15)   ! hexagonal 31m, 6
           istart = 0
           iend = npx
-          jstart = 1
+          jstart = 0
           jend = npx
             do j=jstart,jend
               do i=istart+j,jend

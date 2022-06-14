@@ -2492,7 +2492,7 @@ if (cell%SG%SYM_trigonal.eqv..TRUE.) then ! yes, it is
 
 ! point group 3m
   if ((sg.eq.156).or.(sg.eq.158)) stnum = 14
-  if ((sg.eq.157).or.(sg.eq.159)) stnum = 14 
+  if ((sg.eq.157).or.(sg.eq.159)) stnum = 15 
   if ((sg.eq.160).or.(sg.eq.161)) stnum = 14
   
 ! point group bar3m

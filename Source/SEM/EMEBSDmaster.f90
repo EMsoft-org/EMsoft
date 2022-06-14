@@ -540,7 +540,10 @@ groupname = SC_EMData
   hdferr = HDF_createGroup(datagroupname, HDF_head)
   HDF_FileVersion = '4.0'
   attributename = SC_HDFFileVersion
-  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+  call H5Aexists_f(HDF_head%next%objectID,trim(attributename),g_exists, hdferr)
+  if (.not.g_exists) then 
+    hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+  end if 
 
 ! =====================================================
 ! The following write commands constitute HDF_FileVersion = 4.0
