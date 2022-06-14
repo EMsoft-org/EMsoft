@@ -313,6 +313,11 @@ if (dinl%similaritymetric.eq.'ncc') then
   call Message('--> Using normalized cross correlation as similarity metric')
 end if 
 
+! intercept the case where the exptnumsx/y parameters are set to zero, but 
+! numsx/y are not...
+if (dinl%exptnumsx.eq.0) dinl%exptnumsx = dinl%numsx
+if (dinl%exptnumsy.eq.0) dinl%exptnumsy = dinl%numsy
+
 ! binned pattern array size for experimental patterns
 binx = dinl%exptnumsx/dinl%binning
 biny = dinl%exptnumsy/dinl%binning
@@ -931,10 +936,10 @@ end if
 ! Revision to the above 03 May 2021 
 ! With newer GPUs it is increasingly hard to keep them occupied. 
 ! Thus the code below has been rewritten using nested OpenMP threading.  
-! The outside threads are minamally parallel in that there are only two 
+! The outside threads are minimally parallel in that there are only two 
 ! parallel SECTIONS, and thus two threads created.  With the revisions there 
 ! is no need to keep track of the master/child threads here. 
-! The first SECTION is doing the hard work of sendind the calculated/precalculated 
+! The first SECTION is doing the hard work of sending the calculated/precalculated 
 ! dictionary to the GPU then sending in batches of experimental patterns to the GPU, 
 ! taking the dot product and then allowing the CPU to rank the results.  
 ! The second SECTION does either the calculation of the dictionary (dynamic) or 
@@ -942,10 +947,10 @@ end if
 ! is performing the DP calculation and using some fancy pointer math prepares the new
 ! dictionary chunk for the next batch.  
 ! Within each SECTION there are portions that undergo nested parallelization for some 
-! key FOR loops, where many threads can be thrown at the problem.  Notebaly the creation 
+! key FOR loops, where many threads can be thrown at the problem.  Notably the creation 
 ! of dictionary patterns, and the sorting of the dot product results.  Using many threads 
 ! here makes creating the dictionary patterns much less of a burden and keeps the GPU
-! much bussier.  
+! much busier.  
 ! There is some overhead with making lots of threads on each iteration. Future versions will 
 ! try and address this.  
 
