@@ -352,16 +352,24 @@ end else begin
                 EfitCalc
 	endcase
         'DETuXPC' : begin
+                ldx = float(Efitdata.detmxpc) 
+                ldy = 0.0
                 Efitdata.detxpc += float(Efitdata.detmxpc)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detxpc,FORMAT='(F9.2)'), Efitwidget_s.fitValue[2]
                 Core_Print, 'Pattern center x set to [pixels] '+string(Efitdata.detxpc,FORMAT='(F9.2)')
+; correct the Euler angles to compensate for this pattern center change
+                Efit_correction, ldx, ldy, [Efitdata.detphi1, Efitdata.detphi, Efitdata.detphi2] 
 		Efit_updatePC,/display
                 EfitCalc
 	endcase
         'DETuYPC' : begin
+                ldx = 0.0
+                ldy = float(Efitdata.detmypc) 
                 Efitdata.detypc += float(Efitdata.detmypc)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detypc,FORMAT='(F9.2)'), Efitwidget_s.fitValue[3]
                 Core_Print, 'Pattern center y set to [pixels] '+string(Efitdata.detypc,FORMAT='(F9.2)')
+; correct the Euler angles to compensate for this pattern center change
+                Efit_correction, ldx, ldy, [Efitdata.detphi1, Efitdata.detphi, Efitdata.detphi2] 
 		Efit_updatePC,/display
                 EfitCalc
 	endcase
@@ -411,16 +419,24 @@ end else begin
                 EfitCalc
 	endcase
         'DETdXPC' : begin
+                ldx = -float(Efitdata.detmxpc) 
+                ldy = 0.0
                 Efitdata.detxpc -= float(Efitdata.detmxpc)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detxpc,FORMAT='(F9.2)'), Efitwidget_s.fitValue[2]
                 Core_Print, 'Pattern center x set to [pixels] '+string(Efitdata.detxpc,FORMAT='(F9.2)')
+; correct the Euler angles to compensate for this pattern center change
+                Efit_correction, ldx, ldy, [Efitdata.detphi1, Efitdata.detphi, Efitdata.detphi2] 
 		Efit_updatePC,/display
                 EfitCalc
 	endcase
         'DETdYPC' : begin
+                ldx = 0.0
+                ldy = -float(Efitdata.detmypc) 
                 Efitdata.detypc -= float(Efitdata.detmypc)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detypc,FORMAT='(F9.2)'), Efitwidget_s.fitValue[3]
                 Core_Print, 'Pattern center y set to [pixels] '+string(Efitdata.detypc,FORMAT='(F9.2)')
+; correct the Euler angles to compensate for this pattern center change
+                Efit_correction, ldx, ldy, [Efitdata.detphi1, Efitdata.detphi, Efitdata.detphi2] 
 		Efit_updatePC,/display
                 EfitCalc
 	endcase

@@ -26,72 +26,50 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
+; EMsoft:Efit_correction.pro
+;--------------------------------------------------------------------------
 ;
-; Function: qu2eu
+; PROGRAM: Efit_correction.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief Quaternions to Euler angles [Morawiec, page 40]
+;> @brief Applies an orientation correction to compensate for a pattern center change 
 ;
-;> @note verified 8/5/13
-;
-;> @param q quaternion (scalar first)
-; 
-;> @date 08/04/16 MDG 1.0 original
+;> @date 6/24/22 MDG 1.0 separate routine for orientation correction after PC change
 ;--------------------------------------------------------------------------
-function Core_qu2eu,q
+pro Efit_correction, ldx, ldy, eu
 
-;common rotationcommon, LPs, epsijk
-epsijk = 1.0
+common Efit_widget_common, Efitwidget_s
+common Efit_data_common, Efitdata
 
-qq = q
+; compute the correction quaternion based on the pattern center shifts w.r.t. the original pattern center
+alpha = !pi*0.5+(Efitdata.dettheta-Efitdata.detMCsig)*!dtor
+dx = -ldx * Efitdata.detdelta
+dy = -ldy * Efitdata.detdelta
+quat = Core_eu2qu( eu )
+Lval = Efitdata.detL
 
-q03 = qq[0]^2+qq[3]^2
-q12 = qq[1]^2+qq[2]^2
-chi = sqrt(q03*q12)
+; compute correction axis and angle
+rho = sqrt( dx^2+(dy*cos(2.D0*alpha))^2)
+n = [-dx*cos(alpha),-dy*cos(2.D0*alpha),dx*sin(alpha)]/rho
+rho = sqrt(Lval^2 + 2.D0*Lval*dy*sin(2.0*alpha)+dx^2+dy^2)
+if ((Lval+dy*sin(2.D0*alpha)) gt rho) then omega = 0.0 else omega = acos((Lval+dy*sin(2.D0*alpha))/rho)
 
-if (chi eq 0.D0) then begin
-  if (q12 eq 0.D0) then  begin
-   if (epsijk eq 1) then begin
-    Phi = 0.D0
-    phi2 = 0.D0                  ; arbitrarily due to degeneracy
-    phi1 = atan(-2.D0*qq[0]*qq[3],qq[0]^2-qq[3]^2)
-   end else begin
-    Phi = 0.D0
-    phi2 = 0.D0                  ; arbitrarily due to degeneracy
-    phi1 = atan( 2.D0*qq[0]*qq[3],qq[0]^2-qq[3]^2)
-   end
-  end else begin
-   if (epsijk eq 1) then begin
-    Phi = !dpi
-    phi2 = 0.D0                  ; arbitrarily due to degeneracy
-    phi1 = atan(2.D0*qq[1]*qq[2],qq[1]^2-qq[2]^2)
-   end else begin
-    Phi = !dpi
-    phi2 = 0.D0                  ; arbitrarily due to degeneracy
-    phi1 = atan(2.D0*qq[1]*qq[2],qq[1]^2-qq[2]^2)
-   end
-  end
-end else begin           ; this is not a special degenerate case
-  if (epsijk eq 1) then begin
-    Phi = atan( 2.D0*chi, q03-q12 )
-    chi = 1.D0/chi
-    phi1 = atan( (-qq[0]*qq[2]+qq[1]*qq[3])*chi, (-qq[0]*qq[1]-qq[2]*qq[3])*chi )
-    phi2 = atan( (qq[0]*qq[2]+qq[1]*qq[3])*chi, (-qq[0]*qq[1]+qq[2]*qq[3])*chi )
-  end else begin
-    Phi = atan( 2.D0*chi, q03-q12 )
-    chi = 1.D0/chi
-    phi1 = atan( (qq[0]*qq[2]+qq[1]*qq[3])*chi, (qq[0]*qq[1]-qq[2]*qq[3])*chi )
-    phi2 = atan( (-qq[0]*qq[2]+qq[1]*qq[3])*chi, (qq[0]*qq[1]+qq[2]*qq[3])*chi )
-  end
+; apply the correction to the orientation quaternion
+qu = Core_ax2qu( [ n[0], n[1], n[2], omega ] )
+quats = float(reform(Core_quatmult(quat,qu),4,1))
+
+; convert quaternion to Euler angles and update widgets
+eu = Core_qu2eu(quats)
+Efitdata.detphi1 = eu[0]
+Efitdata.detphi  = eu[1]
+Efitdata.detphi2 = eu[2]
+
+WIDGET_CONTROL, SET_VALUE=string(Efitdata.detphi1,FORMAT='(F9.2)'), Efitwidget_s.fitValue[5]
+Core_Print, 'Euler angle phi1 set to '+string(Efitdata.detphi1,FORMAT='(F9.2)')
+WIDGET_CONTROL, SET_VALUE=string(Efitdata.detphi,FORMAT='(F9.2)'), Efitwidget_s.fitValue[6]
+Core_Print, 'Euler angle phi set to '+string(Efitdata.detphi,FORMAT='(F9.2)')
+WIDGET_CONTROL, SET_VALUE=string(Efitdata.detphi2,FORMAT='(F9.2)'), Efitwidget_s.fitValue[7]
+Core_Print, 'Euler angle phi2 set to '+string(Efitdata.detphi2,FORMAT='(F9.2)')
+
 end
-
-res = [ phi1, Phi, phi2 ]
-
-; reduce Euler angles to definition ranges (and positive values only)
-if (res[0] lt 0.D0) then res[0] = (res[0]+100.D0*!dpi) mod (2.D0*!dpi)
-if (res[1] lt 0.D0) then res[1] = (res[1]+100.D0*!dpi) mod !dpi
-if (res[2] lt 0.D0) then res[2] = (res[2]+100.D0*!dpi) mod (2.D0*!dpi)
-
-return,res / !dtor
-end ;function Core_qu2eu

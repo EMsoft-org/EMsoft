@@ -33,6 +33,7 @@
 @Efit_navigator_event
 @Efit_updatePC
 @Efit_showpattern
+@Efit_correction
 
 ;
 ; Copyright (c) 2013-2022, Marc De Graef Research Group/Carnegie Mellon University
@@ -92,7 +93,7 @@ common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitM
 common getenv_common, librarylocation
 
 ; before we do anything, we make sure that the location of the app_user_dir is set 
-appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by vitual machine apps within EMsoft'],1)
+appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by virtual machine apps within EMsoft'],1)
 
 !EXCEPT = 0
 logmode = 0
