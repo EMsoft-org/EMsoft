@@ -433,6 +433,7 @@ if (tkdnl%energyaverage .eq. 0) then
         accum_e_MC = acc%accum_e_detector
         mLPNH = master%mLPNH
         mLPSH = master%mLPSH
+
 else if (tkdnl%energyaverage .eq. 1) then
         allocate(mLPNH_simple(-tkdnl%npx:tkdnl%npx,-tkdnl%npy:tkdnl%npy))
         allocate(mLPSH_simple(-tkdnl%npx:tkdnl%npx,-tkdnl%npy:tkdnl%npy))
@@ -857,7 +858,6 @@ allocate(TKDpatterninteger(binx,biny),TKDpatternintd(binx,biny),TKDpatternad(bin
           read(itmpexpt,rec=(jj-1)*Ne+pp) tmpimageexpt
           expt((pp-1)*correctsize+1:pp*correctsize) = tmpimageexpt
         end do
-
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
         call CLerror_check('EMTKDDISubroutine:clEnqueueWriteBuffer', ierr)
@@ -917,6 +917,7 @@ allocate(TKDpatterninteger(binx,biny),TKDpatternintd(binx,biny),TKDpatternad(bin
      end if
 
 !$OMP DO SCHEDULE(DYNAMIC)
+
 
      do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
        binned = 0.0

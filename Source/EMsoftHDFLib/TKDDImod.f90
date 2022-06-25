@@ -250,8 +250,9 @@ end subroutine TKDIndexingreadMasterfile
 !> @date 07/01/15   SS  1.1 added omega as the second tilt angle
 !> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
-!> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
+!> @date 06/12/16  MDG  1.4 added correction for effective detector pixel size w.r.t. equal area mapping
 !> @date 05/07/17  MDG  2.0 forked from EBSD version for TKD indexing program
+!> @date 06/25/22  MDG  2.1 correction in gam factor
 !--------------------------------------------------------------------------
 recursive subroutine TKDIndexingGenerateDetector(enl, acc, master, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: TKDIndexingGenerateDetector
@@ -279,7 +280,7 @@ real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
 integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
-real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
+real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp, calpha           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
 
@@ -363,6 +364,7 @@ deallocate(z)
 ! get an estimate of the cone opening angle for which the projected area at the pattern
 ! center is the same as delta**2
   alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
+  calpha = cos(alpha)
 
 ! then get the direction cosines for the pattern center, keeping in mind that for TKD, 
 ! the pattern center need not lie on the detector
@@ -396,8 +398,14 @@ deallocate(z)
         if ((i.eq.ipx).and.(j.eq.ipy)) then
           gam = 0.25 
         else
-          gam = 2.0 * tan(alpha) * dp / ( tan(theta+alpha) - tan(theta-alpha) ) * 0.25
+          gam = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
         end if
+        ! old code... gives negative gam factor ...
+        ! if ((i.eq.ipx).and.(j.eq.ipy)) then
+        !   gam = 0.25 
+        ! else
+        !   gam = 2.0 * tan(alpha) * dp / ( tan(theta+alpha) - tan(theta-alpha) ) * 0.25
+        ! end if
 ! interpolate the intensity 
         do k=Emin,Emax 
           acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
