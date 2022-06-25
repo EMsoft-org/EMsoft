@@ -135,13 +135,13 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)             :: dpfilebase 
 character(fnlen),INTENT(IN)             :: cwd
 
-character(fnlen)                        :: dirname, image_filename, dpfile
+character(fnlen)                        :: dirname, image_filename, dpfile, groupname, dataset
 type(HDFobjectStackType)                :: HDF_head
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(EBSDIndexingNameListType)          :: dinl
 integer(kind=irg)                       :: hdferr, shp(2), jj, nx, ny
 real(kind=sgl)                          :: mi, ma
-logical                                 :: fexists
+logical                                 :: fexists, g_exists, isEBSD, isTKD, readonly
 
 ! declare variables for use in object oriented image module
 integer                                 :: iostat
@@ -155,15 +155,53 @@ integer(int8), allocatable              :: output_image(:,:)
 dpfile = trim(cwd)//'/'//trim(dpfilebase)//'.h5'
 call Message (' looking for file '//trim(dpfile))
 
-call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
-                            getADP=.TRUE., &
-                            getKAM=.TRUE., &
-                            getCI=.TRUE., &
-                            getIQ=.TRUE., & 
-                            getOSM=.TRUE., & 
-                            presentFolder=.TRUE.) 
+! is this an EBSD or TKD dot product file ?
+nullify(HDF_head%next)
+readonly = .TRUE.
+hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
 
-call Message('   found file and read data arrays')
+! make sure this is an EBSD dot product file
+groupname = "Scan 1"
+    hdferr = HDF_openGroup(groupname, HDF_head)
+
+dataset = 'EBSD'
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then 
+  isEBSD=.TRUE.
+else
+  dataset = 'TKD'
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+  if (g_exists.eqv..TRUE.) then 
+    isEBSD = .FALSE. 
+    isTKD = .TRUE.
+  end if 
+end if 
+
+call HDF_pop(HDF_head,.TRUE.)
+nullify(HDF_head%next)
+
+if (isEBSD.eqv..TRUE.)then 
+  call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
+                              getADP=.TRUE., &
+                              getKAM=.TRUE., &
+                              getCI=.TRUE., &
+                              getIQ=.TRUE., & 
+                              getOSM=.TRUE., & 
+                              presentFolder=.TRUE.) 
+else
+  if (isTKD.eqv..TRUE.)then 
+    call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
+                                getADP=.TRUE., &
+                                getKAM=.TRUE., &
+                                getCI=.TRUE., &
+                                getIQ=.TRUE., & 
+                                getOSM=.TRUE., & 
+                                presentFolder=.TRUE.,&
+                                isTKD=.TRUE.) 
+  end if 
+end if 
+
+  call Message('   found file and read data arrays')
 
 ! take these arrays and generate image files for each of them; place them in a folder with the dpfilebase name 
 dirname = trim(dpfilebase)
@@ -185,7 +223,7 @@ ny = shp(2)
 allocate(output_image(nx,ny))
 output_image = EBSDDIdata%ADP
 im2 = image_t(output_image)
-if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+if(im2%empty()) call Message("extractImages","failed to convert array to image")
 
 ! this data set is already scaled to byte range
 
@@ -216,7 +254,7 @@ do jj = 1,ny
 end do
 
 im2 = image_t(output_image)
-if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+if(im2%empty()) call Message("extractImages","failed to convert array to image")
 
 ! create the file
 call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
@@ -245,7 +283,7 @@ do jj = 1,ny
 end do
 
 im2 = image_t(output_image)
-if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+if(im2%empty()) call Message("extractImages","failed to convert array to image")
 
 ! create the file
 call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
@@ -271,7 +309,7 @@ output_image = 0
 output_image = int(255.0*EBSDDIdata%KAM/ma)
 
 im2 = image_t(output_image)
-if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+if(im2%empty()) call Message("extractImages","failed to convert array to image")
 
 ! create the file
 call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
@@ -297,7 +335,7 @@ output_image = 0
 output_image = int(255.0*EBSDDIdata%OSM/ma)
 
 im2 = image_t(output_image)
-if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+if(im2%empty()) call Message("extractImages","failed to convert array to image")
 
 ! create the file
 call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
@@ -307,6 +345,7 @@ else
   call Message('  OSM array written to '//trim(image_filename))
 end if 
 deallocate(output_image,EBSDDIdata%OSM)
+
 
 call chdir(trim(cwd))
 

@@ -1958,5 +1958,4 @@ type EBSDDIdataType
   real(kind=sgl),allocatable    :: RefinedDotProducts(:)
 end type EBSDDIdataType
 
-
 end module typedefs

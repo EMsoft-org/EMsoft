@@ -2222,7 +2222,7 @@ recursive subroutine  readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata,
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
                                             getValid, getXPosition, getYPosition, getRefinedDotProducts, &
-                                            getRefinedEulerAngles, getDictionaryEulerAngles, presentFolder)
+                                            getRefinedEulerAngles, getDictionaryEulerAngles, presentFolder, isTKD)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
 
 use local
@@ -2264,9 +2264,10 @@ logical,INTENT(IN),OPTIONAL                         :: getYPosition
 logical,INTENT(IN),OPTIONAL                         :: getRefinedDotProducts
 logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
 logical,INTENT(IN),OPTIONAL                         :: presentFolder 
+logical,INTENT(IN),OPTIONAL                         :: isTKD
 
 character(fnlen)                                    :: infile, groupname, dataset
-logical                                             :: stat, readonly, g_exists, h_exists
+logical                                             :: stat, readonly, g_exists, h_exists, t_exists
 type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
@@ -2304,23 +2305,30 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'EBSDDictionaryIndexingNML'
-call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (present(isTKD)) then 
+    if (isTKD.eqv..TRUE.) then 
+        dataset = 'TKDDictionaryIndexingNML'
+        call H5Lexists_f(HDF_head%next%objectID,trim(dataset),t_exists, hdferr)
+    end if 
+else
+    dataset = 'EBSDDictionaryIndexingNML'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 
-dataset = 'IndexEBSD'
-call H5Lexists_f(HDF_head%next%objectID,trim(dataset),h_exists, hdferr)
+    dataset = 'IndexEBSD'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),h_exists, hdferr)
 
-if ((g_exists.eqv..FALSE.).and.(h_exists.eqv..FALSE.)) then
-    call FatalError('readEBSDDotProductFile','this is not an EBSD dot product or SI file')
-end if
+    if ((g_exists.eqv..FALSE.).and.(h_exists.eqv..FALSE.)) then
+        call FatalError('readEBSDDotProductFile','this is not an EBSD dot product or SI file')
+    end if
 
-if (g_exists) then 
-  call Message(' --> EBSD dictionary indexing file found')
-end if
+    if (g_exists) then 
+      call Message(' --> EBSD dictionary indexing file found')
+    end if
 
-if (h_exists) then 
-  call Message(' --> EBSD spherical indexing file found')
-end if
+    if (h_exists) then 
+      call Message(' --> EBSD spherical indexing file found')
+    end if
+end if 
 
 call HDF_pop(HDF_head)
 
@@ -2328,13 +2336,14 @@ call HDF_pop(HDF_head)
 
 EBSDDIdata%Nexp = -1
 
-if (g_exists.eqv..TRUE.) then
+if ((g_exists.eqv..TRUE.).or.(t_exists.eqv..TRUE.)) then
 !====================================
 ! read all NMLparameters group datasets
 !====================================
 groupname = SC_NMLparameters
     hdferr = HDF_openGroup(groupname, HDF_head)
 groupname = SC_EBSDIndexingNameListType
+if (t_exists.eqv..TRUE.) groupname = SC_TKDIndexingNameListType
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! we'll read these roughly in the order that the HDFView program displays them...
@@ -2556,6 +2565,7 @@ end if
 groupname = 'Scan 1'
     hdferr = HDF_openGroup(groupname, HDF_head)
 groupname = SC_EBSD
+if (t_exists.eqv..TRUE.) groupname = SC_TKD
     hdferr = HDF_openGroup(groupname, HDF_head)
 groupname = SC_Data
     hdferr = HDF_openGroup(groupname, HDF_head)
