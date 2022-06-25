@@ -76,7 +76,8 @@ integer(kind=irg)                           :: ipf_wd, ipf_ht, irow, numpat, ml(
 integer(kind=irg)                           :: dims(1), hdferr, io_int(2), i, j, ii, numdp
 real(kind=sgl)                              :: io_real(1), mi, ma
 character(fnlen)                            :: fname, xtalname(5), infile, rdxtalname, TIFF_filename
-logical                                     :: f_exists 
+logical                                     :: f_exists, isTKD
+character(4)                                :: EBSDorTKD
 
 ! declare variables for use in object oriented image module
 integer                                     :: iostat
@@ -106,6 +107,10 @@ else
   call GetdpmergeNameList(nmldeffile,dpmnl)
 end if
 
+write (*,*) "Are these files from EBSD or TKD ? " 
+read (*,*) EBSDorTKD
+isTKD = .FALSE.
+if (trim(EBSDorTKD).eq.'TKD') isTKD = .TRUE.
 
 ! how many input files are there ?
 numdp = 0
@@ -124,20 +129,39 @@ if (dpmnl%indexingmode.eq.'DI') then
 ! sure that they cover the same data (after the first one has been read, allocate the data arrays) 
   do i=1,numdp
     call Message(' Reading data from '//trim(dpmnl%dotproductfile(i)) )
-    if (trim(dpmnl%usedp).eq.'original') then ! read the original DI results
-      call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
-                                  getEulerAngles = .TRUE., &
-                                  getIQ = .TRUE., &
-                                  getOSM = .TRUE., &
-                                  getCI = .TRUE.)
-    else   ! read the results from the refinement run
-      call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
-                                  getRefinedEulerAngles = .TRUE., &
-                                  getIQ = .TRUE., &
-                                  getOSM = .TRUE., &
-                                  getRefinedDotProducts = .TRUE., &
-                                  getCI = .TRUE.)
-    end if
+    if (isTKD.eqv..FALSE.) then 
+      if (trim(dpmnl%usedp).eq.'original') then ! read the original DI results
+        call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
+                                    getEulerAngles = .TRUE., &
+                                    getIQ = .TRUE., &
+                                    getOSM = .TRUE., &
+                                    getCI = .TRUE.)
+      else   ! read the results from the refinement run
+        call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
+                                    getRefinedEulerAngles = .TRUE., &
+                                    getIQ = .TRUE., &
+                                    getOSM = .TRUE., &
+                                    getRefinedDotProducts = .TRUE., &
+                                    getCI = .TRUE.)
+      end if
+    else 
+      if (trim(dpmnl%usedp).eq.'original') then ! read the original DI results
+        call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
+                                    getEulerAngles = .TRUE., &
+                                    getIQ = .TRUE., &
+                                    getOSM = .TRUE., &
+                                    getCI = .TRUE., &
+                                    isTKD = .TRUE.)
+      else   ! read the results from the refinement run
+        call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
+                                    getRefinedEulerAngles = .TRUE., &
+                                    getIQ = .TRUE., &
+                                    getOSM = .TRUE., &
+                                    getRefinedDotProducts = .TRUE., &
+                                    getCI = .TRUE., &
+                                    isTKD = .TRUE.)
+      end if
+    end if 
 
     if (i.eq.1) then 
   ! get the ROI dimensions and allocate the arrays 
