@@ -1,0 +1,19 @@
+ &CPLMData
+! this file provides the input parameters for the computation of the polarized light intensities
+! for a given set of grain orientations.
+!
+! number of sample angular sampling steps
+ phinum = 36,
+! number of image pixels along x
+ numpx = 100,
+! number of image pixels along y
+ numpy = 100,
+ !  file name for Mueller matrix master pattern data
+ masterfile = 'undefined',
+!  file name for Euler angles
+ anglefile = 'undefined',
+!  file name for HDF5 output
+ outputfile = 'undefined',
+!  prefix for tiff image files; leave undefined if no tiff output needed
+ tiffprefix = 'undefined',
+ /

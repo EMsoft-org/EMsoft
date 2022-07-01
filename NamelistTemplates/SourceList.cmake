@@ -61,6 +61,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMEBSDmasterSHT.template
   ${APP_DIR}/EMEBSDdefect.template
   ${APP_DIR}/EMCPLMmaster.template
+  ${APP_DIR}/EMCPLM.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

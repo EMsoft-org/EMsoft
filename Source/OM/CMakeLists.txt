@@ -17,5 +17,14 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                               INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                               )
 
+  Add_EMsoft_Executable(TARGET EMCPLM
+                              SOURCES ${APP_DIR}/EMCPLM.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                              TEMPLATE ${TMPLT_DIR}/EMCPLM.template 
+                              SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/OM
+                              INSTALL_PROGRAM TRUE
+                              INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                              )
+
 
 endif()
