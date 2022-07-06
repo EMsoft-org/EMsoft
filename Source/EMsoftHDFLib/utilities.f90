@@ -122,6 +122,7 @@ dataset = SC_LatticeParameters
 else
   call Message('getXtalData','Error reading xtal file '//trim(filename))
   call Message('Writing default lattice parameter set; .ctf/.ang file will need to be edited manually')
+  allocate(cpm(6))
   cpm = (/ 0.4D0, 0.4D0, 0.4D0, 90.D0, 90.D0, 90.D0 /)
   SGnum = 225
 end if
