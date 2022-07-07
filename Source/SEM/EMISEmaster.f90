@@ -423,6 +423,12 @@ call Message(' -> Initializing incident beam direction list')
 ! we need to generate enough atoms to fill a sphere with radius
 ! three times the largest lattice parameter, and then keep only
 ! those atoms (so count them first and then allocate the coordinate array)
+!
+! this is essentially the iCHORD forward model, but put in the form of an 
+! EMsoft master pattern computation.
+!
+! https://doi.org/10.1016/j.ultramic.2019.03.007
+!
 rsphere = 3.0 * maxval( (/ cell%a, cell%b, cell%c /) )
 r2 = rsphere*rsphere
 maxlat = maxloc( (/ cell%a, cell%b, cell%c /) )
@@ -492,7 +498,7 @@ rsphere = rsphere * 10.0   ! the ISE algorithm expects Angstrom units ...
 ! ---------- and here we start the beam direction loop
    beamloop:do ik = 1,numk
 
-     ISEinten = getISEintensity(karray(1:3,ik), atomcnt, atomlist, atomrad, rsphere, emnl%iscale(1), emnl%iscale(2))
+     ISEinten = getISEintensity(karray(1:3,ik), atomcnt, atomlist, atomrad, rsphere, emnl%iscale(1), emnl%iscale(2), usehex)
 
 ! and store the resulting svals values, applying point group symmetry where needed.
      ipx = kij(1,ik)

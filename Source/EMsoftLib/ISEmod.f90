@@ -38,6 +38,7 @@
 !> @note This is based on the iCHORD model for ballistic ion channeling
 !
 !> @date 12/18/20  MDG 1.0 initial module, based on iCHORD forward model for ISE
+!> @date 07/07/22  MDG 1.1 correction for hexagonal reference frames
 !--------------------------------------------------------------------------
 module ISEmod 
 
@@ -50,24 +51,34 @@ IMPLICIT NONE
 
 contains 
 
-recursive function getISEintensity(k, atomcnt, atomlist, atomrad, rsphere, a, b) result(inten)
+recursive function getISEintensity(kloc, atomcnt, atomlist, atomrad, rsphere, a, b, usehex) result(inten)
 !DEC$ ATTRIBUTES DLLEXPORT :: getISEintensity
 
 IMPLICIT NONE
 
-real(kind=sgl), INTENT(IN)          :: k(3)                ! this is already a unit vector
+real(kind=sgl), INTENT(IN)          :: kloc(3)                ! this is already a unit vector
 integer(kind=irg), INTENT(IN)       :: atomcnt 
 real(kind=sgl), INTENT(IN)          :: atomlist(3,atomcnt) ! in Angstrom units
 real(kind=sgl), INTENT(IN)          :: atomrad(atomcnt)    ! in Angstrom units
 real(kind=sgl), INTENT(IN)          :: rsphere             ! in Angstrom units
 real(kind=sgl), INTENT(IN)          :: a
 real(kind=sgl), INTENT(IN)          :: b
+logical,INTENT(IN),OPTIONAL         :: usehex
 real(kind=sgl)                      :: inten 
 
 real(kind=sgl)                      :: apos(3,atomcnt), dp, axang(4), qu(4), xyz(3), Dsphere, Appix, shft, px, py, &
-                                       dis(atomcnt), ndis(atomcnt), Gd(atomcnt), adisk, bdisk, arad(atomcnt)
+                                       dis(atomcnt), ndis(atomcnt), Gd(atomcnt), adisk, bdisk, arad(atomcnt), k(3)
 real(kind=sgl),allocatable          :: pplane(:,:) 
 integer(kind=irg)                   :: i, iatom, ss(atomcnt), spsize, ipx, ipy, ix, iy, maxrad
+
+! take care of the hexagonal reference frame
+k = kloc
+if (present(usehex)) then 
+  if (usehex.eqv..TRUE.) then 
+    k(2) = (k(1)+2.0*k(2))/sqrt(3.0)
+  end if 
+end if 
+k = k/sqrt(sum(k*k))
 
 ! use the k vector to determine a rotation quaternion
 dp = DOT_PRODUCT(k, (/ 0.0, 0.0, 1.0 /) )
@@ -138,7 +149,7 @@ do iatom=1,atomcnt
   end do
 end do
 
-! and summ all the values to get the ISE intensity 
+! and sum all the values to get the ISE intensity 
 inten = sum(pplane)
 
 deallocate(pplane)

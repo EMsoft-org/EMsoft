@@ -9,6 +9,8 @@
  nthreads = 1,
 ! this file will also contain the output data of the master program
  outname = 'undefined',
+! name (without extension) of the tiff output file for the Northern Hemisphere
+ tiffname = 'undefined',
 ! do you wish to receive a notification (Email or Slack) when the program completes ?
  Notify = 'Off', 
  /
