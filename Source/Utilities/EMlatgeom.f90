@@ -54,11 +54,11 @@ use crystal
 use constants
 
 integer(kind=irg)        	:: isel,another, oi_int(3)
-real(kind=sgl)           	:: v1(3),v2(3),vc(3),p,q,r, oi_real(1)
+real(kind=sgl)           	:: v1(3),v2(3),vc(3),p,q,r, oi_real(1), dp
 character(1)             	:: sp,sp2
-character(fnlen)		:: progname, progdesc, gname
+character(fnlen)		    :: progname, progdesc, gname
 type(unitcell)        		:: cell
-logical				:: loadingfile
+logical				        :: loadingfile
 
  progname = 'EMlatgeom.f90'
  progdesc = 'Simple lattice geometry program'
@@ -96,14 +96,24 @@ logical				:: loadingfile
     oi_real(1) = CalcAngle(cell,v1,v2,sp)*180.0/cPi
     call WriteValue(' -> Angle [deg] = ', oi_real, 1, "(2x,F8.4)")
    else
-    if (sp.eq.'d') sp2='r'
-    if (sp.eq.'r') sp2='d'
-    call CalcCross(cell,v1,v2,vc,sp,sp2,0)
-    oi_int(1:3)=int(vc(1:3))
-    if (sp.eq.'d') then
-     call WriteValue(' ', oi_int, 3, "(' -> p x q = (',2(i3,1x),i3,')')")
+    if (isel.lt.7) then 
+      dp = CalcDot(cell,v1,v2,sp)
+      oi_real(1)= dp
+      if (sp.eq.'d') then
+        call WriteValue(' ', oi_real, 1, "(' -> p . q = ',F8.4)")
+      else
+        call WriteValue(' ', oi_real, 1, "(' -> p . q = ',F8.4)")
+      end if
     else
-     call WriteValue(' ', oi_int, 3, "(' -> p x q = [',2(i3,1x),i3,']')")
+      if (sp.eq.'d') sp2='r'
+      if (sp.eq.'r') sp2='d'
+      call CalcCross(cell,v1,v2,vc,sp,sp2,0)
+      oi_int(1:3)=int(vc(1:3))
+      if (sp.eq.'d') then
+       call WriteValue(' ', oi_int, 3, "(' -> p x q = (',2(i3,1x),i3,')')")
+      else
+       call WriteValue(' ', oi_int, 3, "(' -> p x q = [',2(i3,1x),i3,']')")
+      end if
     end if
    end if
   end if
@@ -127,6 +137,7 @@ end program EMlatgeom
 !> @date 05/21/01 MDG 2.0 f90
 !> @date 04/16/13 MDG 3.0 rewrite
 !> @date 06/13/14 MDG 4.0 rewrite without global variables
+!> @date 08/02/22 MDG 5.0 added dot product
 !--------------------------------------------------------------------------
 subroutine PrintMenu(isel)
 
@@ -141,8 +152,10 @@ integer(kind=irg)		:: io_int(1)
  call Message(' [2] length of reciprocal space vector', frm = "(A)")
  call Message(' [3] angle between direct space vectors', frm = "(A)")
  call Message(' [4] angle between reciprocal space vectors', frm = "(A)")
- call Message(' [5] cross product, direct space vectors', frm = "(A)")
- call Message(' [6] cross product, reciprocal space vectors', frm = "(A/)")
+ call Message(' [5] dot product, direct space vectors', frm = "(A)")
+ call Message(' [6] dot product, reciprocal space vectors', frm = "(A)")
+ call Message(' [7] cross product, direct space vectors', frm = "(A)")
+ call Message(' [8] cross product, reciprocal space vectors', frm = "(A/)")
  call ReadValue('    Enter selection: ', io_int, 1)
  isel = io_int(1)
 
