@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.14.5)
 
 include ("cmake/CMakePolicies.cmake")
 
+SET(AIM_USE_SSE OFF)
+
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
 

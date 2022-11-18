@@ -97,7 +97,13 @@ use,intrinsic :: ISO_C_BINDING
 !DEC$ ATTRIBUTES DLLEXPORT :: ish
 !DEC$ ATTRIBUTES DLLEXPORT :: irg
 !DEC$ ATTRIBUTES DLLEXPORT :: ill
-@EMsoft_HDF5_110_DEFINES@
+
+! new kind parameter definitions for use with HDF5-1_12_2; replace Fortran_REAL_4 and 8 
+ INTEGER, PARAMETER :: real_kind_7 = SELECTED_REAL_KIND(6,37) !should map to REAL*4 on most modern processors
+ INTEGER, PARAMETER :: real_kind_15 = SELECTED_REAL_KIND(15,307) !should map to REAL*8 on most modern processors
+!DEC$ ATTRIBUTES DLLEXPORT :: real_kind_7 
+!DEC$ ATTRIBUTES DLLEXPORT :: real_kind_15 
+
 !> character type used for json routines
   integer,parameter :: jsonCK = selected_char_kind('DEFAULT')
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK
