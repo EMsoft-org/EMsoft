@@ -40,7 +40,7 @@ EMsoft started as a source code base used for the creation of all figures in the
 
 
 ## Source 
-[This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place.
+[This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place. (needs to be updated [12/4/22])
 
 For our new spherical indexing code, please go to [this site](http://vbff.materials.cmu.edu/EMSphInx) for all information.
 
@@ -50,11 +50,13 @@ Precompiled binaries (i.e., [nightly builds](http://www.bluequartz.net/binaries/
 
 |  Operating System | Notes |
 |-------------------|-------|
-| macOS | Version 10.13.6 (High Sierra or newer) |
+| macOS | Version 10.13.6 (High Sierra or newer, x86_64 processor) |
 | Windows 10 | 64 bit, NVidia GPU with latest (3.88) drivers installed |
 
 
 If you want to build EMsoft yourself, it would make sense to first get a GitHub account, and fork this repository into your account. Then clone the repo *from your account* onto your local computer. Before you can compile things, you need to first build the Software Developer Kit (EMsoft_SDK), which you can find [here](https://github.com/EMsoft-org/EMsoftSuperbuild); follow the instructions for your platform. In addition (as of June 19th, 2019), you will need to clone the *EMsoftData* repository, also from *EMsoft-org*, in a folder at the same level as the Public repository folder. 
+
+(Please note: if you work on Mac OS X and an M1 processor, either on Monterey or Ventura, you should make sure that you use the homebrew gcc install; other gfortran versions may cause issues with the executables not linking to the correct libraries.  On ARM processors, both the Superbuild and EMsoft 5.X have been successfully built.)
 
 Then, starting in the top folder where you have cloned the EMsoft repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
 
@@ -87,6 +89,9 @@ make -j
 ```
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
+
+## Changes in 5.0.4
+Various minor bug fixes; updates to cmake code to cover Mac OS X Monterey and Ventura on arm64 M1 processors.
 
 ## Changes in 5.0.3
 This minor update changes the handling of binning in the EMEBSDDI dictionary indexing program; this required additional parameters in the corresponding name list template file.  The changes are described in the EMEBSDDI wiki page.
@@ -126,9 +131,8 @@ This update makes internal changes to the CMake code that configures the SHT lib
 
 ## What's coming in 6.0? 
 - We are currently rewriting the entire code base of EMsoft using Object Oriented fortran 2018; this is a major rewrite that completely changes the API, meaning that users who have written their own code to link to or extend EMsoft will likely need to update that code (or continue using the most recent 5.x version).
-- All the data types defined in the former typedefs.f90 module are replaced by classes and methods, leading to a significantly cleaner code base.
-- We started to use a different package documentation model (FORD for FORtran Documentation) that will have every function, subroutine, class, etc. fully documented in HTML format.
-- This is a major recoding effort so for now we won't put a release date on it; it will likely be late 2020 if not Spring of 2021.
+- All the data types defined in the former typedefs.f90 module are replaced by classes and methods, leading to a significantly cleaner code base that is much easier to maintain.
+- This has been a major recoding effort; EMsoftOO is currently available in beta version from EMsoft-org on GitHub.  To build EMsoftOO, please make sure that you build the developOO branch of the EMsoftSuperbuild repository. 
 
 
 ## New features in 4.2
@@ -151,7 +155,7 @@ This update makes internal changes to the CMake code that configures the SHT lib
 ## Licenses ##
 
 	!###################################################################
-	! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+	! Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University
 	! All rights reserved.
 	!
 	! Redistribution and use in source and binary forms, with or without modification, are 
