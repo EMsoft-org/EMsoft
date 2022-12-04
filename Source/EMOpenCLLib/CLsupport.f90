@@ -188,11 +188,11 @@ else
 ! Loop over devices and print information.
   do i = 1, num_devices
 ! Maximum compute units.
-    temp_size = 8
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_COMPUTE_UNITS, zero_size, C_LOC(device_cu), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_COMPUTE_UNITS, temp_size, C_LOC(device_cu), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
   
-    temp_size = 8
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_GLOBAL_MEM_SIZE, zero_size, C_LOC(device_gms), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_GLOBAL_MEM_SIZE, temp_size, C_LOC(device_gms), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
     device_gms = device_gms/1024/1024/1024
@@ -202,12 +202,12 @@ else
 !write (*,*) 'mmas : ', device_mmas
 
 ! CL_DEVICE_MAX_WORK_GROUP_SIZE
-    temp_size = 8 
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_GROUP_SIZE, zero_size, C_LOC(device_mwgs), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_GROUP_SIZE, temp_size, C_LOC(device_mwgs), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
 ! CL_DEVICE_MAX_WORK_ITEM_SIZES
-    temp_size = 8 * 3
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_ITEM_SIZES, zero_size, C_LOC(device_mwis), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_ITEM_SIZES, temp_size, C_LOC(device_mwis), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
@@ -258,11 +258,11 @@ else
 ! Loop over devices and print information.
   do i = 1, num_devices
 ! Maximum compute units.
-    temp_size = 8
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_COMPUTE_UNITS, zero_size, C_LOC(device_cu), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_COMPUTE_UNITS, temp_size, C_LOC(device_cu), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
-    temp_size = 8
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_GLOBAL_MEM_SIZE, zero_size, C_LOC(device_gms), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_GLOBAL_MEM_SIZE, temp_size, C_LOC(device_gms), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
     device_gms = device_gms/1024/1024/1024
@@ -277,13 +277,13 @@ else
 !write (*,*) 'mmas : ', device_mmas
 
 ! CL_DEVICE_MAX_WORK_GROUP_SIZE
-    temp_size = 8 
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_GROUP_SIZE, zero_size, C_LOC(device_mwgs), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_GROUP_SIZE, temp_size, C_LOC(device_mwgs), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
 
 ! CL_DEVICE_MAX_WORK_ITEM_SIZES
-    temp_size = 8 * 3
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_ITEM_SIZES, zero_size, C_LOC(device_mwis), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_ITEM_SIZES, temp_size, C_LOC(device_mwis), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
@@ -296,14 +296,14 @@ else
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
 ! CL_DEVICE_MAX_MEM_ALLOC_SIZE
-    temp_size = 8 
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_MEM_ALLOC_SIZE, zero_size, C_LOC(device_maxalloc), temp_size)
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_MEM_ALLOC_SIZE, temp_size, C_LOC(device_maxalloc), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
     device_maxalloc = device_maxalloc/1024/1024
 
 ! Print brief device details. Since this routine can be used by the user to determine GPU device IDs,
 ! we subtract 1 from the device ID to make sure that the CPU gets number 0...
-    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,I4,A)', ADVANCE='No') ' Device (#', i, ', CU/MWGS/MWIS/GMS/MAS: ',&
+    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,I6,A)', ADVANCE='No') ' Device (#', i, ', CU/MWGS/MWIS/GMS/MAS: ',&
                                                                            device_cu,'/', device_mwgs,'/',device_mwis(1),&
                                                                            ',',device_mwis(2),',',device_mwis(3),'/',&
                                                                            device_gms,',',device_maxalloc,') - '
