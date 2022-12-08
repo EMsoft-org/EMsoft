@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2022, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2023, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -176,8 +176,10 @@ if (enl%numav.ge.0) then
       do j=-enl%numav,enl%numav
         if ((enl%paty+j.gt.0).and.(enl%paty+j.lt.enl%ipf_ht)) then
           offset3 = (/ 0, 0, (enl%paty+j) * enl%ipf_wd + (enl%patx+i) /)
-          call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, &
+          ! offset3 = (/ 0, 0,  (enl%patx+i) /)
+          call getSingleExpPattern(enl%paty+j, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, &
                                    enl%HDFstrings, expt)
+          ! write (*,*) i, j, offset3, maxval(expt) 
           sumexpt = sumexpt + expt
           jj = jj+1
         end if 
