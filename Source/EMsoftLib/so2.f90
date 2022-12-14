@@ -102,7 +102,7 @@ end subroutine delete_SO2list
 recursive subroutine getBSEDetectorGrid(nsteps, niz, noz, SO2list, SO2cnt)
 !DEC$ ATTRIBUTES DLLEXPORT :: getBSEDetectorGrid
 
-use mod_Lambert
+use Lambert
 
 IMPLICIT NONE 
 
@@ -111,8 +111,6 @@ real(kind=dbl),INTENT(IN)                   :: niz
 real(kind=dbl),INTENT(IN)                   :: noz 
 type(SO2pointd),pointer,INTENT(INOUT)       :: SO2list
 integer(kind=irg),INTENT(INOUT)             :: SO2cnt 
-
-type(Lambert_T)                             :: L
 
 real(kind=dbl)                              :: ds, xy(2), xyz(3) 
 integer(kind=irg)                           :: ierr, ix, iy 
@@ -145,8 +143,7 @@ ds = 1.D0/dble(nsteps)
 do ix = -nsteps,nsteps
     do iy = -nsteps,nsteps
         xy = (/ dble(ix), dble(iy) /) * ds 
-        L = Lambert_T( xyd = xy )
-        ierr = L%LambertSquareToSphere( xyz )
+        xyz = LambertSquareToSphere( xy, ierr )
 ! does the z-component fall in the correct range ?
         if ((xyz(3).le.niz).and.(xyz(3).ge.noz)) then 
 ! add this point to the linked list 
