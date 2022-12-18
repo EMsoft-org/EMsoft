@@ -34,6 +34,7 @@
 @Efit_updatePC
 @Efit_showpattern
 @Efit_correction
+@Efit_updateEulers
 
 ;
 ; Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University

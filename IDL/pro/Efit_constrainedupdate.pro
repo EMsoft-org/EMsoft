@@ -151,17 +151,17 @@ fpar[8] = Efitdata.detdwelltime
 
 ; compute the correction quaternion based on the pattern center shifts w.r.t. the original pattern center
 alpha = !pi*0.5+(FitValue[8]-Efitdata.detMCsig)*!dtor
-dx = (fpar[0] - c_sv[0]) * Efitdata.detdelta   ; double(i) * dpcx * delta
-dy = (fpar[1] - c_sv[1]) * Efitdata.detdelta   ; double(j) * dpcy * delta
+Lval = fpar[6]
+dx = (fpar[0] - c_sv[0]) * Efitdata.detdelta / Lval  ; double(i) * dpcx * delta
+dy = (fpar[1] - c_sv[1]) * Efitdata.detdelta / Lval  ; double(j) * dpcy * delta
 quat = Core_eu2qu( c_sv[3:5] )
 if ((dx eq 0.0) and (dy eq 0.0)) then begin
   quats = quat
 end else begin
-  Lval = fpar[6] 
-  rho = sqrt( dx^2+(dy*cos(2.D0*alpha))^2)
-  n = [-dx*cos(alpha),-dy*cos(2.D0*alpha),dx*sin(alpha)]/rho
-  rho = sqrt(Lval^2 + 2.D0*Lval*dy*sin(2.0*alpha)+dx^2+dy^2)
-  if ((Lval+dy*sin(2.D0*alpha)) gt rho) then omega = 0.0 else omega = acos((Lval+dy*sin(2.D0*alpha))/rho)
+  rho = sqrt( dx^2+dy^2 )
+  n = [dx*cos(alpha),-dy,-dx*sin(alpha)]/rho
+  rho = sqrt(1.D0+dx^2+dy^2)
+  omega = acos(1.D0/rho)
 
   qu = Core_ax2qu( [ n[0], n[1], n[2], omega ] )
   quats = float(reform(Core_quatmult(quat,qu),4,1))
