@@ -150,9 +150,12 @@ logical                                 :: isInteger
 type(image_t)                           :: im, im2
 integer(int8)                           :: i8 (3,4), int8val
 integer(int8), allocatable              :: output_image(:,:)
+character(1)                            :: EMsoftnativedelimiter
 
+EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 ! read all the image-type arrays from the file
-dpfile = trim(cwd)//'/'//trim(dpfilebase)//'.h5'
+dpfile = trim(cwd)//EMsoftnativedelimiter//trim(dpfilebase)//'.h5'
+
 call Message (' looking for file '//trim(dpfile))
 
 ! is this an EBSD or TKD dot product file ?
