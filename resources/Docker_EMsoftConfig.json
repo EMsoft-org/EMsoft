@@ -1,0 +1,12 @@
+{
+	"EMsoftpathname": "/@EMsoft@/",
+	"EMXtalFolderpathname": "/@EMData@/XtalFolder/",
+	"EMdatapathname": "/@EMData@/",
+	"EMtmppathname": "/.config/EMsoft/tmp/",
+	"EMsoftLibraryLocation": "",
+	"Release": "Yes",
+	"Develop": "No",
+	"UserName": "Docker",
+	"UserEmail": "",
+	"UserLocation": ""
+}
