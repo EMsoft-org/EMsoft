@@ -6,7 +6,7 @@
 	"EMsoftLibraryLocation": "",
 	"Release": "Yes",
 	"Develop": "No",
-	"UserName": "Docker",
+	"UserName": "@USER@",
 	"UserEmail": "",
 	"UserLocation": ""
 }
