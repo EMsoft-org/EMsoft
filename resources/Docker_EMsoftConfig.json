@@ -1,8 +1,8 @@
 {
-	"EMsoftpathname": "/@USER@/@EMsoft@/",
-	"EMXtalFolderpathname": "/@USER@/@EMData@/XtalFolder/",
-	"EMdatapathname": "/@USER@/@EMData@/",
-	"EMtmppathname": "/@USER@/.config/EMsoft/tmp/",
+	"EMsoftpathname": "/@WDIR@/@EMsoft@/",
+	"EMXtalFolderpathname": "/@WDIR@/@EMData@/@XtalFolder@/",
+	"EMdatapathname": "/@WDIR@/@EMData@/",
+	"EMtmppathname": "/@WDIR@/.config/EMsoft/tmp/",
 	"EMsoftLibraryLocation": "",
 	"Release": "Yes",
 	"Develop": "No",
