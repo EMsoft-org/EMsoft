@@ -10,6 +10,7 @@
 @Core_eu2qu
 @Core_qu2eu
 @Core_LambertSphereToSquare
+@Core_LambertInterpolation
 @Core_histnd
 @Core_mind
 @Efitcalc
@@ -24,6 +25,7 @@
 @Efit_amoeba
 @Efit_fit
 @Efit_constrainedfit
+@efit_getEBSDpattern
 @Efit_update
 @Efit_constrainedupdate
 @Efitgetpreferences

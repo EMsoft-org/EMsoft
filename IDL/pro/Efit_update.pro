@@ -156,7 +156,7 @@ if (fitOnOff[7] eq 1) then begin
     np += 1
 end else phi2 = fitValue[7]
 Efitdata.quaternion = Core_eu2qu( [phi1, phi, phi2] )
-quats = reform(Efitdata.quaternion[0:3],4,1)
+quats = Efitdata.quaternion[0:3]
 
 if (fitOnOff[8] eq 1) then begin
   fpar[5] = param[np]
@@ -165,28 +165,28 @@ end else fpar[5] = fitValue[8]
 
 ; initialize the simulated pattern array
 EBSDpattern = fltarr(Efitdata.detnumsx,Efitdata.detnumsy)
-EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
+Efit_getEBSDpattern, ipar, fpar, quats
 
-callname = 'getEBSDPatternsWrapper'
-faccum_e = float(accum_e)
-if (!version.os eq 'darwin') then begin
-  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
-                      ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; callname = 'getEBSDPatternsWrapper'
+; faccum_e = float(accum_e)
+; if (!version.os eq 'darwin') then begin
+;   res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+;                       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
-if (!version.os eq 'Win32') then begin
-  res = call_external(librarylocation+'/EMsoftLib.dll', callname, $
-                      ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; if (!version.os eq 'Win32') then begin
+;   res = call_external(librarylocation+'/EMsoftLib.dll', callname, $
+;                       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
-if (!version.os eq 'linux') then begin
-  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
-                      ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; if (!version.os eq 'linux') then begin
+;   res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+;                       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
-if (res ne 1.0) then begin
-  Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
-end 
+; if (res ne 1.0) then begin
+;   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
+; end 
 
 EBSDpattern = reverse(EBSDpattern, 2)
 

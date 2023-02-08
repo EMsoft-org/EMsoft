@@ -164,7 +164,7 @@ end else begin
   omega = acos(1.D0/rho)
 
   qu = Core_ax2qu( [ n[0], n[1], n[2], omega ] )
-  quats = float(reform(Core_quatmult(quat,qu),4,1))
+  quats = float(Core_quatmult(quat,qu))
 endelse
 
 if (fitOnOff[8] eq 1) then begin
@@ -174,17 +174,17 @@ end else fpar[5] = fitValue[8]
 
 ; initialize the simulated pattern array
 EBSDpattern = fltarr(Efitdata.detnumsx,Efitdata.detnumsy)
-EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
+Efit_getEBSDpattern, ipar, fpar, quats
 
-callname = 'getEBSDPatternsWrapper'
-faccum_e = float(accum_e)
+; callname = 'getEBSDPatternsWrapper'
+; faccum_e = float(accum_e)
 
-res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
-      ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+;       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
-if (res ne 1.0) then begin
-  Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
-end 
+; if (res ne 1.0) then begin
+;   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
+; end 
 
 EBSDpattern = reverse(EBSDpattern, 2)
 

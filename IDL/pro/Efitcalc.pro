@@ -78,34 +78,34 @@ fpar[5] = Efitdata.dettheta
 fpar[6] = Efitdata.detL
 fpar[7] = Efitdata.detbeamcurrent
 fpar[8] = Efitdata.detdwelltime
-quats = reform(Efitdata.quaternion[0:3],4,1)
+quats = Efitdata.quaternion
 
 EBSDpattern = fltarr(Efitdata.detnumsx,Efitdata.detnumsy)
-EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
+Efit_getEBSDpattern, ipar, fpar, quats
 
-callname = 'getEBSDPatternsWrapper'
+; callname = 'getEBSDPatternsWrapper'
 
-if (!version.os eq 'darwin') then begin
-    res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
-                       ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; if (!version.os eq 'darwin') then begin
+;     res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+;                        ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
-if (!version.os eq 'Win32') then begin
-    res = call_external(librarylocation+'/EMsoftLib.dll', callname, $
-                      ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; if (!version.os eq 'Win32') then begin
+;     res = call_external(librarylocation+'/EMsoftLib.dll', callname, $
+;                       ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
-if (!version.os eq 'linux') then begin
-    res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
-                      ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-endif
+; if (!version.os eq 'linux') then begin
+;     res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+;                       ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+; endif
 
 ; IDL puts the pattern origin in the lower left corner so we need to flip the pattern vertically. 
 EBSDpattern = reverse(reform(EBSDpattern),2)
 
-if (res ne 1.0) then begin
-  Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
-end 
+; if (res ne 1.0) then begin
+;   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
+; end 
 
 wset,Efitdata.drawID
 Efit_showpattern
