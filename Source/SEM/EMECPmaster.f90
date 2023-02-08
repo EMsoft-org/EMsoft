@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2022, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -663,6 +663,8 @@ beamloop: do i = 1, numk
     nns = 0
     nnw = 0
     call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
+
+! write (*,*) i, nref, nns, nnw 
 
     allocate(DynMat(nns,nns))
 

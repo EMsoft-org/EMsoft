@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2022, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -275,8 +275,9 @@ integer(int8), allocatable              :: montage(:,:)
   DynFN = defects%foil%F
   
 ! and determine the overall reflection list
-  xx = 1.0/CalcLength(cell,float(eccinl%k),'d')
-  kk = xx*float(eccinl%k)/cell%mLambda     ! don't forget to scale the incident beam vector by the wavelength (reciprocal nm)
+  call TransSpace(cell,real(eccinl%k),kk,'d','r')
+  call NormVec(cell,kk,'r')
+  kk = kk/cell%mLambda     ! don't forget to scale the incident beam vector by the wavelength (reciprocal nm)
   call Initialize_ReflectionList(cell, reflist, BetheParameters, sngl(DynFN), kk, sngl(eccinl%dmin), nref, verbose)
   nn = nref
 
@@ -671,7 +672,7 @@ dataset = SC_ECCIimages
   call WriteValue('ECCI: number of beam directions =  ', io_int, 1, "(I5)")
   
   cone = cmplx(1.D0,0.D0)
-  
+ write (*,*) 'number of reflections : ', nn
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 !--------------------------------------------------------------
