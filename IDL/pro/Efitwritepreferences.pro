@@ -45,6 +45,8 @@ common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
 ; prefs file
+  cmd = 'touch '+Efitdata.appdir+Efitdata.prefname
+  spawn, cmd
   openw,1,Efitdata.appdir+Efitdata.prefname
   nprefs = 45
   Efitdata.nprefs = nprefs
