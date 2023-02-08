@@ -293,9 +293,9 @@ Efitdata = {Efitdatastruct, $
                 foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
                 test:long(0) }
 
-Efitdata.EMsoftpathname = Core_getenv(/bin)
-Efitdata.EMdatapathname = Core_getenv(/data)
-librarylocation = Core_getenv(/lib)
+;Efitdata.EMsoftpathname = Core_getenv(/bin)
+;Efitdata.EMdatapathname = Core_getenv(/data)
+; librarylocation = Core_getenv(/lib)
 
 ; set the foldersep string
 if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then Efitdata.foldersep = '\'
