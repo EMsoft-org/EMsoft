@@ -149,96 +149,98 @@ end else begin
         endcase
 
         'MKJSON' : begin
-; here we first make a structure that has all the f90 namelist entries in it, and then we 
-; use implied print into a json file...
- 		Efitgetfilename,validfile,/JSONFILE
- 		Efitgetfilename,validfile,/EULERFILE
-; some of the string variables need to have the correct path inserted, since files in EMsoft have relative 
-; pathnames with respect to fitdata.EMdatapathname; give a warning if the path is not found in the absolute path 
-                eulerconvention = ['tsl', 'hkl']
-                maskpattern = ['n','y']
-
-; remove the EMdatapathname portion of the euler angle file path
-                z=strsplit(Efitdata.EMdatapathname,'/',/extract)
-                sz = size(z,/dimensions)
-                last = z[sz[0]-1]
-                z2 = strsplit(Efitdata.eulerpathname,last,/regex,/ex)
-                sz = size(z2,/dimensions)
-                if (sz[0] ne 2) then begin
-                  message = ['EMdatapathname does not appear to be a part of the Euler angle file name', $
-                             'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
-                             'The file will be created at the requested location with the requested name,', $
-                             'but the EMsoft package will not be able to find it.  Please move the Euler angle file', $
-                             'to a location inside the accessible path, and update the corresponding json file to reflect this path']
-                  result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
-                  eulerpath = Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
-                end else begin
-                  z3 = z2[sz[0]-1]
-                  eulerpath = strmid(z3,1)+'/'+Efitdata.eulerfilename
-                endelse
-
-; and do the same for the masterpattern and energy files
-                z2 = strsplit(Efitdata.pathname,last,/regex,/ex)
-                sz = size(z2,/dimensions)
-                if (sz[0] ne 2) then begin
-                  message = ['EMdatapathname does not appear to be a part of the master pattern file name', $
-                             'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
-                             'The file will be created at the requested location with the requested name,', $
-                             'but the EMsoft package will not be able to find it.  Please make sure that the master file', $
-                             'is located inside the accessible path, and update the corresponding json file to reflect this path']
-                  result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
-                  masterpath = Efitdata.pathname+'/'+Efitdata.mpfilename
-                end else begin
-                  z3 = z2[sz[0]-1]
-                  masterpath = strmid(z3,1)+'/'+Efitdata.mpfilename
-                endelse
-
-; define the SEMdata structure that will be written to the JSON file
-                SEMdata = {ebsddatastructure, $
-                        L : Efitdata.detL, $ 
-                        thetac : Efitdata.dettheta, $ 
-                        delta : Efitdata.detdelta, $
-                        numsx : Efitdata.detnumsx, $ 
-                        numsy : Efitdata.detnumsy, $ 
-                        energymin : EkeV - float(numEbins-1)*Ebinsize, $
-                        energymax : EkeV, $ 
-                        energyaverage : 0, $ 
-                        xpc : Efitdata.detxpc, $
-                        ypc : Efitdata.detypc, $
-                        omega : Efitdata.detomega, $ 
-                        anglefile : eulerpath, $ 
-                        eulerconvention : eulerconvention[Efitdata.EulerConvention], $ 
-                        masterfile : masterpath, $ 
-                        energyfile : Efitdata.energyfilename, $ 
-                        datafile : "undefined", $ 
-                        beamcurrent : Efitdata.detbeamcurrent, $ 
-                        dwelltime : Efitdata.detdwelltime, $ 
-                        binning : 2^Efitdata.detbinning, $ 
-                        scalingmode : 'not', $ 
-                        gammavalue : Efitdata.detgamma, $ 
-                        outputformat : 'bin', $ 
-                        maskpattern : maskpattern[Efitdata.showcircularmask], $
-                        nthreads : 1, $
-                        spatialaverage : 'n' $ 
-                }
-; embed it into a new structure
-                jsonstruct = {SEMdata: SEMdata}
-
-; and write this to a file using implied_print formatting
-                 openw,1,Efitdata.jsonpathname+'/'+Efitdata.jsonfilename
-                 printf,1,jsonstruct,/implied_print
-                 close,1
-                 Core_Print,'Structure saved to '+Efitdata.jsonfilename+'.json file'
-
-; next, create the euler angle file
-; in a future version, we will also include the pattern center coordinates in this file...
-                 openw,1,Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
-                 printf,1,'eu'
-                 printf,1,'1'
-                 printf,1,Efitdata.detphi1,', ',Efitdata.detphi,', ',Efitdata.detphi2
-                 close,1
-                 Core_Print,'Euler angles saved to '+Efitdata.eulerfilename+'.txt file'
+        print,'disabled for now'
         endcase
+; ; here we first make a structure that has all the f90 namelist entries in it, and then we 
+; ; use implied print into a json file...
+;  		Efitgetfilename,validfile,/JSONFILE
+;  		Efitgetfilename,validfile,/EULERFILE
+; ; some of the string variables need to have the correct path inserted, since files in EMsoft have relative 
+; ; pathnames with respect to fitdata.EMdatapathname; give a warning if the path is not found in the absolute path 
+;                 eulerconvention = ['tsl', 'hkl']
+;                 maskpattern = ['n','y']
+
+; ; remove the EMdatapathname portion of the euler angle file path
+;                 z=strsplit(Efitdata.EMdatapathname,'/',/extract)
+;                 sz = size(z,/dimensions)
+;                 last = z[sz[0]-1]
+;                 z2 = strsplit(Efitdata.eulerpathname,last,/regex,/ex)
+;                 sz = size(z2,/dimensions)
+;                 if (sz[0] ne 2) then begin
+;                   message = ['EMdatapathname does not appear to be a part of the Euler angle file name', $
+;                              'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
+;                              'The file will be created at the requested location with the requested name,', $
+;                              'but the EMsoft package will not be able to find it.  Please move the Euler angle file', $
+;                              'to a location inside the accessible path, and update the corresponding json file to reflect this path']
+;                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
+;                   eulerpath = Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
+;                 end else begin
+;                   z3 = z2[sz[0]-1]
+;                   eulerpath = strmid(z3,1)+'/'+Efitdata.eulerfilename
+;                 endelse
+
+; ; and do the same for the masterpattern and energy files
+;                 z2 = strsplit(Efitdata.pathname,last,/regex,/ex)
+;                 sz = size(z2,/dimensions)
+;                 if (sz[0] ne 2) then begin
+;                   message = ['EMdatapathname does not appear to be a part of the master pattern file name', $
+;                              'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
+;                              'The file will be created at the requested location with the requested name,', $
+;                              'but the EMsoft package will not be able to find it.  Please make sure that the master file', $
+;                              'is located inside the accessible path, and update the corresponding json file to reflect this path']
+;                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
+;                   masterpath = Efitdata.pathname+'/'+Efitdata.mpfilename
+;                 end else begin
+;                   z3 = z2[sz[0]-1]
+;                   masterpath = strmid(z3,1)+'/'+Efitdata.mpfilename
+;                 endelse
+
+; ; define the SEMdata structure that will be written to the JSON file
+;                 SEMdata = {ebsddatastructure, $
+;                         L : Efitdata.detL, $ 
+;                         thetac : Efitdata.dettheta, $ 
+;                         delta : Efitdata.detdelta, $
+;                         numsx : Efitdata.detnumsx, $ 
+;                         numsy : Efitdata.detnumsy, $ 
+;                         energymin : EkeV - float(numEbins-1)*Ebinsize, $
+;                         energymax : EkeV, $ 
+;                         energyaverage : 0, $ 
+;                         xpc : Efitdata.detxpc, $
+;                         ypc : Efitdata.detypc, $
+;                         omega : Efitdata.detomega, $ 
+;                         anglefile : eulerpath, $ 
+;                         eulerconvention : eulerconvention[Efitdata.EulerConvention], $ 
+;                         masterfile : masterpath, $ 
+;                         energyfile : Efitdata.energyfilename, $ 
+;                         datafile : "undefined", $ 
+;                         beamcurrent : Efitdata.detbeamcurrent, $ 
+;                         dwelltime : Efitdata.detdwelltime, $ 
+;                         binning : 2^Efitdata.detbinning, $ 
+;                         scalingmode : 'not', $ 
+;                         gammavalue : Efitdata.detgamma, $ 
+;                         outputformat : 'bin', $ 
+;                         maskpattern : maskpattern[Efitdata.showcircularmask], $
+;                         nthreads : 1, $
+;                         spatialaverage : 'n' $ 
+;                 }
+; ; embed it into a new structure
+;                 jsonstruct = {SEMdata: SEMdata}
+
+; ; and write this to a file using implied_print formatting
+;                  openw,1,Efitdata.jsonpathname+'/'+Efitdata.jsonfilename
+;                  printf,1,jsonstruct,/implied_print
+;                  close,1
+;                  Core_Print,'Structure saved to '+Efitdata.jsonfilename+'.json file'
+
+; ; next, create the euler angle file
+; ; in a future version, we will also include the pattern center coordinates in this file...
+;                  openw,1,Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
+;                  printf,1,'eu'
+;                  printf,1,'1'
+;                  printf,1,Efitdata.detphi1,', ',Efitdata.detphi,', ',Efitdata.detphi2
+;                  close,1
+;                  Core_Print,'Euler angles saved to '+Efitdata.eulerfilename+'.txt file'
+;         endcase
 
 ; next are the non-refinable parameter widgets
         'DETTHETA' : begin
