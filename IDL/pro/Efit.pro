@@ -96,7 +96,24 @@ common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitM
 common getenv_common, librarylocation
 
 ; before we do anything, we make sure that the location of the app_user_dir is set 
-appdir = app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by virtual machine apps within EMsoft'],1)
+res = file_test('~/.idl',/directory)
+if (res ne 1) then begin
+  cmd = 'mkdir .idl'
+  spawn, cmd
+endif 
+res = file_test('~/.idl/emsoft',/directory)
+if (res ne 1) then begin
+  cmd = 'mkdir .idl/emsoft'
+  spawn, cmd
+endif 
+res = file_test('~/.idl/emsoft/vmapps',/directory)
+if (res ne 1) then begin
+  cmd = 'mkdir .idl/emsoft/vmapps'
+  spawn, cmd
+endif 
+appdir = '~/.idl/emsoft/vmapps'
+; this replaces the old app_user_dir('EMsoft','EMsoftPackage','VMapps','Virtual Machine Apps',['This folder is used by virtual machine apps within EMsoft'],1)
+; to make things compatible with gdl
 
 !EXCEPT = 0
 logmode = 0
