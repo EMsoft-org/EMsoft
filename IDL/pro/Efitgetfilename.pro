@@ -120,7 +120,7 @@ common inverseGaussian, inverseGaussianMask
   endif
 
   if keyword_set(MPFILE) then begin 
-    res=dialog_pickfile(title='Select a valid Master Pattern data file',path=rootpath,filter='*Master*.h5;*master*.h5;*MASTER*.h5')
+    res=dialog_pickfile(title='Select a valid Master Pattern data file',path=rootpath,filter='*.h5')
     if (res eq '') then begin
 	  Core_Print,'No selection made'
 	  goto, skip

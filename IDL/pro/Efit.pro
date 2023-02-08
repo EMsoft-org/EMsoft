@@ -120,7 +120,6 @@ logmode = 0
 logunit = 10
 nFit = 9
 
-
 ; widget structure
 Efitwidget_s = {widgetstruct, $
         	base:long(0), $                    	
@@ -300,6 +299,8 @@ Efitdata = {Efitdatastruct, $
 ; set the foldersep string
 if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then Efitdata.foldersep = '\'
 Efitdata.appdir = Efitdata.appdir+Efitdata.foldersep
+
+print,'appdir = ', Efitdata.appdir
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
