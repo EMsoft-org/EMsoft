@@ -1,0 +1,44 @@
+&HREBSDpreview
+! The line above must not be changed
+! The values below are the default values for this program
+! number of pattern pixels along x and y
+ numsx = 1244,
+ numsy = 1024,
+
+! number of patterns along x and y 
+ ipf_wd = 1,
+ ipf_ht = 1,
+
+! high pass filter parameter range and number of steps (starts from zero)
+ hipasswmax = 0.05,
+
+ ! low pass filter parameter range and number of steps (starts from 0.1)
+ lowpasswmax = 0.3,
+
+! size of the region of interest (square size: 2^dimROI * 2^dimROI)
+ dimROI=8,
+
+! name of tiff output file; will contain an array of pre-processed patterns
+ tifffile = 'undefined',
+
+! name of tiff output file; will contain xcf of pre-processed patterns
+ xcffile = 'undefined',
+
+! name of pattern output file; will contain raw experimental pattern (tiff, pgm, bmp)
+ patternfile = 'undefined',
+
+! name of datafile where the patterns are stored; path relative to EMdatapathname
+ exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, EMEBSD32i, EMEBSD32f, TSLHDF, TSLup2, 
+!                            OxfordHDF, OxfordBinary, BrukerHDF, NORDIF
+ inputtype = 'EMEBSD',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = 'EMData' 'EBSD' 'EBSDPatterns' '' '' '' '' '' '' '',
+ 
+! pattern coordinates to be used for the preview (zero based)
+ patx = 0,
+ paty = 0,
+/

@@ -2,6 +2,7 @@ set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/SEM")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
+find_package(NLopt REQUIRED)
 
 if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
 
@@ -14,6 +15,24 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
           EMsoftHDFLib
           EMOpenCLLib
   )
+
+  Add_EMsoft_Executable(TARGET EMHREBSD
+                              SOURCES ${APP_DIR}/EMHREBSD.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${NLOPT_LIBRARIES}
+                              TEMPLATE ${TMPLT_DIR}/EMHREBSD.template 
+                              SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
+                              INSTALL_PROGRAM TRUE
+                              INCLUDE_DIRS ${NLOPT_INCLUDE_DIRS} ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                              )
+
+  Add_EMsoft_Executable(TARGET EMHREBSDpreview 
+                              SOURCES ${APP_DIR}/EMHREBSDpreview.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
+                              TEMPLATE ${TMPLT_DIR}/EMHREBSDpreview.template 
+                              SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/SEM 
+                              INSTALL_PROGRAM TRUE
+                              INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                              )
 
   Add_EMsoft_Executable(TARGET EMEBSDmasterOpenCL 
                               SOURCES ${APP_DIR}/EMEBSDmasterOpenCL.f90 

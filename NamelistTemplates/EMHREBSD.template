@@ -1,0 +1,84 @@
+ &HREBSDNamelist
+!###################################################################
+! EBSD Pattern Data
+!###################################################################
+
+! Pattern Resolution
+ numsx = 1244, ! number of pattern pixels along x (Nx)
+ numsy = 1024, ! and along y (Ny)
+
+! name of the output data file (.h5) path relative to EMdatapathname
+ datafile='data.h5',
+
+! name of EBSD master output file; path relative to EMdatapathname
+ masterfile = 'Ni-master-20kV.h5',
+
+! name of test pattern file; path relative to EMdatapathname
+ exptfile = 'EMEBSDDEmap/Ni-scan-LargeArea.h5',
+
+! number of patterns along x (width) and y (height) of the scan
+ ipf_wd = 1,
+ ipf_ht = 1,
+
+! coordinates of the reference pattern to be used (0-based coordinates)
+ patx = 0,
+ paty = 0,
+
+! refined pattern center position
+PCrefine = 'y'
+
+! step size (micron) used for dynamica pattern center correction
+step_size = 1
+
+! input file type parameter: EMEBSD, TSLHDF, BrukerHDF
+ inputtype = 'EMEBSD',
+
+! Enter the HDF group names for pattern data set as individual strings (up to 10)
+! e.g. 'Scan 1' 'EBSD' 'Data' 'Pattern' '' '' '' '' '' ''
+ HDFstrings = 'EMData' 'EBSD' 'EBSDPatterns' '' '' '' '' '' '' '',
+
+! detector pixel size (micron)
+ delta = 22.91,
+
+! angle between sample surface and the detector screen
+ totaltilt = 30.0,
+
+! number of threads (default = 1)
+ nthreads = 1,
+
+!###################################################################
+! Cross Correlation Parameter
+!###################################################################
+! number of region of interest (N_ROI = 21)
+! N_ROI = 21, (TODO: need to modify the main_minf part to change N_ROI)
+
+! the size is ROI is 2^size_ROI
+ size_ROI = 8,
+
+! distance from pattern center to the center of ROI
+ roi_distance = 250,
+
+! first pass cross correlation remapping (for large intragranular orientation gradient)
+ Remap='n',
+
+! high pass filter 
+ highpass = 0.05,
+
+! low pass filter 
+ lowpass = 0.3,
+
+!###################################################################
+! Stiffness tensor parameters (unit:GPa)
+!###################################################################
+! type of crystal (cubic: 'cub' or hcp: 'hex')
+crystal= 'cub',
+
+! cubic 
+C11 = 276.0,
+C12 = 159.0,
+C44 = 132.0,
+
+! additional terms for HCP 
+C13 = 0.0
+C33 = 0.0
+ /
