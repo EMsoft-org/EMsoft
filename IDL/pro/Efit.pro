@@ -173,7 +173,8 @@ Efitwidget_s = {widgetstruct, $
                 max:long(0), $
                 smoothval:long(0), $
                 compute:long(0), $
-                mkjson:long(0), $
+                mknml5:long(0), $
+                mknml6:long(0), $
                 convcrit:long(0), $
                 fitmode:long(0), $
                 goconstrainedfit:long(0), $
@@ -292,10 +293,6 @@ Efitdata = {Efitdatastruct, $
                 foldersep: '/', $               ; folder separator character ('/' for OS X and Linux, '\' for Windows)
                 test:long(0) }
 
-;Efitdata.EMsoftpathname = Core_getenv(/bin)
-;Efitdata.EMdatapathname = Core_getenv(/data)
-; librarylocation = Core_getenv(/lib)
-
 ; set the foldersep string
 if ( (!version.os ne 'darwin') and (!version.os ne 'linux') ) then Efitdata.foldersep = '\'
 Efitdata.appdir = Efitdata.appdir+Efitdata.foldersep
@@ -376,7 +373,6 @@ fitManualStep[6] = Efitdata.detmphi
 fitManualStep[7] = Efitdata.detmphi2
 fitManualStep[8] = Efitdata.detmtheta
 
-
 ; a few font strings (this will need to be redone for Windows systems)
 fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
 fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
@@ -388,8 +384,8 @@ Efitwidget_s.base = WIDGET_BASE(TITLE='Electron Backscatter Diffraction Pattern 
                         /COLUMN, $
                         XSIZE=1220, $
                         /ALIGN_LEFT, $
-			/TLB_MOVE_EVENTS, $
-			EVENT_PRO='Efit_event', $
+			                  /TLB_MOVE_EVENTS, $
+			                  EVENT_PRO='Efit_event', $
                         XOFFSET=Efitdata.xlocation, $
                         YOFFSET=Efitdata.ylocation)
 
@@ -507,7 +503,7 @@ Efitwidget_s.inverseGaussian = CW_BGROUP(item3, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Inverse Gaussian', $
+			                  LABEL_LEFT='Inverse Gaussian', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='INVERSEGAUSSIAN', $
                         SET_VALUE=Efitdata.inverseGaussian)
@@ -532,7 +528,7 @@ Efitwidget_s.circularmask = CW_BGROUP(item3, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Circular Mask', $
+			                  LABEL_LEFT='Circular Mask', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='CIRCULARMASK', $
                         SET_VALUE=Efitdata.showcircularmask)
@@ -636,7 +632,7 @@ Efitwidget_s.hipassonoff = CW_BGROUP(line2, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Hipass filter', $
+			                  LABEL_LEFT='Hipass filter', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='HIPASSONOFF', $
                         SET_VALUE=Efitdata.hipassonoff)
@@ -653,38 +649,38 @@ Efitwidget_s.ramponoff = CW_BGROUP(line2, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Linear ramp subtraction', $
+			                  LABEL_LEFT='Linear ramp subtraction', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='RAMPONOFF', $
                         SET_VALUE=Efitdata.ramponoff)
 
 
-line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
+; line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 
-vals = ['0','3','5','7','9','11']
-Efitwidget_s.smoothval = CW_BGROUP(line2, $
-                        vals, $
-                        /ROW, $
-                        /NO_RELEASE, $
-                        /EXCLUSIVE, $
-                        FONT=fontstr, $
-			LABEL_LEFT='Smoothing parameter', $
-                        EVENT_FUNC ='Efitevent', $
-                        UVALUE='SMOOTHVAL', $
-                        SET_VALUE=Efitdata.smoothval)
+; vals = ['0','3','5','7','9','11']
+; Efitwidget_s.smoothval = CW_BGROUP(line2, $
+;                         vals, $
+;                         /ROW, $
+;                         /NO_RELEASE, $
+;                         /EXCLUSIVE, $
+;                         FONT=fontstr, $
+; 			                  LABEL_LEFT='Smoothing parameter', $
+;                         EVENT_FUNC ='Efitevent', $
+;                         UVALUE='SMOOTHVAL', $
+;                         SET_VALUE=Efitdata.smoothval)
 
-line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
-vals = ['Regular','Laplacian']
-Efitwidget_s.preproc = CW_BGROUP(line2, $
-                        vals, $
-                        /ROW, $
-                        /NO_RELEASE, $
-                        /EXCLUSIVE, $
-                        FONT=fontstr, $
-			LABEL_LEFT='Preprocessing mode', $
-                        EVENT_FUNC ='Efitevent', $
-                        UVALUE='PREPROC', $
-                        SET_VALUE=Efitdata.preproc)
+; line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
+; vals = ['Regular','Laplacian']
+; Efitwidget_s.preproc = CW_BGROUP(line2, $
+;                         vals, $
+;                         /ROW, $
+;                         /NO_RELEASE, $
+;                         /EXCLUSIVE, $
+;                         FONT=fontstr, $
+; 			                  LABEL_LEFT='Preprocessing mode', $
+;                         EVENT_FUNC ='Efitevent', $
+;                         UVALUE='PREPROC', $
+;                         SET_VALUE=Efitdata.preproc)
 
 
 ;------------------------------------------------------------
@@ -704,7 +700,7 @@ Efitwidget_s.convcrit= CW_BGROUP(line2, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Fit criterion', $
+			                  LABEL_LEFT='Fit criterion', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='CONVCRIT', $
                         SET_VALUE=Efitdata.convcrit)
@@ -717,7 +713,7 @@ Efitwidget_s.fitmode = CW_BGROUP(line2, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Fit mode', $
+			                  LABEL_LEFT='Fit mode', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='FITMODE', $
                         SET_VALUE=Efitdata.fitmode)
@@ -751,13 +747,20 @@ Efitwidget_s.goconstrainedfit = WIDGET_BUTTON(line2, $
 
 
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
-Efitwidget_s.mkjson= WIDGET_BUTTON(line2, $
-                                UVALUE='MKJSON', $
-                                VALUE='Create JSON file', $
+Efitwidget_s.mknml5= WIDGET_BUTTON(line2, $
+                                UVALUE='MKNML5', $
+                                VALUE='Create 5.2 NML file', $
                                 EVENT_PRO='Efit_event', $
                                 /ALIGN_CENTER, $
                                 SENSITIVE=0)
 
+line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
+Efitwidget_s.mknml6= WIDGET_BUTTON(line2, $
+                                UVALUE='MKNML6', $
+                                VALUE='Create 6.0 NML file', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
 
 ;------------------------------------------------------------
 ;------------------------------------------------------------
@@ -780,9 +783,6 @@ Efitwidget_s.status= WIDGET_TEXT(block1, $
 
 ; the following is needed by the Core_Print routine
 status = Efitwidget_s.status 
-
-
-
 
 ;------------------------------------------------------------
 ; realize the widget structure

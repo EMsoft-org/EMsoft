@@ -37,7 +37,7 @@
 ;
 ;> @date 10/13/15 MDG 1.0 first attempt 
 ;--------------------------------------------------------------------------
-pro Efitgetfilename,validfile,PATTERNFILE=PATTERNFILE,MPFILE=MPFILE,JSONFILE=JSONFILE,EULERFILE=EULERFILE
+pro Efitgetfilename,validfile,PATTERNFILE=PATTERNFILE,MPFILE=MPFILE,EULERFILE=EULERFILE
  
 ;------------------------------------------------------------
 ; common blocks
@@ -142,27 +142,6 @@ common inverseGaussian, inverseGaussianMask
   	Core_Print,' path '+Efitdata.pathname
   	Core_Print,' data file '+Efitdata.mpfilename
   	Core_Print,' suffix '+Efitdata.suffix
-  endif
-
-  if keyword_set(JSONFILE) then begin 
-    res=dialog_pickfile(title='Enter *.json file name',path=rootpath,filter='*.json',default_extension='json',/write)
-    if (res eq '') then begin
-	  Core_Print,'No selection made'
-	  goto, skip
-    end
-	validfile = 1
-; find the last folder separator
-	spos = strpos(res,'/',/reverse_search)
-	dpos = strpos(res,'.',/reverse_search)
-	plen = strlen(res)
-	Efitdata.jsonpathname = strmid(res,0,spos)
-	Efitdata.jsonfilename = strmid(res,spos+1)
-	Efitdata.jsonsuffix = strmid(res,dpos+1)
-
-  	Core_Print,' full path '+res
-  	Core_Print,' path '+Efitdata.jsonpathname
-  	Core_Print,' data file '+Efitdata.jsonfilename
-  	Core_Print,' suffix '+Efitdata.jsonsuffix
   endif
 
   if keyword_set(EULERFILE) then begin 

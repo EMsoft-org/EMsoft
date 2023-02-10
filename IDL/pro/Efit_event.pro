@@ -96,7 +96,8 @@ end else begin
 
         'COMPUTE': begin
                 EfitCalc
-                WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive=1
+                WIDGET_CONTROL, Efitwidget_s.mknml5, sensitive=1
+                WIDGET_CONTROL, Efitwidget_s.mknml6, sensitive=1
         endcase
 
         'GOFIT': begin
@@ -148,99 +149,138 @@ end else begin
                 Efit_showpattern
         endcase
 
-        'MKJSON' : begin
-        print,'disabled for now'
+        'MKNML5' : begin
+; write an EMsoft 5.2 EMEBSDDI.nml name list file with name efit_EMEBSDDI.nml
+                openw,1,Efitdata.pathname+'/efit_EMEBSDDI.nml'
+                printf,1,'&EBSDIndexingdata'
+                printf,1,'indexingmode = ''dynamic'','
+                printf,1,'similaritymetric = ''ndp'','
+                printf,1,'notify = ''off'','
+                printf,1,'ipf_wd = 100,'
+                printf,1,'ipf_ht = 100,'
+                printf,1,'ROI = 0 0 0 0,'
+                printf,1,'stepx = 1.0,'
+                printf,1,'stepy = 1.0,'
+                printf,1,'nnk = 50,'
+                printf,1,'nosm = 20,'
+                printf,1,'nism = 5,'
+                printf,1,'isangle = 1.5,'
+                printf,1,'maskfile = ''undefined'','
+                printf,1,'maskpattern = ''n'','
+                printf,1,'maskradius = 240,'
+                printf,1,'hipassw = 0.05,'
+                printf,1,'nregions = 10,'
+                printf,1,'exptnumsx = '+string(efitdata.detnumsx,format="(I5)")+','
+                printf,1,'exptnumsy = '+string(efitdata.detnumsy,format="(I5)")+','
+                printf,1,'exptnumsy = 480,'
+                printf,1,'binning = 1, '
+                printf,1,'numsx = '+string(efitdata.detnumsx,format="(I5)")+','
+                printf,1,'numsy = '+string(efitdata.detnumsy,format="(I5)")+','
+                printf,1,'ncubochoric = 100,'
+                printf,1,'thetac = '+string(efitdata.dettheta,format="(F5.1)")+','
+                printf,1,'omega = '+string(efitdata.detomega,format="(F5.1)")+','
+                printf,1,'L = '+string(efitdata.detL,format="(F12.5)")+','
+                printf,1,'delta = '+string(efitdata.detdelta,format="(F12.5)")+','
+                printf,1,'xpc = '+string(efitdata.detxpc,format="(F12.5)")+','
+                printf,1,'ypc = '+string(efitdata.detypc,format="(F12.5)")+','
+                printf,1,'energymin = '+string(EkeV - float(numebins-1)*ebinsize,format="(F12.5)")+','
+                printf,1,'energymax = '+string(EkeV,format="(F12.5)")+','
+                printf,1,'beamcurrent = '+string(efitdata.detbeamcurrent,format="(F12.5)")+','
+                printf,1,'dwelltime = '+string(efitdata.detdwelltime,format="(F12.5)")+','
+                printf,1,'scalingmode = ''gam'','
+                printf,1,'gammavalue = '+string(efitdata.detgamma,format="(F12.5)")+','
+                printf,1,'exptfile = ''undefined'','
+                printf,1,'inputtype = ''binary'','
+                printf,1,'hdfstrings = '''' '''' '''' '''' '''' '''' '''' '''' '''' '''' ,'
+                printf,1,'tmpfile = ''EMEBSDdict_tmp.data'','
+                printf,1,'keeptmpfile = ''n'','
+                printf,1,'usetmpfile = ''n'','
+                printf,1,'datafile = ''undefined'','
+                printf,1,'ctffile = ''undefined'','
+                printf,1,'angfile = ''undefined'','
+                printf,1,'eulerfile = ''undefined'',
+                printf,1,'dictfile = ''undefined'','
+                printf,1,'masterfile = '''+strtrim(Efitdata.mpfilename)+''','
+                printf,1,'refinementnmlfile = ''undefined'','
+                printf,1,'numdictsingle = 1024,'
+                printf,1,'numexptsingle = 1024,'
+                printf,1,'nthreads = 1,'
+                printf,1,'platid = 1,'
+                printf,1,'devid = 1,'
+                printf,1,'multidevid = 0 0 0 0 0 0 0 0,'
+                printf,1,'usenumd = 0,'
+                printf,1,'/'
+                close,1
+                core_print,'fit data stored in EMsoft 5.2 name list file efit_EMEBSDDI.nml'
         endcase
-; ; here we first make a structure that has all the f90 namelist entries in it, and then we 
-; ; use implied print into a json file...
-;  		Efitgetfilename,validfile,/JSONFILE
-;  		Efitgetfilename,validfile,/EULERFILE
-; ; some of the string variables need to have the correct path inserted, since files in EMsoft have relative 
-; ; pathnames with respect to fitdata.EMdatapathname; give a warning if the path is not found in the absolute path 
-;                 eulerconvention = ['tsl', 'hkl']
-;                 maskpattern = ['n','y']
 
-; ; remove the EMdatapathname portion of the euler angle file path
-;                 z=strsplit(Efitdata.EMdatapathname,'/',/extract)
-;                 sz = size(z,/dimensions)
-;                 last = z[sz[0]-1]
-;                 z2 = strsplit(Efitdata.eulerpathname,last,/regex,/ex)
-;                 sz = size(z2,/dimensions)
-;                 if (sz[0] ne 2) then begin
-;                   message = ['EMdatapathname does not appear to be a part of the Euler angle file name', $
-;                              'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
-;                              'The file will be created at the requested location with the requested name,', $
-;                              'but the EMsoft package will not be able to find it.  Please move the Euler angle file', $
-;                              'to a location inside the accessible path, and update the corresponding json file to reflect this path']
-;                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
-;                   eulerpath = Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
-;                 end else begin
-;                   z3 = z2[sz[0]-1]
-;                   eulerpath = strmid(z3,1)+'/'+Efitdata.eulerfilename
-;                 endelse
-
-; ; and do the same for the masterpattern and energy files
-;                 z2 = strsplit(Efitdata.pathname,last,/regex,/ex)
-;                 sz = size(z2,/dimensions)
-;                 if (sz[0] ne 2) then begin
-;                   message = ['EMdatapathname does not appear to be a part of the master pattern file name', $
-;                              'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
-;                              'The file will be created at the requested location with the requested name,', $
-;                              'but the EMsoft package will not be able to find it.  Please make sure that the master file', $
-;                              'is located inside the accessible path, and update the corresponding json file to reflect this path']
-;                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
-;                   masterpath = Efitdata.pathname+'/'+Efitdata.mpfilename
-;                 end else begin
-;                   z3 = z2[sz[0]-1]
-;                   masterpath = strmid(z3,1)+'/'+Efitdata.mpfilename
-;                 endelse
-
-; ; define the SEMdata structure that will be written to the JSON file
-;                 SEMdata = {ebsddatastructure, $
-;                         L : Efitdata.detL, $ 
-;                         thetac : Efitdata.dettheta, $ 
-;                         delta : Efitdata.detdelta, $
-;                         numsx : Efitdata.detnumsx, $ 
-;                         numsy : Efitdata.detnumsy, $ 
-;                         energymin : EkeV - float(numEbins-1)*Ebinsize, $
-;                         energymax : EkeV, $ 
-;                         energyaverage : 0, $ 
-;                         xpc : Efitdata.detxpc, $
-;                         ypc : Efitdata.detypc, $
-;                         omega : Efitdata.detomega, $ 
-;                         anglefile : eulerpath, $ 
-;                         eulerconvention : eulerconvention[Efitdata.EulerConvention], $ 
-;                         masterfile : masterpath, $ 
-;                         energyfile : Efitdata.energyfilename, $ 
-;                         datafile : "undefined", $ 
-;                         beamcurrent : Efitdata.detbeamcurrent, $ 
-;                         dwelltime : Efitdata.detdwelltime, $ 
-;                         binning : 2^Efitdata.detbinning, $ 
-;                         scalingmode : 'not', $ 
-;                         gammavalue : Efitdata.detgamma, $ 
-;                         outputformat : 'bin', $ 
-;                         maskpattern : maskpattern[Efitdata.showcircularmask], $
-;                         nthreads : 1, $
-;                         spatialaverage : 'n' $ 
-;                 }
-; ; embed it into a new structure
-;                 jsonstruct = {SEMdata: SEMdata}
-
-; ; and write this to a file using implied_print formatting
-;                  openw,1,Efitdata.jsonpathname+'/'+Efitdata.jsonfilename
-;                  printf,1,jsonstruct,/implied_print
-;                  close,1
-;                  Core_Print,'Structure saved to '+Efitdata.jsonfilename+'.json file'
-
-; ; next, create the euler angle file
-; ; in a future version, we will also include the pattern center coordinates in this file...
-;                  openw,1,Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
-;                  printf,1,'eu'
-;                  printf,1,'1'
-;                  printf,1,Efitdata.detphi1,', ',Efitdata.detphi,', ',Efitdata.detphi2
-;                  close,1
-;                  Core_Print,'Euler angles saved to '+Efitdata.eulerfilename+'.txt file'
-;         endcase
+        'MKNML6' : begin
+; write an EMsoftOO 6.0 EMDI.nml name list file with name efit_EMDI.nml
+                openw,1,Efitdata.pathname+'/efit_EMDI.nml'
+                printf,1,'&DIdata'
+                printf,1,'indexingmode = ''dynamic'','
+                printf,1,'similaritymetric = ''ndp'','
+                printf,1,'notify = ''off'','
+                printf,1,'ipf_wd = 100,'
+                printf,1,'ipf_ht = 100,'
+                printf,1,'ROI = 0 0 0 0,'
+                printf,1,'stepx = 1.0,'
+                printf,1,'stepy = 1.0,'
+                printf,1,'nnk = 50,'
+                printf,1,'nosm = 20,'
+                printf,1,'nism = 5,'
+                printf,1,'isangle = 1.5,'
+                printf,1,'maskfile = ''undefined'','
+                printf,1,'maskpattern = ''n'','
+                printf,1,'maskradius = 240,'
+                printf,1,'hipassw = 0.05,'
+                printf,1,'nregions = 10,'
+                printf,1,'exptnumsx = '+string(efitdata.detnumsx,format="(I5)")+','
+                printf,1,'exptnumsy = '+string(efitdata.detnumsy,format="(I5)")+','
+                printf,1,'exptnumsy = 480,'
+                printf,1,'binning = 1, '
+                printf,1,'numsx = '+string(efitdata.detnumsx,format="(I5)")+','
+                printf,1,'numsy = '+string(efitdata.detnumsy,format="(I5)")+','
+                printf,1,'doNLPAR = .FALSE.,'
+                printf,1,'sw = 3,'
+                printf,1,'lambda = 0.375,'
+                printf,1,'ncubochoric = 100,'
+                printf,1,'thetac = '+string(efitdata.dettheta,format="(F5.1)")+','
+                printf,1,'omega = '+string(efitdata.detomega,format="(F5.1)")+','
+                printf,1,'L = '+string(efitdata.detL,format="(F12.5)")+','
+                printf,1,'delta = '+string(efitdata.detdelta,format="(F12.5)")+','
+                printf,1,'xpc = '+string(efitdata.detxpc,format="(F12.5)")+','
+                printf,1,'ypc = '+string(efitdata.detypc,format="(F12.5)")+','
+                printf,1,'energymin = '+string(EkeV - float(numebins-1)*ebinsize,format="(F12.5)")+','
+                printf,1,'energymax = '+string(EkeV,format="(F12.5)")+','
+                printf,1,'beamcurrent = '+string(efitdata.detbeamcurrent,format="(F12.5)")+','
+                printf,1,'dwelltime = '+string(efitdata.detdwelltime,format="(F12.5)")+','
+                printf,1,'scalingmode = ''gam'','
+                printf,1,'gammavalue = '+string(efitdata.detgamma,format="(F12.5)")+','
+                printf,1,'exptfile = ''undefined'','
+                printf,1,'inputtype = ''binary'','
+                printf,1,'hdfstrings = '''' '''' '''' '''' '''' '''' '''' '''' '''' '''' ,'
+                printf,1,'tmpfile = ''EMEBSDdict_tmp.data'','
+                printf,1,'keeptmpfile = ''n'','
+                printf,1,'usetmpfile = ''n'','
+                printf,1,'datafile = ''undefined'','
+                printf,1,'ctffile = ''undefined'','
+                printf,1,'angfile = ''undefined'','
+                printf,1,'eulerfile = ''undefined'',
+                printf,1,'dictfile = ''undefined'','
+                printf,1,'masterfile = '''+strtrim(Efitdata.mpfilename)+''','
+                printf,1,'refinementnmlfile = ''undefined'','
+                printf,1,'numdictsingle = 1024,'
+                printf,1,'numexptsingle = 1024,'
+                printf,1,'nthreads = 1,'
+                printf,1,'platid = 1,'
+                printf,1,'devid = 1,'
+                printf,1,'multidevid = 0 0 0 0 0 0 0 0,'
+                printf,1,'usenumd = 0,'
+                printf,1,'/'
+                close,1
+                Core_print,'fit data stored in EMsoftOO 6.0 name list file efit_EMEBSDDI.nml'
+        endcase
 
 ; next are the non-refinable parameter widgets
         'DETTHETA' : begin
