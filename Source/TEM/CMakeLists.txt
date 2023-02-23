@@ -55,14 +55,14 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                       )
 
-  # Add_EMsoft_Executable(TARGET EMhh4
-  #                     SOURCES ${APP_DIR}/EMhh4.f90 
-  #                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-  #                     TEMPLATE ${TMPLT_DIR}/EMhh4.template 
-  #                     SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/TEM 
-  #                     INSTALL_PROGRAM TRUE
-  #                     INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
-  #                     )
+  Add_EMsoft_Executable(TARGET EMhh4
+                      SOURCES ${APP_DIR}/EMhh4.f90 
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMhh4.template 
+                      SOLUTION_FOLDER ${EMSOFTPUBLIC_DIR_NAME}/TEM 
+                      INSTALL_PROGRAM TRUE
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
 
   Add_EMsoft_Executable(TARGET EMLACBED
                       SOURCES ${APP_DIR}/EMLACBED.f90 
