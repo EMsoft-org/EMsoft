@@ -109,7 +109,7 @@ if keyword_set(single) then begin
   ECPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy)
   ECPattern = reform(ECPattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
-  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
         ipar, fpar, ECPattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
