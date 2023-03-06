@@ -109,8 +109,20 @@ if keyword_set(single) then begin
   ECPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy)
   ECPattern = reform(ECPattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
-  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+  if (!version.os eq 'darwin') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, ECPattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
+
+  if (!version.os eq 'Win32') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.dll', callname, $
+        ipar, fpar, ECPattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
+
+  if (!version.os eq 'linux') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+        ipar, fpar, ECPattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
 
   if (res ne 1.0) then begin
     Core_print,'getECPatternsWrapper return code = '+string(res,format="(F4.1)")
@@ -128,8 +140,20 @@ end else begin
 
   ECPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy,SEMdata.numangles)
 
-  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+  if (!version.os eq 'darwin') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, ECPattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
+
+  if (!version.os eq 'Win32') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.dll', callname, $
+        ipar, fpar, ECPattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
+
+  if (!version.os eq 'linux') then begin
+      res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+        ipar, fpar, ECPattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+  endif
 
   if (res ne 1.0) then begin
     Core_print,'getECPatternsWrapper return code = '+string(res,format="(F4.1)")
