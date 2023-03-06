@@ -12,7 +12,7 @@
 			  'real_kind4':'float',
 			  'real_kind8':'double',
 			  'real_kind_7':'float',
-			  'real_kind_15':'float',
+			  'real_kind_15':'double',
               'c_float': 'float',
               'c_double': 'double'},
 'character': {  '*':'char',
