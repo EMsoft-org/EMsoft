@@ -2267,13 +2267,17 @@ logical,INTENT(IN),OPTIONAL                         :: presentFolder
 logical,INTENT(IN),OPTIONAL                         :: isTKD
 
 character(fnlen)                                    :: infile, groupname, dataset
-logical                                             :: stat, readonly, g_exists, h_exists, t_exists
+logical                                             :: TKD, stat, readonly, g_exists, h_exists, t_exists
 type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+t_exists = .FALSE.
+g_exists = .FALSE.
+h_exists = .FALSE. 
 
 ! we assume that the calling program has opened the HDF interface
 
@@ -2305,11 +2309,14 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 
+TKD = .FALSE.
 if (present(isTKD)) then 
-    if (isTKD.eqv..TRUE.) then 
-        dataset = 'TKDDictionaryIndexingNML'
-        call H5Lexists_f(HDF_head%next%objectID,trim(dataset),t_exists, hdferr)
-    end if 
+    if (isTKD.eqv..TRUE.) TKD = .TRUE. 
+end if 
+
+if (TKD.eqv..TRUE.) then 
+    dataset = 'TKDDictionaryIndexingNML'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),t_exists, hdferr)
 else
     dataset = 'EBSDDictionaryIndexingNML'
     call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
@@ -2340,219 +2347,219 @@ if ((g_exists.eqv..TRUE.).or.(t_exists.eqv..TRUE.)) then
 !====================================
 ! read all NMLparameters group datasets
 !====================================
-groupname = SC_NMLparameters
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSDIndexingNameListType
-if (t_exists.eqv..TRUE.) groupname = SC_TKDIndexingNameListType
-    hdferr = HDF_openGroup(groupname, HDF_head)
+    groupname = SC_NMLparameters
+        hdferr = HDF_openGroup(groupname, HDF_head)
+    groupname = SC_EBSDIndexingNameListType
+    if (t_exists.eqv..TRUE.) groupname = SC_TKDIndexingNameListType
+        hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! we'll read these roughly in the order that the HDFView program displays them...
-dataset = SC_HDFstrings
-    call hdf_readdatasetstringarray(dataset, nlines, hdf_head, hdferr, stringarray)
-    do ii=1,10
-      ebsdnl%hdfstrings(ii) = trim(stringarray(ii))
-    end do
-    deallocate(stringarray)
+    dataset = SC_HDFstrings
+        call hdf_readdatasetstringarray(dataset, nlines, hdf_head, hdferr, stringarray)
+        do ii=1,10
+          ebsdnl%hdfstrings(ii) = trim(stringarray(ii))
+        end do
+        deallocate(stringarray)
 
-dataset = SC_L
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%L)
+    dataset = SC_L
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%L)
 
-dataset = SC_ncubochoric  
+    dataset = SC_ncubochoric  
 ! There is an issue with the capitalization on this variable; needs to be resolved 
 ! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
 ! for ncubochoric ...
-call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-if (g_exists) then
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
-else
-    dataset = 'ncubochoric'
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
-end if
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
+    else
+        dataset = 'ncubochoric'
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
+    end if
 
-dataset = SC_ROI
-call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-if (g_exists) then
-    call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
-    ebsdnl%ROI(1:4) = iarray(1:4)
-    deallocate(iarray)
-else
-    ebsdnl%ROI = (/ 0, 0, 0, 0 /)
-end if
+    dataset = SC_ROI
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then
+        call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
+        ebsdnl%ROI(1:4) = iarray(1:4)
+        deallocate(iarray)
+    else
+        ebsdnl%ROI = (/ 0, 0, 0, 0 /)
+    end if
 
-dataset = SC_angfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%angfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_angfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%angfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_anglefile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%anglefile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_anglefile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%anglefile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_axisangle
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, farray)
-    ebsdnl%axisangle(1:4) = farray(1:4)
-    deallocate(farray)
+    dataset = SC_axisangle
+        call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, farray)
+        ebsdnl%axisangle(1:4) = farray(1:4)
+        deallocate(farray)
 
-dataset = SC_beamcurrent
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%beamcurrent)
+    dataset = SC_beamcurrent
+        call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%beamcurrent)
 
-dataset = SC_binning
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%binning)
+    dataset = SC_binning
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%binning)
 
-dataset = SC_ctffile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%ctffile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_ctffile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%ctffile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_datafile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%datafile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_datafile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%datafile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_delta
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%delta)
+    dataset = SC_delta
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%delta)
 
-dataset = SC_devid
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%devid)
+    dataset = SC_devid
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%devid)
 
-dataset = SC_dwelltime
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%dwelltime)
+    dataset = SC_dwelltime
+        call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%dwelltime)
 
-dataset = SC_energyaverage
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%energyaverage)
+    dataset = SC_energyaverage
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%energyaverage)
 
-dataset = SC_energyfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%energyfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_energyfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%energyfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_energymax
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymax)
+    dataset = SC_energymax
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymax)
 
-dataset = SC_energymin
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymin)
+    dataset = SC_energymin
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymin)
 
-dataset = SC_eulerfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%eulerfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_eulerfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%eulerfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_exptfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%exptfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_exptfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%exptfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_gammavalue
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%gammavalue)
+    dataset = SC_gammavalue
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%gammavalue)
 
-dataset = SC_hipassw
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%hipassw)
+    dataset = SC_hipassw
+        call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%hipassw)
 
-dataset = SC_inputtype
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%inputtype = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_inputtype
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%inputtype = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_ipfht
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_ht)
+    dataset = SC_ipfht
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_ht)
 
-dataset = SC_ipfwd
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
+    dataset = SC_ipfwd
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
 
-dataset = SC_maskfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%maskfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_maskfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%maskfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_maskpattern
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%maskpattern = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_maskpattern
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%maskpattern = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_maskradius
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%maskradius)
+    dataset = SC_maskradius
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%maskradius)
 
-dataset = SC_masterfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%masterfile = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_masterfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%masterfile = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_nnav
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnav)
+    dataset = SC_nnav
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnav)
 
-dataset = SC_nnk
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnk)
+    dataset = SC_nnk
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnk)
 
-dataset = SC_nosm
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nosm)
+    dataset = SC_nosm
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nosm)
 
-dataset = SC_nregions
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nregions)
+    dataset = SC_nregions
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nregions)
 
-dataset = SC_nthreads
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nthreads)
+    dataset = SC_nthreads
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nthreads)
 
-dataset = SC_numdictsingle
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numdictsingle)
+    dataset = SC_numdictsingle
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numdictsingle)
 
-dataset = SC_numexptsingle
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numexptsingle)
+    dataset = SC_numexptsingle
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numexptsingle)
 
-dataset = SC_numsx
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsx)
+    dataset = SC_numsx
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsx)
 
-dataset = SC_numsy
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
+    dataset = SC_numsy
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
 
 !=====================================================
 ! check here for the exptnumsx(y) parameters that were introduced in 5.0.3
-dataset = 'exptnumsx'
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists.eqv..TRUE.) then
-      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsx)
-    else 
-      ebsdnl%exptnumsx = ebsdnl%numsx 
-    end if 
+    dataset = 'exptnumsx'
+        call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+        if (g_exists.eqv..TRUE.) then
+          call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsx)
+        else 
+          ebsdnl%exptnumsx = ebsdnl%numsx 
+        end if 
 
-dataset = 'exptnumsy'
-    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists.eqv..TRUE.) then
-      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsy)
-    else 
-      ebsdnl%exptnumsy = ebsdnl%numsy 
-    end if 
+    dataset = 'exptnumsy'
+        call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+        if (g_exists.eqv..TRUE.) then
+          call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsy)
+        else 
+          ebsdnl%exptnumsy = ebsdnl%numsy 
+        end if 
 !=====================================================
 
-dataset = SC_omega
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
+    dataset = SC_omega
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
 
-dataset = SC_platid
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%platid)
+    dataset = SC_platid
+        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%platid)
 
-dataset = SC_scalingmode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%scalingmode = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_scalingmode
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%scalingmode = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_spatialaverage
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%spatialaverage = trim(stringarray(1))
-    deallocate(stringarray)
+    dataset = SC_spatialaverage
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%spatialaverage = trim(stringarray(1))
+        deallocate(stringarray)
 
-dataset = SC_thetac
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%thetac)
+    dataset = SC_thetac
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%thetac)
 
-dataset = SC_tmpfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%tmpfile = trim(stringarray(1))
-    deallocate(stringarray)
-    
-dataset = SC_xpc
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%xpc)
+    dataset = SC_tmpfile
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%tmpfile = trim(stringarray(1))
+        deallocate(stringarray)
+        
+    dataset = SC_xpc
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%xpc)
 
-dataset = SC_ypc
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%ypc)
+    dataset = SC_ypc
+        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%ypc)
 
 ! and close the NMLparameters group
     call HDF_pop(HDF_head)

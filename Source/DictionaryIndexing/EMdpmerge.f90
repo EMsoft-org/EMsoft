@@ -135,14 +135,16 @@ if (dpmnl%indexingmode.eq.'DI') then
                                     getEulerAngles = .TRUE., &
                                     getIQ = .TRUE., &
                                     getOSM = .TRUE., &
-                                    getCI = .TRUE.)
+                                    getCI = .TRUE., &
+                                    isTKD = .FALSE.)
       else   ! read the results from the refinement run
         call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
                                     getRefinedEulerAngles = .TRUE., &
                                     getIQ = .TRUE., &
                                     getOSM = .TRUE., &
                                     getRefinedDotProducts = .TRUE., &
-                                    getCI = .TRUE.)
+                                    getCI = .TRUE., &
+                                    isTKD = .FALSE.)
       end if
     else 
       if (trim(dpmnl%usedp).eq.'original') then ! read the original DI results
@@ -162,6 +164,7 @@ if (dpmnl%indexingmode.eq.'DI') then
                                     isTKD = .TRUE.)
       end if
     end if 
+
 
     if (i.eq.1) then 
   ! get the ROI dimensions and allocate the arrays 
