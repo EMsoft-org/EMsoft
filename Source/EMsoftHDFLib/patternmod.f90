@@ -841,7 +841,7 @@ character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt, patx
 integer(kind=ish)                       :: pair(2)
-integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
+integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot, myoffset
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
 integer(kind=8)                         :: patoffsets(wd)
@@ -879,10 +879,10 @@ select case (itype)
          multfactor = 2_ill
         end if
 
-        offset = offset + (l1-1_ill) * lpatsz * multfactor
+        myoffset = offset + (l1-1_ill) * lpatsz * multfactor
         buffersize = lpatsz * multfactor
         allocate(buffer(buffersize))
-        read(unit=funit, pos=offset, iostat=ios) buffer
+        read(unit=funit, pos=myoffset, iostat=ios) buffer
 
 ! then we convert the byte values into single byte or 2-byte integers 
         if (multfactor.eq.2_ill) then ! .up2 format
