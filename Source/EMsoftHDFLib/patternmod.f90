@@ -242,8 +242,8 @@ integer(kind=irg)                       :: istat
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
-                                           ios, up1header(4), version, patx, paty, myoffset
-character(fnlen)                        :: groupname, dataset, platform
+                                           ios, up1header(4), version, patx, paty, myoffset, SEMlevel
+character(fnlen)                        :: groupname, dataset, datasetx, datasety, platform
 logical                                 :: f_exists
 character(1)                            :: header  ! used for Oxford .ebsp version test
 istat = 0
@@ -383,32 +383,62 @@ select case (itype)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
 
         ! open all the groups to the correct level of the data set
-        do i=1,hdfnumg
+        ! note that there are two different possibilities for the location 
+        ! of the SEM group which contains the pattern ordering arrays: either
+        ! at the same level as the EBSD group or inside the EBSD group.  In the former
+        ! case, the arrays are called 'SEM IX' and 'SEM IY', in the latter they are 
+        ! called 'IX' and 'IY' So, which one is it ?  Let's do a test first...
+        groupname = trim(HDFstrings(1))//'/SEM'
+        call H5Lexists_f(pmHDF_head%next%objectID,trim(groupname),f_exists, hdferr)
+
+        SEMlevel = 0
+        if (f_exists.eqv..TRUE.) then 
+          SEMlevel = 1
+        else 
+          groupname = trim(HDFstrings(1))//'/'//trim(HDFstrings(2))//'/SEM'
+          call H5Lexists_f(pmHDF_head%next%objectID,trim(groupname),f_exists, hdferr)
+          if (f_exists.eqv..TRUE.) SEMlevel = 2
+        end if
+        if (SEMlevel.eq.0) then 
+          call FatalError("openExpPatternFile","SEM group not found in input file")
+        end if
+
+        groupname = trim(HDFstrings(1))
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        if (SEMlevel.eq.2) then
+          groupname = trim(HDFstrings(2))
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+          datasetx = 'IX'
+          datasety= 'IY'
+        else
+          datasetx = 'SEM IX'
+          datasety= 'SEM IY'
+        end if
+        if (hdferr.ne.0) call HDF_handleError(hdferr, 'openExpPatternFile:HDF%openGroup: groupname issue, check for typos.')
+        !  this part is different from the other vendors: the patterns are not necessarily in the correct order
+        !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
+        !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
+        groupname = 'SEM'
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
+        call HDF_readDatasetIntegerArray1D(datasetx, semixydims, pmHDF_head, hdferr, semix)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
+        call HDF_readDatasetIntegerArray1D(datasety, semixydims, pmHDF_head, hdferr, semiy)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+        call invert_ordering_arrays(npat)
+        if (present(verbose)) then
+          if (verbose.eqv..TRUE.) then
+            call Message('  found pattern reordering arrays')
+          end if
+        end if
+        ! and leave this group
+                call HDF_pop(pmHDF_head)
+        do i=SEMlevel+1,hdfnumg
             groupname = trim(HDFstrings(i))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
-            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-            !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
-            !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
-            !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
-            if (i.eq.1) then 
-               groupname = 'SEM'
-               hdferr = HDF_openGroup(groupname, pmHDF_head)
-               dataset = 'SEM IX'
-               call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
-               if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
-               dataset = 'SEM IY'
-               call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
-               if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
-               call invert_ordering_arrays(npat)
-               if (present(verbose)) then
-	                if (verbose.eqv..TRUE.) then
-                    call Message('  found pattern reordering arrays')
-                  end if
-               end if
-               ! and leave this group
-               call HDF_pop(pmHDF_head)
-            end if
+            if (hdferr.ne.0) call HDF_handleError(hdferr, 'openExpPatternFile:HDF%openGroup: groupname issue, check for typos.')
         end do
+        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
+        call Message(' Bruker file has been opened ')
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
