@@ -1,0 +1,26 @@
+&GAMMAlist 
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the gamma crystal input file MUST be specified (full pathname)
+ gammaname = 'NiAl-disordered.xtal',
+! the name of the gamma' crystal input file MUST be specified (full pathname)
+ gammapname = 'Ni3Al.xtal',
+! the name of the microstructure input file MUST be specified (full pathname)
+ microfile = 'undefined',
+! microscope accelerating voltage [kV]
+ voltage = 200.0,
+! minimum d-spacing to be taken into account [nm]
+ dmin = 0.04,
+! orientation of crystal; euler angle representation in degrees
+ eu = 0.0,0.0,0.0,
+! output will be BF and DF images of area (2*npix+1)^2
+ npix = 256
+! thicknes value to be used in the output
+ thick = 100.0
+! output will be stored here (full pathname)
+ datafile = 'Test.h5'
+! this last line must be present!
+/

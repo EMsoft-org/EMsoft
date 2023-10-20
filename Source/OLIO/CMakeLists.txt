@@ -18,7 +18,7 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
   Add_EMsoft_Executable(TARGET EMgammaOpenCL
                         SOURCES ${APP_DIR}/EMgammaOpenCL.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${PRIV_TMPLT_DIR}/EMgamma.template 
+                        TEMPLATE ${TMPLT_DIR}/EMgamma.template 
                         SOLUTION_FOLDER EMsoftPrivate/OLIO
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
@@ -27,7 +27,7 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
   Add_EMsoft_Executable(TARGET EMgammaSTEM
                         SOURCES ${APP_DIR}/EMgammaSTEM.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}
-                        TEMPLATE ${PRIV_TMPLT_DIR}/EMgammaSTEM.template 
+                        TEMPLATE ${TMPLT_DIR}/EMgammaSTEM.template 
                         SOLUTION_FOLDER EMsoftPrivate/OLIO
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
@@ -58,7 +58,7 @@ elseif(EMsoft_ENABLE_HDF5_SUPPORT)
      Add_EMsoft_Executable(TARGET EMgamma
                            SOURCES ${APP_DIR}/EMgamma.f90 
                            LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
-                           TEMPLATE ${PRIV_TMPLT_DIR}/EMgamma.template 
+                           TEMPLATE ${TMPLT_DIR}/EMgamma.template 
                            SOLUTION_FOLDER EMsoftPrivate/OLIO
                            INSTALL_PROGRAM TRUE
                            INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}

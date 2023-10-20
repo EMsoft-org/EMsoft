@@ -1,0 +1,24 @@
+&GAMMAlist 
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the gamma crystal input file MUST be specified 
+ gammaname = 'NiAl-disordered.xtal',
+! the name of the gamma' crystal input file MUST be specified
+ gammapname = 'Ni3Al.xtal',
+! the name of the microstructure input file MUST be specified
+ microstructurefile = 'undefined',
+! microscope accelerating voltage [kV]
+ voltage = 200.0,
+! minimum d-spacing to be taken into account [nm]
+ dmin = 0.04,
+! convergence angle of probe [mRad]
+ convergence = 10.0,
+! orientation of crystal; euler angle representation in degrees
+ eu = 0.0,0.0,0.0,
+! output will be stored here (full pathname)
+ datafile = 'Test.h5'
+! this last line must be present!
+/
