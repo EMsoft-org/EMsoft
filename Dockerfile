@@ -7,9 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN cd ~/EMs \
  && git clone https://github.com/EMsoft-org/EMsoftData.git \
  && git clone https://github.com/EMsoft-org/EMsoft.git \
- && mkdir EMsoftBuild && mkdir EMPlay 
-
-# EMsoftBuild ... must use dynamic "shared" libraries for f90wrap later on
+ && mkdir EMsoftBuild && mkdir EMPlay && mkdir EMXtal
 
 RUN cd ~/EMs/EMsoftBuild/ && mkdir Debug Release && cd Debug \
  && cmake -DCMAKE_BUILD_TYPE=Debug -DEMsoft_SDK=/opt/EMsoft_SDK -DBUILD_SHARED_LIBS=OFF \
@@ -18,11 +16,8 @@ RUN cd ~/EMs/EMsoftBuild/ && mkdir Debug Release && cd Debug \
  && cd ../Release \
  && cmake -DCMAKE_BUILD_TYPE=Release -DEMsoft_SDK=/opt/EMsoft_SDK -DBUILD_SHARED_LIBS=OFF \
   ../../EMsoft -G Ninja \
- && ninja \
- && cd ~/EMs/GenEMsoftData && mkdir EMXtal \
- && cd ../../ && mkdir .config && cd .config && mkdir EMsoft && cd EMsoft && mkdir tmp && cd ../../
+ && ninja
  
-
 # add release version to path
 ENV PATH ~/EMs/EMsoftBuild/Release/Bin:$PATH
 # add backup path of EMsoft
