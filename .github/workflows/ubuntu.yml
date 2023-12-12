@@ -1,4 +1,4 @@
-name: Docker Image CI Ubuntu AMD64
+name: Docker Image CI Ubuntu
 
 on:
   push:
@@ -31,5 +31,5 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emsoft:linux-amd64-latest
+          platforms: linux/amd64, linux/arm64
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emsoft:buildx-latest
