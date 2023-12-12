@@ -4,10 +4,10 @@ ARG TARGETARCH
 ARG DEBIAN_FRONTEND=noninteractive
 
 # clone EMsoft and set up SDK Debug/Release
-RUN mkdir ~/EMs && cd ~/EMs \
+RUN cd ~/EMs \
  && git clone https://github.com/EMsoft-org/EMsoftData.git \
  && git clone https://github.com/EMsoft-org/EMsoft.git \
- && mkdir EMsoftBuild && mkdir EMPlay && mkdir EMXtal
+ && mkdir EMsoftBuild && mkdir EMXtal
 
 RUN cd ~/EMs/EMsoftBuild/ && mkdir Debug Release && cd Debug \
  && cmake -DCMAKE_BUILD_TYPE=Debug -DEMsoft_SDK=/opt/EMsoft_SDK -DBUILD_SHARED_LIBS=OFF \
