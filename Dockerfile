@@ -4,7 +4,7 @@ ARG TARGETARCH
 ARG DEBIAN_FRONTEND=noninteractive
 
 # clone EMsoft and set up SDK Debug/Release
-RUN cd ~/EMs \
+RUN mkdir ~/EMs && cd ~/EMs \
  && git clone https://github.com/EMsoft-org/EMsoftData.git \
  && git clone https://github.com/EMsoft-org/EMsoft.git \
  && mkdir EMsoftBuild && mkdir EMPlay && mkdir EMXtal
