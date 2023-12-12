@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN cd ~/EMs \
  && git clone https://github.com/EMsoft-org/EMsoftData.git \
  && git clone https://github.com/EMsoft-org/EMsoft.git \
- && mkdir EMsoftBuild && mkdir EMXtal
+ && mkdir EMPlay && mkdir EMsoftBuild && mkdir EMXtal
 
 RUN cd ~/EMs/EMsoftBuild/ && mkdir Debug Release && cd Debug \
  && cmake -DCMAKE_BUILD_TYPE=Debug -DEMsoft_SDK=/opt/EMsoft_SDK -DBUILD_SHARED_LIBS=OFF \
