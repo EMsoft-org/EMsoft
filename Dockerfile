@@ -38,9 +38,6 @@ RUN useradd -m $USERNAME && \
 
 USER ${user}
 
-# create a home folder
-RUN mkdir /home/${user}
-
 # run terminal for EMuser at /home/${user}
 WORKDIR /home/${user}
 CMD ["/bin/bash"]
