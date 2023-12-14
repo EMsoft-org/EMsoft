@@ -1,0 +1,15 @@
+{
+        "EMsoftpathname": "/EMs/EMsoft/",
+        "EMXtalFolderpathname": "/home/EMuser/XtalFolder",
+        "EMdatapathname": "/home/EMuser/EMPlay",
+        "EMtmppathname": "/home/EMuser/.config/EMsoft/tmp/",
+        "EMsoftLibraryLocation": "/EMs/EMsoftBuild/Release/Bin/",
+        "EMNotify": "",
+        "EMSlackWebHookURL": "",
+        "EMSlackChannel": "",
+        "Develop" : "No",
+        "UserName" : "Docker EMuser",
+        "UserLocation" : "Docker Container",
+        "UserEmail" : "",
+        "Release": "Yes"
+}
