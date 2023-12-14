@@ -44,7 +44,7 @@ RUN mkdir /home/${user}/XtalFolder \
  && mkdir /home/${user}/.config \
  && mkdir /home/${user}/.config/EMsoft \
  && mkdir /home/${user}/.config/EMsoft/tmp \
- && cp ~/EMs/EMsoft/EMsoftDockerConfig.template /home/${user}/.config/EMsoft/EMsoftConfig.json
+ && cp /home/EMs/EMsoft/EMsoftDockerConfig.template /home/${user}/.config/EMsoft/EMsoftConfig.json
 
 # run terminal for EMuser at /home/${user}
 WORKDIR /home/${user}
