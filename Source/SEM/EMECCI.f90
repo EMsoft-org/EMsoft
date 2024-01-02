@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2024, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -625,8 +625,8 @@ dataset = SC_npiy
 
   ktmp => khead
   do ic=1,numk
-      XYarray(1,ic) = -CalcDot(cell,sngl(ktmp%kt),float(ga),'c') ! / glen
-      XYarray(2,ic) = -CalcDot(cell,sngl(ktmp%kt),gperp,'c') * glen
+      XYarray(1,ic) = real(ktmp%i) ! CalcDot(cell,sngl(ktmp%kt),float(ga),'c') ! / glen
+      XYarray(2,ic) = real(ktmp%j) ! CalcDot(cell,sngl(ktmp%kt),gperp,'c') * glen
       ktmp => ktmp%next
   end do
 
@@ -673,6 +673,7 @@ dataset = SC_ECCIimages
   
   cone = cmplx(1.D0,0.D0)
  write (*,*) 'number of reflections : ', nn
+
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 !--------------------------------------------------------------
@@ -704,12 +705,12 @@ NTHR = eccinl%nthreads
 
 !$OMP  PARALLEL NUM_THREADS(NTHR) DEFAULT(SHARED) PRIVATE(TID,i,j,k,ii,jj,ic,ir,g,Azz,DDD,zmax)
 TID = OMP_GET_THREAD_NUM() 
-!TID = 0
+
 allocate(Azz(nn,nn), DDD(nn,nn))   ! these are private variables, so each thread must allocate them !
 
 if (TID.eq.0) then
   io_int(1) = isg
-  call WriteValue(' -> ',io_int,1,"(I4,' ')",advance="no")
+  call WriteValue(' -> ',io_int,1,"(I6,' ')",advance="no")
   call Message('starting Sarray computation',"(A)",advance="no")
 end if
 
@@ -751,10 +752,9 @@ call Message(' done; scattering matrix computation ',"(A)",advance="no")
 ! summation of the product of Sgh and Lgh.           !
 !----------------------------------------------------!
 
- NTHR = 12
 !$OMP  PARALLEL NUM_THREADS(NTHR) DEFAULT(SHARED) PRIVATE(TID,i,j,k,ii,Azz,amp,amp2,ix,iy,dx,dy,dxm,dym,ixp,iyp,Lgh,ir,ic)
  TID = OMP_GET_THREAD_NUM() 
-! TID = 0 
+
  allocate(Azz(nn,nn),amp(nn),amp2(nn),Lgh(nn))
  
 !$OMP DO SCHEDULE (STATIC)
@@ -900,7 +900,7 @@ if (trim(eccinl%montagename).ne.'undefined') then
 ! allocate the montage array
   if (eccinl%progmode.eq.'array') then 
 ! divide the beam offsets by the dkt step size so that we can turn them into integers
-    XYarray = XYarray / eccinl%dkt
+    ! XYarray = XYarray / eccinl%dkt
     allocate(XYint(2,numk))
     XYint = nint(XYarray)
     maxXY = maxval(XYint)
@@ -912,6 +912,47 @@ if (trim(eccinl%montagename).ne.'undefined') then
     montage_ny = eccinl%DF_npiy
     allocate(montage(montage_nx,montage_ny))
   end if
+
+! assign the average value of the ECCIimages array to the montage
+  ! av = sum(ECCIstore)/float(eccinl%DF_npix)/float(eccinl%DF_npiy)/float(numk)
+  ! montage = av 
+
+! get the intensity scaling parameters
+
+! fill and scale the montage array
+  do kkk=1,numk
+    ma = maxval(ECCIstore(:,:,kkk))
+    mi = minval(ECCIstore(:,:,kkk))
+    do j=1,eccinl%DF_npiy
+      do i=1,eccinl%DF_npix
+        if (eccinl% progmode.eq.'array') then
+          ii = eccinl%DF_npix * (maxXY + XYint(1,kkk)) + i
+          jj = eccinl%DF_npiy * (maxXY + XYint(2,kkk)) + j
+          montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
+        else
+          ii = eccinl%DF_npix * (kkk-1) + i
+          jj = j
+          montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
+        end if
+      end do
+    end do
+  end do
+
+! set up the image_t structure
+  im = image_t(montage)
+  if (im%empty()) call Message("EMECCI","failed to convert array to image")
+
+! create the file
+  call im%write(trim(Image_filename), iostat, iomsg) ! format automatically detected from extension
+  if (0.ne.iostat) then
+    call Message("Failed to write image to file : "//iomsg)
+  else  
+    call Message('ECCI image montage written to '//trim(Image_filename))
+  end if 
+
+  fname = trim(EMsoft_getEMdatapathname())//trim(eccinl%montagename)//'.tiff'
+  fname = EMsoft_toNativePath(fname)
+  Image_filename = trim(fname)
 
 ! assign the average value of the ECCIimages array to the montage
   av = sum(ECCIstore)/float(eccinl%DF_npix)/float(eccinl%DF_npiy)/float(numk)
@@ -950,6 +991,7 @@ if (trim(eccinl%montagename).ne.'undefined') then
   else  
     call Message('ECCI image montage written to '//trim(Image_filename))
   end if 
+
   deallocate(montage)
 
 end if

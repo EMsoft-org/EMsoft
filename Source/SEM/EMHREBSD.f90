@@ -16,7 +16,6 @@ program EMHREBSD
     use patternmod
     use NameListHDFwriters
     use omp_lib
-    use PSO
     use timing
     use quaternions
   
@@ -26,10 +25,6 @@ program EMHREBSD
     type(HREBSDNameListType)               :: enl
     type(EBSDAngleType),pointer            :: angles
     type(EBSDSEMArray)                     :: SEM
-    type(MCCLNameListType)                 :: mcnl
-    type(EBSDMasterNameListType)           :: mpnl
-    type(EBSDMCdataType)                   :: EBSDMCdata
-    type(EBSDMPdataType)                   :: EBSDMPdata
   
     real(kind=sgl),allocatable             :: eulerangles(:,:), pc(:,:),cost(:), Ftensor(:,:)
     real(kind=sgl),allocatable             :: eulerangles_NMS(:,:), pc_NMS(:,:),cost_NMS(:), Ftensor_NMS(:,:)
@@ -42,8 +37,6 @@ program EMHREBSD
     real(kind=sgl),allocatable             :: XCminV(:), XCmaxV(:), bestmem_XC(:)
     real(kind=sgl)                         :: bestval,st_initial(3),pc_initial(3), q_c(4), tstart, tstop
     character(1)                           :: single_grain
-    type (particle), dimension(:), allocatable :: swarm
-    type (particle), allocatable           :: best_particle
     real(kind=sgl)                         :: w, w_damp,c1,c2
     integer(kind=irg)                      :: dims(2)
     real(kind=dbl),allocatable             :: a(:,:), c(:,:), Euler_Angle(:,:)
@@ -124,7 +117,7 @@ program EMHREBSD
     real(kind=dbl)                                      :: x, y, val, Ftensor(9), R_sample(3,3), Smatrix(3,3), w(3,3), &
                                                           R_tilt(3,3), F_sample(3,3), R_detector(3,3), strain_sample(3,3), &
                                                           strain(3,3,numangles), rotation(3,3,numangles), minf(numangles), &
-                                                          shift_data(3,21,numangles), beta_sample(3,3)
+                                                          shift_data(3,21,numangles), beta_sample(3,3), mea, sdev, fROI
     real(kind=sgl),allocatable                          :: window(:,:), expt(:), expt_ref(:), pattern(:,:), pattern_test(:,:), &
                                                         hpvals(:), lpvals(:), sumexpt(:), pcopy_ROI(:,:), q_shift(:,:), &
                                                         ref_p(:,:), pcopy_ROI_test(:,:), interp_ngrid(:), ngrid(:), &
@@ -166,7 +159,8 @@ program EMHREBSD
     
     ! size of region of interest
     ROI_size=2**enl%size_ROI
-    
+    fROI = 1.D0/ROI_size**2
+
     allocate(expt(patsz), expt_ref(patsz))
     dims3 = (/ binx, biny, 1 /)
 
@@ -335,10 +329,16 @@ program EMHREBSD
         ! apply the band pass fitlers on the reference ROI
         ffdata = applyBandPassFilter(rrdata, (/ ROI_size, ROI_size/), dble(hpmask_shifted), &
           dble(lpmask_shifted), inp, outp, planf, planb)
+    mea = sum(ffdata)*fROI
+    sdev = sqrt( sum( (ffdata-mea)**2)*fROI )
+    ffdata = (ffdata-mea) / sdev
 
         ! apply the band pass fitlers on the test ROI
         ffdata_test = applyBandPassFilter(rrdata_test, (/ ROI_size, ROI_size/), dble(hpmask_shifted), &
         dble(lpmask_shifted), inp, outp, planf, planb)
+    mea = sum(ffdata_test)*fROI
+    sdev = sqrt( sum( (ffdata_test-mea)**2)*fROI )
+    ffdata_test = (ffdata_test-mea) / sdev
 
         ! convert to single precision 
         pattern = (sngl(ffdata))
@@ -346,7 +346,7 @@ program EMHREBSD
 
         ! compute the cross correlation function in the Fourier space
         call cross_correlation_function((/ ROI_size, ROI_size/), dble(pattern), dble(pattern_test), XCF, max_pos) 
-       
+   write (*,*) i, maxval(XCF)       
         ! now crop out a small region around the peak of xcf
         z_peak=XCF(max_pos(1)-interp_grid/2:max_pos(1)+interp_grid/2,max_pos(2)-interp_grid/2:max_pos(2)+interp_grid/2)
       
@@ -355,6 +355,7 @@ program EMHREBSD
         
         ! we can then find the shift vectors associated with the ROI with subpixel accuracy
         q_shift(:,i) = (/-q(1), -q(2), 0.0/)
+write (*,*) i, q_shift(:,i)
         
         ! pattern center refinement (geometrically corrected, this assumes that the titlt is perfect 70 degree)
         ! reference: Britton et al, 2011, Ultramicroscopy
@@ -375,6 +376,8 @@ program EMHREBSD
 
       ! rotation matrix to sample frame
       R_tilt = eu2om((/0.D0, real(-enl%totaltilt*dtor,8), 0.D0/))
+
+  write (*,*) 'R_tilt : ', R_tilt
    
       ! optimization routine
       call main_minf(enl%N_ROI, real(r,8), real(q_shift,8), Euler_Angle(:,j), real(C,8), &
@@ -392,6 +395,8 @@ program EMHREBSD
       ! lattice rotation matrix in the sample frame
       w = 0.D0
       call Rot2LatRot(R_sample, w)
+
+      write (*,*) 'Rot2LatRot : ', w
 
       ! distortion tensor
       beta_sample = F_sample-reshape((/1.D0,0.D0,0.D0,0.D0,1.D0,0.D0,0.D0,0.D0,1.D0/),(/3,3/))
@@ -574,7 +579,7 @@ program EMHREBSD
   cplan = fftw_plan_dft_2d(cdims(1),cdims(2), inp, outp, FFTW_BACKWARD, FFTW_ESTIMATE)
   
   call fftw_execute_dft(cplan, fftc, outp)
-  c=real(outp)
+  c=real(outp)/real(product(cdims))/real(product(dims))
   max_pos=maxloc(c)
   
   deallocate(ffta, fftb, fftc, apad, bpad)

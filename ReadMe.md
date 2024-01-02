@@ -15,7 +15,7 @@ Release v5.0.0 has the following DOI (through Zenodo):
 
 - ### **For Dictionary Indexing (DI) users, we have changed our convention for EBSD pattern orientation to be the same as the vendor convention; i.e., EBSD patterns are displayed looking from the detector to the sample. The practical consequence is that for older DI runs the sign of the xpc (x-component of pattern center) will need to be reversed when used with the Release 5.0 indexing programs.**
 
-
+- ### **There is now a Docker image for the current release of EMsoft 5.0!! Check [here](https://github.com/EMsoft-org/EMsoft) for instructions on how to download and use the Docker image.**
 
 ## Financial Support 
 EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, was started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of EMsoft was performed with support from an ONR Vannevar Bush Faculty Fellowship, N00014-­16-­1-­2821, and an NSF research program DMR \#1904629.

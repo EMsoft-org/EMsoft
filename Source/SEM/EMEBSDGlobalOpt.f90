@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2023, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2024, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -566,112 +566,112 @@ iter=1
 !!------Perform evolutionary computation------------------------------------!! 
 
 do while (iter <= itermax)
-popold_XC=pop_XC
+  popold_XC=pop_XC
 
 !!------Mutation operation--------------------------------------------------!!
 ! rand permutation of the population size
-ind=randperm(4)
-a1=randperm(NP)
-rt=mod(rot+ind(1),NP)
-a2=a1(rt+1)
-rt=mod(rot+ind(2),NP)
-a3=a2(rt+1)
-rt=mod(rot+ind(3),NP)
-a4=a3(rt+1)
-rt=mod(rot+ind(4),NP)
-a5=a4(rt+1)
-bm_XC=spread(bestmemit_XC, DIM=1, NCOPIES=NP)
+  ind=randperm(4)
+  a1=randperm(NP)
+  rt=mod(rot+ind(1),NP)
+  a2=a1(rt+1)
+  rt=mod(rot+ind(2),NP)
+  a3=a2(rt+1)
+  rt=mod(rot+ind(3),NP)
+  a4=a3(rt+1)
+  rt=mod(rot+ind(4),NP)
+  a5=a4(rt+1)
+  bm_XC=spread(bestmemit_XC, DIM=1, NCOPIES=NP)
 
 !----- Generating a random scaling factor--------------------------------!
-select case (method(1))
-  case (1)
-    call random_number(F_XC)
-  case(2)
-    call random_number(F_XC)
-    F_XC=2.0*F_XC-1.0
-end select
+  select case (method(1))
+    case (1)
+      call random_number(F_XC)
+    case(2)
+      call random_number(F_XC)
+      F_XC=2.0*F_XC-1.0
+  end select
 
 !---- select a mutation strategy-----------------------------------------!
-select case (strategy)
+  select case (strategy)
 
-case (1) !de/best/1/bin
-  ui_XC=bm_XC+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
+  case (1) !de/best/1/bin
+    ui_XC=bm_XC+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
 
-case default !de/rand/1/bin
-  ui_XC=popold_XC(a3,:)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
+  case default !de/rand/1/bin
+    ui_XC=popold_XC(a3,:)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
 
-case (3) !de/rand-to-best/1/bin
-  ui_XC=popold_XC+F_XC*(bm_XC-popold_XC+popold_XC(a1,:)-popold_XC(a2,:))
+  case (3) !de/rand-to-best/1/bin
+    ui_XC=popold_XC+F_XC*(bm_XC-popold_XC+popold_XC(a1,:)-popold_XC(a2,:))
 
-case (4) !de/best/2/bin
-  ui_XC=bm_XC+F_XC*(popold_XC(a1,:)-popold_XC(a2,:)+popold_XC(a3,:)-popold_XC(a4,:))
+  case (4) !de/best/2/bin
+    ui_XC=bm_XC+F_XC*(popold_XC(a1,:)-popold_XC(a2,:)+popold_XC(a3,:)-popold_XC(a4,:))
 
-case (5) !de/rand/2/bin
-  ui_XC=popold_XC(a5,:)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:)+popold_XC(a3,:) &
-    -popold_XC(a4,:))
+  case (5) !de/rand/2/bin
+    ui_XC=popold_XC(a5,:)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:)+popold_XC(a3,:) &
+      -popold_XC(a4,:))
 
-case (6) ! A linear crossover combination of bm_XC and popold_XC
-  if (method(2) == 1) call random_number(F_CR) 
-  ui_XC=popold_XC+F_CR*(bm_XC-popold_XC)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
-end select
+  case (6) ! A linear crossover combination of bm_XC and popold_XC
+    if (method(2) == 1) call random_number(F_CR) 
+    ui_XC=popold_XC+F_CR*(bm_XC-popold_XC)+F_XC*(popold_XC(a1,:)-popold_XC(a2,:))
+  end select
 !!--------------------------------------------------------------------------!!
 !!---------------------Binomial Crossover operation-------------------------!!
-call random_number(rand_XC)
-call random_number(rand_j)
+  call random_number(rand_XC)
+  call random_number(rand_j)
 
-jrand=floor(rand_j*Dim_XC+1)
-mui_XC=0.0
-mpo_XC=0.0
+  jrand=floor(rand_j*Dim_XC+1)
+  mui_XC=0.0
+  mpo_XC=0.0
 
-do i=1,NP
-do j=1,Dim_XC
-if ((rand_XC(i,j) < CR_XC) .or. (j==jrand(i,j))) then
-  mui_XC(i,j)=1.0
-else
-  mpo_XC(i,j)=1.0
-end if
-end do 
-end do
-ui_XC=popold_XC*mpo_XC+ui_XC*mui_XC
+  do i=1,NP
+    do j=1,Dim_XC
+      if ((rand_XC(i,j) < CR_XC) .or. (j==jrand(i,j))) then
+        mui_XC(i,j)=1.0
+      else
+        mpo_XC(i,j)=1.0
+      end if
+    end do 
+  end do
+  ui_XC=popold_XC*mpo_XC+ui_XC*mui_XC
 !!--------------------------------------------------------------------------!!
 !!------Evaluate fitness functions and find the best member-----------------!!
-do i=1,NP
-! Confine each of feasible individuals in the lower-upper bound
- ui_XC(i,:)=max(min(ui_XC(i,:),XCmax),XCmin)
-end do
+  do i=1,NP
+  ! Confine each of feasible individuals in the lower-upper bound
+   ui_XC(i,:)=max(min(ui_XC(i,:),XCmax),XCmin)
+  end do
 
-call objective_function(offset3, ui_XC,st_initial, tempval, Dim_XC, enl, &
-patterndata, NP, objective, mcnl, mpnl, EBSDMCdata, EBSDMPdata)
+  call objective_function(offset3, ui_XC,st_initial, tempval, Dim_XC, enl, &
+  patterndata, NP, objective, mcnl, mpnl, EBSDMCdata, EBSDMPdata)
 
-do i=1,NP
-  nfeval=nfeval+1
+  do i=1,NP
+    nfeval=nfeval+1
 
-! Population selection based on objectiove function values 
-  if (tempval(i) < val(i)) then
-     pop_XC(i,:)=ui_XC(i,:)
-     val(i)=tempval(i)
-     if (tempval(i) < bestval) then
-        bestval=tempval(i)
-        bestmem_XC=ui_XC(i,:)
-      end if
-   end if
-end do
+! Population selection based on objective function values 
+    if (tempval(i) < val(i)) then
+       pop_XC(i,:)=ui_XC(i,:)
+       val(i)=tempval(i)
+       if (tempval(i) < bestval) then
+          bestval=tempval(i)
+          bestmem_XC=ui_XC(i,:)
+        end if
+     end if
+  end do
 
-bestmemit_XC=bestmem_XC
+  bestmemit_XC=bestmem_XC
 
-if( (refresh > 0) .and. (mod(iter,refresh)==0)) then
-write(*,*)
-print *,"# Iteration:",iter,": Objective function value:",bestval
-print *,"# Best Member:", bestmem_XC
-end if
+  if( (refresh > 0) .and. (mod(iter,refresh)==0)) then
+    write(*,*)
+    print *,"# Iteration:",iter,": Objective function value:",bestval
+    print *,"# Best Member:", bestmem_XC
+  end if
 
-iter=iter+1
+  iter=iter+1
 ! end if best fitness if smaller than expected value to reach
-if ( bestval <= VTR ) then
-  print *,"# The best fitness",bestval, "is smaller than VTR at generation #", iter
-  print *,"# Best Member:", bestmem_XC
-  exit
-end if
+  if ( bestval <= VTR ) then
+    print *,"# The best fitness",bestval, "is smaller than VTR at generation #", iter
+    print *,"# Best Member:", bestmem_XC
+    exit
+  end if
 end do
 !!------end the evolutionary computation------------------------------!!
 end subroutine DE_Fortran90

@@ -347,8 +347,8 @@ function UpdateExecutableDependencies()
 }
 
 # -----------------------------------------------------------------------------
-qtLibDir=`"@QtQMake_location@" -query QT_INSTALL_LIBS`
-libSearchDirs="@lib_search_dirs@;${qtLibDir}"
+# qtLibDir=`"@QtQMake_location@" -query QT_INSTALL_LIBS`
+# libSearchDirs="@lib_search_dirs@;${qtLibDir}"
 
 # -----------------------------------------------------------------------------
 #  Script really starts here

@@ -17,7 +17,7 @@
 ! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
  npx = 360,
 ! normalize Mueller matrix by the element M(1,1)?
- normalize = .FALSE.
+ normalize = .FALSE.,
 ! number of parallel threads to use
  nthreads = 1,
 ! name of the h5 output file produced; relative to EMdatapathname;
