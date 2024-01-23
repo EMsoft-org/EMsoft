@@ -25,6 +25,9 @@
  outputformat = 'gui',
 ! output file ; path relative to EMdatapathname
  datafile = 'undefined',
+! file prefix to save individual patterns as tiff files (relative to EMdatapathname)
+! [probably best to save them in a separate folder, so they can be loaded as an image stack in Fiji]
+ tiff_prefix = 'undefined',
 ! number of threads for parallel execution
  nthreads = 1,
 ! tilt of the sample; only one angle incorporated for now

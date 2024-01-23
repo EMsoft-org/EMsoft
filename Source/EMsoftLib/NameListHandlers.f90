@@ -5797,6 +5797,7 @@ character(fnlen)        :: masterfile
 character(fnlen)        :: datafile
 character(1)            :: maskpattern
 character(fnlen)        :: anglefile
+character(fnlen)        :: tiff_prefix
 character(3)            :: eulerconvention
 integer(kind=irg)       :: numangle_anglefile
 real(kind=sgl)          :: gammavalue
@@ -5808,7 +5809,7 @@ real(kind=sgl)          :: Rout
 
 ! namelist /ECPlist/ stdout, xtalname, voltage, k, fn, dmin, distort, abcdist, albegadist, ktmax, &
 namelist /ECPlist/ stdout, xtalname, xtalname2, fn_f, fn_s, dmin, filmthickness, anglefile, &
-                   nthreads, thetac, npix, maskpattern, eulerconvention, Rin, Rout, &
+                   nthreads, thetac, npix, maskpattern, eulerconvention, Rin, Rout, tiff_prefix, &
                    gF, gS, tF, tS, energyfile, filmfile, subsfile, masterfile, datafile, &
                    numangle_anglefile, gammavalue, outputformat, sampletilt, workingdistance
 
@@ -5832,6 +5833,7 @@ filmfile = 'undefined'
 subsfile = 'undefined'
 masterfile = 'undefined'
 datafile = 'undefined'
+tiff_prefix = 'undefined'
 maskpattern = 'y'
 anglefile = 'undefined'
 eulerconvention = 'hkl'
@@ -5880,6 +5882,7 @@ ecpnl%subsfile = subsfile
 ecpnl%masterfile = masterfile
 ecpnl%maskpattern = maskpattern
 ecpnl%anglefile = anglefile
+ecpnl%tiff_prefix = tiff_prefix
 ecpnl%numangle_anglefile = numangle_anglefile
 ecpnl%eulerconvention = eulerconvention
 ecpnl%gammavalue = gammavalue

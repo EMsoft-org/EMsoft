@@ -1061,6 +1061,7 @@ type ECPNameListType
         character(fnlen)        :: masterfile
         character(fnlen)        :: datafile
         character(fnlen)        :: anglefile
+        character(fnlen)        :: tiff_prefix
         character(3)            :: eulerconvention
         real(kind=sgl)          :: gammavalue
         character(3)            :: outputformat

@@ -113,6 +113,8 @@ use omp_lib
 use distortion
 use filters 
 use stringconstants
+use image
+use, intrinsic :: iso_fortran_env
 
 IMPLICIT NONE
 
@@ -148,19 +150,28 @@ integer(kind=irg)                       :: TID, nthreads
 real(kind=dbl)                          :: dp, MCangle
 real(kind=dbl),parameter                :: Rtod = 57.2957795131D0
 real(kind=dbl),parameter                :: dtoR = 0.01745329251D0
-logical                                 :: switchwfoff = .FALSE.
+logical                                 :: switchwfoff = .FALSE., tiff_output = .FALSE.
 !complex(kind=dbl)                       :: D
 
 type(HDFobjectStackType)                :: HDF_head
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T)                        :: dims3(3)
 character(fnlen,kind=c_char)            :: line2(1)
-character(fnlen)                        :: groupname, dataset, attributename, HDF_FileVersion
+character(fnlen)                        :: groupname, dataset, attributename, HDF_FileVersion, TIFF_filename
 character(11)                           :: dstr
 character(15)                           :: tstrb
 character(15)                           :: tstre
 character(fnlen)                        :: datafile
 logical                                 :: overwrite = .TRUE., insert = .TRUE.
+
+! declare variables for use in object oriented image module
+integer                                 :: iostat
+character(len=128)                      :: iomsg
+logical                                 :: isInteger
+type(image_t)                           :: im
+character(5)                            :: TIFF_number
+integer(int8)                           :: i8 (3,4)
+integer(int8), allocatable              :: TIFF_image(:,:)
 
 !=================================================================
 ! read Monte Carlo output file and extract necessary parameters
@@ -220,10 +231,11 @@ if ((-ecpnl%MCsigend .gt. ecpnl%thetac - abs(ecpnl%sampletilt)) .and. (switchwfo
     switchwfoff = .TRUE.
 end if
 
-
 !=================================================================
 ! completed reading the file; generating list of incident vectors
 !=================================================================
+
+if (trim(ecpnl%tiff_prefix).ne.'undefined') tiff_output = .TRUE. 
 
 numk = 0
 call GetVectorsCone(ecpnl, khead, numk)
@@ -376,11 +388,13 @@ call OMP_SET_NUM_THREADS(ecpnl%nthreads)
 
 ! use OpenMP to run on multiple cores
 !$OMP PARALLEL DEFAULT(SHARED) &
-!$OMP PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp) &
+!$OMP PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp,TIFF_image) &
 !$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dims3,hdferr,qu,idir,wf)
 
 TID = OMP_GET_THREAD_NUM()
 nthreads = OMP_GET_NUM_THREADS()
+
+if (tiff_output.eqv..TRUE.) allocate(TIFF_image(ecpnl%npix,ecpnl%npix))
 
 !$OMP DO SCHEDULE(DYNAMIC)
 angleloop: do iang = 1,ecpnl%numangle_anglefile
@@ -493,11 +507,30 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
           hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
           dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
           hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dims3, HDF_head, insert)
-! =====================================================
-! end of HDF_FileVersion = 4.0 write statements
-! =====================================================
-
     end if
+
+    if (tiff_output.eqv..TRUE.) then 
+! Create a tiff file name 
+      TIFF_filename = trim(EMsoft_getEMdatapathname())//trim(ecpnl%tiff_prefix)
+      write (tiff_number,"(I5.5)") iang-1
+      TIFF_filename = trim(TIFF_filename)//tiff_number//'.tiff'
+      TIFF_filename = EMsoft_toNativePath(TIFF_filename)
+      ma = maxval(ECPpattern)
+      mi = minval(ECPpattern)
+      ECPpatternintd = ((ECPpattern - mi)/ (ma-mi))
+      if (ecpnl%maskpattern.eq.'y')  ECPpatternintd = ECPpatternintd * mask 
+      TIFF_image = nint(255.0*ECPpatternintd)
+! set up the image_t structure
+      im = image_t(TIFF_image)
+      if(im%empty()) call Message("EMECP","failed to convert array to image")
+
+! create the file
+      call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
+      if(0.ne.iostat) then
+        call Message("failed to write image to file : "//iomsg)
+      end if 
+    end if
+
 !$OMP END CRITICAL
 
 end do angleloop 

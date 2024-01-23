@@ -3388,6 +3388,11 @@ line2(1) = ecpnl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create datafile dataset',.TRUE.)
 
+dataset = 'tiff_prefix'
+line2(1) = ecpnl%tiff_prefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create tiff_prefix dataset',.TRUE.)
+
 dataset = SC_xtalname
 line2(1) = ecpnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
