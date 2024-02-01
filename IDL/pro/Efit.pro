@@ -95,6 +95,8 @@ common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 common getenv_common, librarylocation
 
+librarylocation = Core_getenv(/lib) 
+
 ; before we do anything, we make sure that the location of the app_user_dir is set 
 res = file_test('~/.idl',/directory)
 if (res ne 1) then begin
@@ -190,6 +192,7 @@ Efitwidget_s = {widgetstruct, $
 
 ; data structure
 Efitdata = {Efitdatastruct, $
+                os_family:'',
                 scrdimx:fix(0), $
                 scrdimy:fix(0), $
                 xlocation:fix(0), $
@@ -299,6 +302,10 @@ Efitdata.appdir = Efitdata.appdir+Efitdata.foldersep
 
 print,'appdir = ', Efitdata.appdir
 
+; get the platform
+Efitdata.os_family = 'unix'
+if (!version.os_family ne Efitdata.os_family) then Efitdata.os_family = 'windows'
+
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
 ; We'll need to guess whether or not the user has a double screen: if the aspect ratio is larger than 16/9,
@@ -374,9 +381,15 @@ fitManualStep[7] = Efitdata.detmphi2
 fitManualStep[8] = Efitdata.detmtheta
 
 ; a few font strings (this will need to be redone for Windows systems)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+if (Efitdata.os_family eq 'unix') then begin
+  fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+  fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+  fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+end else begin
+  fontstr='Garamond*ITALIC*14'
+  fontstrlarge='Garamond*ITALIC*20'
+  fontstrsmall='Garamond*ITALIC*14'
+end
 
 ;------------------------------------------------------------
 ; create the top level widget

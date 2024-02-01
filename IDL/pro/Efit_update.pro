@@ -165,14 +165,14 @@ end else fpar[5] = fitValue[8]
 
 ; initialize the simulated pattern array
 EBSDpattern = fltarr(Efitdata.detnumsx,Efitdata.detnumsy)
-Efit_getEBSDpattern, ipar, fpar, quats
+;Efit_getEBSDpattern, ipar, fpar, quats
 
-; callname = 'getEBSDPatternsWrapper'
-; faccum_e = float(accum_e)
-; if (!version.os eq 'darwin') then begin
-;   res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
-;                       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
-; endif
+callname = 'getEBSDPatternsWrapper'
+faccum_e = float(accum_e)
+if (!version.os eq 'darwin') then begin
+res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
+                    ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+endif
 
 ; if (!version.os eq 'Win32') then begin
 ;   res = call_external(librarylocation+'/EMsoftLib.dll', callname, $
