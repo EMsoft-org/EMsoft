@@ -1,0 +1,76 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 26,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "ci",
+        "displayName": "CI build",
+        "description": "Build configuration for GitHub Actions CI",
+        "generator": "Ninja",
+        "binaryDir": "${sourceDir}/build",
+        "cacheVariables": {
+        }
+      },
+      {
+        "name": "ci-windows-v142",
+        "displayName": "ci-windows-v142",
+        "description": "Build configuration for GitHub Actions CI",
+        "generator": "NMake Makefiles",
+        "inherits": "ci",
+        "cacheVariables": {
+        }
+      },
+      {
+        "name": "ci-windows-v143",
+        "displayName": "ci-windows-v143",
+        "description": "Build configuration for GitHub Actions CI",
+        "generator": "NMake Makefiles",
+        "inherits": "ci",
+        "cacheVariables": {
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "ci-windows-v142",
+        "displayName": "ci-windows-v142 Release build",
+        "description": "Build configuration for GitHub actions CI",
+        "configurePreset": "ci-windows-v142",
+        "configuration": "Release"
+      },
+      {
+        "name": "ci-windows-v143",
+        "displayName": "ci-windows-v143 CI build",
+        "description": "Build configuration for GitHub actions CI",
+        "configurePreset": "ci-windows-v143",
+        "configuration": "Release"
+      }
+    ],
+    "testPresets": [
+      {
+        "name": "ci-windows-v142",
+        "displayName": "ci-windows-v142 CI build",
+        "description": "Build configuration for GitHub actions CI",
+        "configurePreset": "ci-windows-v142",
+        "configuration": "Release",
+        "output": {
+          "outputOnFailure": true
+        }
+      },
+      {
+        "name": "ci-windows-v143",
+        "displayName": "ci-windows-v143 CI build",
+        "description": "Build configuration for GitHub actions CI",
+        "configurePreset": "ci-windows-v143",
+        "configuration": "Release",
+        "output": {
+          "outputOnFailure": true
+        }
+      }
+    ]
+  }
+  

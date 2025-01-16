@@ -1,0 +1,93 @@
+name: windows
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+  push:
+    branches:
+      - develop
+      - master
+
+jobs:
+  build:
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;nuget,GitHub,readwrite'
+      WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
+      WINDOWS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c95a3b26-fc45-496c-833b-df08b10297b9/w_HPCKit_p_2024.1.0.561_offline.exe
+      LINUX_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/fdc7a2bc-b7a8-47eb-8876-de6201297144/l_BaseKit_p_2024.1.0.596_offline.sh
+      LINUX_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7f096850-dc7b-4c35-90b5-36c12abd9eaa/l_HPCKit_p_2024.1.0.560_offline.sh
+      LINUX_AIKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/0414ef18-5b64-47f2-9b2e-ae94860272b9/l_AITools.2024.1.0.9.sh
+      MACOS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c112cca6-12cf-4a0c-9e5e-d0d50d3b0f8b/m_RenderKit_p_2024.1.0.744_offline.dmg
+      WINDOWS_CPP_COMPONENTS: intel.oneapi.win.cpp-dpcpp-common
+      WINDOWS_FORTRAN_COMPONENTS: intel.oneapi.win.ifort-compiler
+      WINDOWS_DPCPP_COMPONENTS: intel.oneapi.win.cpp-dpcpp-common
+      LINUX_CPP_COMPONENTS: intel-oneapi-dpcpp-cpp-compiler
+      LINUX_FORTRAN_COMPONENTS: intel-oneapi-compiler-fortran
+      LINUX_DPCPP_COMPONENTS: intel-oneapi-compiler-dpcpp-cpp
+      LINUX_CPP_COMPONENTS_WEB: intel.oneapi.lin.dpcpp-cpp-compiler
+      LINUX_FORTRAN_COMPONENTS_WEB: intel.oneapi.lin.ifort-compiler
+      LINUX_DPCPP_COMPONENTS_WEB: intel.oneapi.lin.dpcpp-cpp-compiler
+      MACOS_CPP_COMPONENTS: intel.oneapi.mac.cpp-compiler
+      MACOS_FORTRAN_COMPONENTS: intel.oneapi.mac.ifort-compiler
+      CACHE_NUMBER: 6
+      SAMPLES_TAG: 2024.1.0
+      COMPILER_VERSION: 2024.1.0
+      TBB_VERSION: 2021.12.0
+      VS_VER: vs2022
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+        toolset:
+          - v142
+          - v143
+    runs-on: ${{matrix.os}}
+
+    steps:
+      - uses: actions/checkout@master
+        with:
+          repository: bluequartzsoftware/bcls
+          path: ./SDK/bcls
+          ref: refs/heads/develop
+      - uses: actions/checkout@master
+        with:
+          repository: bluequartzsoftware/clfortran
+          path: ./SDK/clfortran
+          ref: refs/heads/develop
+
+      - uses: actions/checkout@v2
+      - name: cache install
+        id: cache-install
+        uses: actions/cache@v2
+        with:
+          path: |
+              C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat
+              C:\Program Files (x86)\Intel\oneAPI\compiler
+          key: install-${{ env.CACHE_NUMBER }}-${{ env.WINDOWS_HPCKIT_URL }}-${{ env.WINDOWS_FORTRAN_COMPONENTS }}-compiler-${{ hashFiles('**/scripts/cache_exclude_windows.sh') }}
+      - name: install
+        if: steps.cache-install.outputs.cache-hit != 'true'
+        run: .github/scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_FORTRAN_COMPONENTS
+      - name: Configure
+        run: |
+          cmake --preset ci-windows-${{matrix.toolset}} ${{github.workspace}}
+      # - name: build
+      #   run: .github/scripts/build_windows.bat fortran $VS_VER $SAMPLES_TAG
+      - name: exclude unused files from cache
+        if: steps.cache-install.outputs.cache-hit != 'true'
+        shell: bash
+        run: .github/scripts/cache_exclude_windows.sh
+
+      # Delete the following if you don't want to save install logs
+      - name: Saving install logs
+        if: steps.cache-install.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: InstallLogs_${{ github.job }}
+          path: |
+            extract.log
+            bootstrapper*
+            installer*
+          retention-days: 7
