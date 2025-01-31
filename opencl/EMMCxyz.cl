@@ -228,6 +228,10 @@ __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* 
         r_new = r0 + step*c_new*1.0e7f;
         //r_new = (float4)(r0.x + step*c_new.x, r0.y + step*c_new.y, r0.z + step*c_new.z, 0.0f);
         r0 = r_new;
+
+        de_ds = -0.00785f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
+        E_new += step*rho*de_ds;
+        
         counter1 = 0;   // This is used as a counter for the number of monte carlo steps to carry out for each electron. This is due to the lock step nature of the GPU code. We have arbitrarily set this to a 1000, though this is material dependent
         
         counter2 = 0;   // This counter is used to figure out if the electron has left the sample or not. Again, this is because of the lock step nature. All steps have to be executed on each thread irrespective of the fact that the electron may have actually left the sample
